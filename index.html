@@ -832,8 +832,14 @@ async function dbSaveWeeklyReport(h, entry) {
     created_at:     new Date().toISOString()
   };
 
-  console.log('[DB] Saving weekly_report:', data);
-  var r = await sb.from('weekly_reports').insert(data);
+  console.log('[DB] Saving weekly_report:', data, 'dbId:', entry && entry.dbId);
+  var r;
+  if (entry && entry.dbId) {
+    // Ghi đè bản ghi cũ (upsert)
+    r = await sb.from('weekly_reports').update(data).eq('id', entry.dbId);
+  } else {
+    r = await sb.from('weekly_reports').insert(data);
+  }
   if (r.error) {
     console.error('[DB] weekly_reports ERROR:', r.error);
     // Nếu lỗi enum → thử với 'other'
@@ -1581,6 +1587,17 @@ function renderHSTable(){
     var matchSt = !st || h.status===st;
     var matchCb = !cb || h.canBoId===cb;
     return matchQ && matchSt && matchCb;
+  });
+  // Sort: CĐT → mới nhất trên; CB/QL → cũ nhất trên (quá hạn lên đầu)
+  f.sort(function(a, b){
+    var ta = new Date(a.lastContactAt || a.updatedAt || a.createdAt || 0).getTime();
+    var tb = new Date(b.lastContactAt || b.updatedAt || b.createdAt || 0).getTime();
+    if (isCDT()) {
+      return tb - ta; // mới nhất trên
+    } else {
+      // CB/QL: quá hạn (cũ nhất) lên đầu
+      return ta - tb; // cũ nhất trên
+    }
   });
   document.getElementById('hs-count').textContent = f.length + ' / ' + src.length + ' hồ sơ';
   var html = '';
@@ -3334,7 +3351,7 @@ function buildWeeklyReportForm(h) {
   if (!reports.length) {
     html2 += '<div class="text-sm" style="padding:8px 0">Chưa có báo cáo nào. Cập nhật đầu tiên sẽ hiển thị ở đây.</div>';
   } else {
-    html2 += '<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse">';
+    html2 += '<div style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:6px"><table style="width:100%;font-size:12px;border-collapse:collapse">';
     html2 += '<thead style="background:var(--surf2)"><tr>';
     html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Ngày cập nhật</th>';
     html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Kết quả khai thác</th>';
@@ -3344,14 +3361,14 @@ function buildWeeklyReportForm(h) {
     html2 += '</tr></thead><tbody>';
     reports.slice().reverse().forEach(function(r2) {
       if (r2.type === 'cdt_feedback') {
-        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:var(--teal-l)">';
+        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#FFFDE7">';
         html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
         html2 += '<td style="padding:6px 10px;font-weight:600;color:var(--teal)" colspan="3">💬 CĐT: ' + (r2.chiTiet || '') + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
         html2 += '</tr>';
       } else {
         var lbl = getStatusLabel(r2.ketQua);
-        html2 += '<tr style="border-bottom:1px solid var(--bdr)">';
+        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#F0F8FF">';
         html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
         html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.chiTiet || '') + '</td>';
@@ -3372,7 +3389,8 @@ function saveCDTFeedback() {
   if (!el || !el.value.trim()) { alert('Vui lòng nhập nội dung phản hồi!'); return; }
   var idx = hsList.findIndex(function(x){ return x.id===currentHSId; });
   if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
-  hsList[idx].weeklyReports.push({
+  var today2 = new Date().toISOString().slice(0,10);
+  var cdtEntry = {
     time:    nowStr(),
     type:    'cdt_feedback',
     ketQua:  'cdt_feedback',
@@ -3380,7 +3398,18 @@ function saveCDTFeedback() {
     deXuat:  '',
     who:     currentUser.name,
     weekNum: getWeekNum()
+  };
+  // Ghi đè phản hồi CĐT cùng ngày
+  var cdtIdx = -1;
+  hsList[idx].weeklyReports.forEach(function(r, i){
+    if (r.type === 'cdt_feedback' && (r.time||'').slice(0,10) === today2) cdtIdx = i;
   });
+  if (cdtIdx >= 0) {
+    cdtEntry.dbId = hsList[idx].weeklyReports[cdtIdx].dbId;
+    hsList[idx].weeklyReports[cdtIdx] = cdtEntry;
+  } else {
+    hsList[idx].weeklyReports.push(cdtEntry);
+  }
   hsList[idx].updatedAt = nowStr();
   el.value = '';
   addLog('CĐT phản hồi: ' + hsList[idx].tenKH, 'teal', currentHSId);
@@ -3399,15 +3428,27 @@ function saveWeeklyReport() {
   if (!kq || !kq.value) { alert('Vui lòng chọn kết quả khai thác!'); return; }
   var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
   if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
+  var today = new Date().toISOString().slice(0,10);
   var entry = {
-    time: nowStr(),
-    ketQua: kq.value,
+    time:    nowStr(),
+    ketQua:  kq.value,
     chiTiet: ct ? ct.value : '',
-    deXuat: dx ? dx.value : '',
-    who: currentUser.name,
+    deXuat:  dx ? dx.value : '',
+    who:     currentUser.name,
     weekNum: getWeekNum()
   };
-  hsList[idx].weeklyReports.push(entry);
+  // Kiểm tra đã có báo cáo hôm nay chưa (không phải CDT feedback)
+  var todayIdx = -1;
+  hsList[idx].weeklyReports.forEach(function(r, i){
+    if (r.type !== 'cdt_feedback' && (r.time||'').slice(0,10) === today) todayIdx = i;
+  });
+  if (todayIdx >= 0) {
+    // Ghi đè báo cáo cũ trong ngày
+    entry.dbId = hsList[idx].weeklyReports[todayIdx].dbId; // giữ id DB để update
+    hsList[idx].weeklyReports[todayIdx] = entry;
+  } else {
+    hsList[idx].weeklyReports.push(entry);
+  }
   // Update latest values on HS record
   hsList[idx].ketQuaKhaiThac = kq.value;
   hsList[idx].chiTiet = ct ? ct.value : '';
