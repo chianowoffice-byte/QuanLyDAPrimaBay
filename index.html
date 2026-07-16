@@ -1330,21 +1330,7 @@ function buildHSForm(h) {
 
   // Nút lưu
   if (!locked) {
-    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-    if (isCDTUser) {
-      html += '<button class="btn btn-primary btn-sm" onclick="saveProjCDT()">💾 Lưu thông tin căn hộ</button>';
-    } else {
-      if (!kLocked) {
-        html += '<button class="btn btn-primary btn-sm" onclick="saveProj()">💾 Lưu thông tin KH & Nhu cầu vay</button>';
-      }
-      if (isQL()) {
-        html += '<button class="btn btn-sm" style="background:var(--teal-l);color:var(--teal);border-color:#9DD5E0" onclick="saveProjQL()">💾 Lưu căn hộ & HĐMB</button>';
-      }
-      if (!locked) {
-        html += '<button class="btn btn-amber btn-sm" onclick="saveGiaiNganInfo()">💾 Lưu phê duyệt & GN</button>';
-      }
-    }
-    html += '</div>';
+    html += '<button class="btn btn-primary" onclick="saveAll()" style="margin-bottom:12px">💾 Lưu tất cả</button>';
   }
   html += '</div>'; // t-proj
 
@@ -1680,6 +1666,34 @@ function saveQLOutcome() {
   openHS(currentHSId);
 }
 
+
+function saveAll() {
+  // 1. Lưu thông tin KH & Nhu cầu vay (CB / QL / Admin)
+  if (!isCDT() && !document.getElementById('f-tenKH')?.disabled) {
+    if (document.getElementById('f-tenKH') && !document.getElementById('f-tenKH').value.trim()) {
+      alert('Vui lòng nhập họ tên KH!'); return;
+    }
+    if (document.getElementById('f-tenKH')) saveProj();
+  }
+
+  // 2. Lưu căn hộ & HĐMB (CĐT / QL / Admin)
+  if (isCDT()) {
+    saveProjCDT();
+    return;
+  }
+  if (isQL()) saveProjQL();
+
+  // 3. Lưu phê duyệt & GN (CB phân công / QL / Admin)
+  if (document.getElementById('f-hmduyet') && !document.getElementById('f-hmduyet').disabled) {
+    saveGiaiNganInfo();
+  }
+
+  if (!isCDT() && !isQL()) {
+    // CB thường — chỉ lưu KH (đã gọi saveProj ở trên)
+    return;
+  }
+}
+
 function saveProj() {
   var gv = function(id) { var el=document.getElementById(id); return el?el.value:''; };
   var gvn = function(id) {
@@ -1778,12 +1792,32 @@ function saveGiaiNganInfo() {
 
 function lockKH() {
   if (!currentHSId) return;
+  var gv = function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
+  // Kiểm tra đủ các trường KH bắt buộc
+  var errors = [];
+  if (!gv('f-tenKH'))  errors.push('Họ và tên KH');
+  if (!gv('f-cccd'))   errors.push('CCCD / CMND');
+  if (!gv('f-sdt'))    errors.push('Số điện thoại');
+  if (!gv('f-ns'))     errors.push('Ngày sinh');
+  if (!gv('f-dc'))     errors.push('Địa chỉ thường trú');
+  if (!gv('f-nn'))     errors.push('Nghề nghiệp');
+  if (!gv('f-tn'))     errors.push('Thu nhập/tháng');
+  // Nếu có vợ/chồng thì kiểm tra thêm
+  var coVC = document.getElementById('f-coVC');
+  if (coVC && coVC.checked) {
+    if (!gv('f-tenVC'))  errors.push('Họ tên vợ/chồng');
+    if (!gv('f-cccdVC')) errors.push('CCCD vợ/chồng');
+  }
+  if (errors.length) {
+    alert('Vui lòng nhập đủ thông tin trước khi chốt:\n• ' + errors.join('\n• '));
+    return;
+  }
   showConf('Chốt thông tin KH?', 'Sau khi chốt, thông tin KH và nhu cầu vay sẽ không chỉnh sửa được (chỉ CB Quản lý mới mở lại).', function() {
     var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
-    hsList[idx].kLocked = true;
-    hsList[idx].kLockedBy = currentUser.name;
-    hsList[idx].kLockedAt = nowStr();
-    hsList[idx].updatedAt = nowStr();
+    hsList[idx].kLocked    = true;
+    hsList[idx].kLockedBy  = currentUser.name;
+    hsList[idx].kLockedAt  = nowStr();
+    hsList[idx].updatedAt  = nowStr();
     addLog('Chốt TT KH: ' + hsList[idx].tenKH, 'default', currentHSId);
     persist(); openHS(currentHSId); renderHSTable();
   });
@@ -2620,11 +2654,48 @@ function buildHSFooter(h, locked) {
 
 function lockHS() {
   if (!currentHSId) return;
+  var h = hsList.find(function(x){ return x.id===currentHSId; });
+  if (!h) return;
+  var gv = function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
+
+  var errors = [];
+
+  // Căn hộ & HĐMB (bỏ qua Diện tích)
+  if (!gv('f-mach'))    errors.push('Mã căn hộ');
+  if (!(h.giaHDMB||gv('f-giahdmb'))) errors.push('Giá HĐMB');
+  if (!gv('f-sohdmb') && !h.soHDMB)  errors.push('Số HĐMB');
+  if (!gv('f-ngayky') && !h.ngayKyHDMB) errors.push('Ngày ký HĐMB');
+
+  // VTC & Nhu cầu vay
+  var vtcPhai = gv('f-vtcphai') || String(h.vtcPhaiNop||'');
+  var vtcDa   = gv('f-vtcdanop')|| String(h.vtcDaNop||'');
+  var stv     = gv('f-stv')     || String(h.soTienVay||'');
+  var htls    = gv('f-htls')    || h.hinhThucVay || '';
+  if (!vtcPhai || vtcPhai==='0') errors.push('VTC phải nộp');
+  if (!vtcDa   || vtcDa==='0')   errors.push('VTC đã nộp hiện tại');
+  if (!stv     || stv==='0')     errors.push('Số tiền vay đề xuất');
+  if (!htls)                     errors.push('Hình thức vay (HTLS)');
+
+  // Phê duyệt & Giải ngân
+  var hm  = gv('f-hmduyet')|| String(h.hanMucDuocDuyet||'');
+  var ngn = gv('f-ngaygn') || h.ngayGiaiNgan || '';
+  var stgn= gv('f-stgn')   || String(h.soTienGiaiNgan||'');
+  if (!hm  || hm==='0')   errors.push('Phê duyệt hạn mức vay');
+  if (!ngn)               errors.push('Ngày giải ngân');
+  if (!stgn|| stgn==='0') errors.push('Số tiền giải ngân');
+
+  if (errors.length) {
+    alert('Vui lòng nhập đủ thông tin trước khi chốt hồ sơ:\n• ' + errors.join('\n• '));
+    return;
+  }
+
   showConf('Chốt hồ sơ?', 'Sau khi chốt, toàn bộ hồ sơ sẽ không chỉnh sửa được. Chỉ CB Quản lý mới mở lại.', function(){
     var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-    hsList[idx].locked=true; hsList[idx].lockedBy=currentUser.name; hsList[idx].lockedAt=nowStr();
-    hsList[idx].updatedAt=nowStr();
-    addLog('Chốt hồ sơ: '+hsList[idx].tenKH,'green',currentHSId);
+    hsList[idx].locked    = true;
+    hsList[idx].lockedBy  = currentUser.name;
+    hsList[idx].lockedAt  = nowStr();
+    hsList[idx].updatedAt = nowStr();
+    addLog('Chốt hồ sơ: '+hsList[idx].tenKH, 'green', currentHSId);
     persist(); openHS(currentHSId); renderHSTable();
   });
 }
