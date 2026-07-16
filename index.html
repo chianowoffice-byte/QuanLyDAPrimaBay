@@ -1655,6 +1655,7 @@ function buildHSForm(h) {
 
   // Phân quyền
   var isCDTUser  = isCDT();
+  var isCDTAdmin = currentUser && (currentUser.db_role === 'cdt_admin' || currentUser.role === 'cdt_admin');
   var isQLAdmin  = isQL();
   var isCBOwner  = !isQLAdmin && !isCDTUser && h && h.canBoId === currentUser.id;
   var isCBOther  = !isQLAdmin && !isCDTUser && !(h && h.canBoId === currentUser.id);
@@ -1753,9 +1754,9 @@ function buildHSForm(h) {
   html += '</div></div></div></div>';
 
   // ── Căn hộ & HĐMB ──
-  // CĐT / QL / Admin sửa | CB xem (dim)
-  var hdmbDim = (isQLAdmin || isCDTUser || isViewerUser) ? 'disabled' : 'disabled';
-  var hdmbDimClass = (!isQLAdmin && !isCDTUser) ? 'cdt-section-dim' : '';
+  // CĐT admin / QL / Admin sửa | CB + CĐT view xem (dim)
+  var hdmbDim = (isQLAdmin || isCDTAdmin) ? (locked ? 'disabled' : '') : 'disabled';
+  var hdmbDimClass = (!isQLAdmin && !isCDTAdmin) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + hdmbDimClass + '">';
   html += '<div class="fsec-title">Căn hộ & Hợp đồng mua bán</div>';
   html += '<div class="fgrid fgrid3">';
@@ -1770,8 +1771,8 @@ function buildHSForm(h) {
 
   // ── VTC & Nhu cầu vay ──
   // CĐT / QL / Admin sửa | CB xem (dim)
-  var vtcDim = (isQLAdmin || isCDTUser || isViewerUser) ? 'disabled' : 'disabled';
-  var vtcDimClass = (!isQLAdmin && !isCDTUser) ? 'cdt-section-dim' : '';
+  var vtcDim = (isQLAdmin || isCDTAdmin) ? (locked ? 'disabled' : '') : 'disabled';
+  var vtcDimClass = (!isQLAdmin && !isCDTAdmin) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + vtcDimClass + '">';
   html += '<div class="fsec-title">Vốn tự có (VTC) & Nhu cầu vay</div>';
   html += '<div class="fgrid fgrid3">';
@@ -1779,9 +1780,9 @@ function buildHSForm(h) {
   html += '<div class="fg"><label>VTC đã nộp hiện tại (VNĐ)</label>' + numInput('f-vtcdanop',dv('vtcDaNop'),vtcDim) + '</div>';
   html += '<div class="fg"><label>Số tiền vay đề xuất (VNĐ)</label>' + numInput('f-stv',dv('soTienVay'),vtcDim) + '</div>';
   html += '<div class="fg"><label>Hình thức vay (thời gian HTLS)</label>';
-  html += '<input id="f-htls" value="'+(dv('hinhThucVay')||'30 tháng HTLS')+'" '+(vtcDim||locked?'disabled':'')+' placeholder="VD: 30 tháng HTLS"></div>';
+  html += '<input id="f-htls" value="'+(dv('hinhThucVay')||'30 tháng HTLS')+'" '+(vtcDim ? 'disabled' : '')+' placeholder="VD: 30 tháng HTLS"></div>';
   html += '<div class="fg"><label>CSBH áp dụng</label>';
-  html += '<input id="f-csbh" value="'+dv('csChinhSach')+'" '+(vtcDim||locked?'disabled':'')+' placeholder="VD: 20260617_Prima_vay"></div>';
+  html += '<input id="f-csbh" value="'+dv('csChinhSach')+'" '+(vtcDim ? 'disabled' : '')+' placeholder="VD: 20260617_Prima_vay"></div>';
   html += fld('Kỳ hạn vay (tháng)','f-kh',dv('kyHan'),vtcDim);
   html += '</div></div>';
 
@@ -2262,7 +2263,7 @@ function saveProjQL() {
 }
 
 function saveProjCDT() {
-  if (!isCDT() || !currentHSId) return;
+  if (!isCDT() || !currentHSId) return; // isCDT() đã bao gồm cả cdt_admin
   var gv=function(id){var el=document.getElementById(id);return el?el.value:'';};
   var gvn=function(id){var el=document.getElementById(id);return el?(el.value.replace(/\./g,'').replace(/,/g,'')):''};
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
