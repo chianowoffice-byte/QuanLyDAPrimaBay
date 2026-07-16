@@ -638,7 +638,13 @@ var confFn = null;
 // Map app HS object → loan_files columns
 function mapHSToLF(h) {
   return {
-    status:                 h.status      || 'new',
+    status: (function(){
+      var appToDb = {
+        'moi':'new', 'dang':'processing', 'cho':'pending',
+        'choky':'approved', 'xong':'disbursed', 'tuchoi':'rejected'
+      };
+      return appToDb[h.status] || 'new';
+    })(),
     officer_id:             h.canBoId     || null,
     sale_price:             parseInt(h.giaHDMB)            || null,
     vtc_required:           parseInt(h.vtcPhaiNop)         || null,
@@ -1266,7 +1272,17 @@ function mapDbHS(lf) {
     id:            lf.id,
     maBIM:         lf.bim_ref || '',
     sttBIM:        lf.bim_seq || 0,
-    status:        lf.status  || 'new',
+    status: (function(){
+      var dbToApp = {
+        'new':'moi', 'processing':'dang', 'pending':'cho',
+        'approved':'choky', 'signed':'choky', 'disbursed':'xong',
+        'rejected':'tuchoi', 'cancelled':'tuchoi',
+        // đã là app status thì giữ nguyên
+        'moi':'moi', 'dang':'dang', 'cho':'cho',
+        'choky':'choky', 'xong':'xong', 'tuchoi':'tuchoi'
+      };
+      return dbToApp[lf.status] || 'moi';
+    })(),
     tenKH:         cust.full_name || '',
     cccd:          cust.id_number || '',
     sdt:           cust.phone     || '',
@@ -1451,7 +1467,7 @@ function renderHSTable(){
   var q   = (document.getElementById('s-q')||{value:''}).value.toLowerCase();
   var st  = (document.getElementById('s-st')||{value:''}).value;
   var cb  = (document.getElementById('s-cb')||{value:''}).value;
-  var src = (isQL()||isCDT()) ? hsList : hsList.filter(function(h){ return h.canBoId===currentUser.id; });
+  var src = (isQL()||isCDT()||isViewer()) ? hsList : hsList.filter(function(h){ return h.canBoId===currentUser.id; });
   var f   = src.filter(function(h){
     var matchQ  = !q || (h.tenKH||'').toLowerCase().indexOf(q)>=0 || (h.sdt||'').indexOf(q)>=0 || (h.maCanHo||'').toLowerCase().indexOf(q)>=0;
     var matchSt = !st || h.status===st;
@@ -3162,10 +3178,29 @@ function saveWeeklyReport() {
   hsList[idx].lastContactAt = nowStr();
   hsList[idx].updatedAt = nowStr();
   // Auto update status based on result
-  if (kq.value === 'duoc_vay') hsList[idx].status = 'choky';
-  else if (['tu_choi_tn','tu_choi_cic','tu_choi_kh'].includes(kq.value)) hsList[idx].status = 'tuchoi';
-  else if (kq.value === 'nop_du') hsList[idx].status = 'cho';
-  else if (['da_lh','hen_gap','cho_bs'].includes(kq.value)) hsList[idx].status = 'dang';
+  // Tự động cập nhật trạng thái hồ sơ theo kết quả khai thác
+  var ktMap = {
+    'chua_lh':       'moi',    // Chưa liên hệ → Mới nhận
+    'dang_can_nhac': 'dang',   // Đang cân nhắc → Đang xử lý
+    'dong_y_cung_cap':'dang',  // Đồng ý - đang cung cấp HS → Đang xử lý
+    'kh_tu_choi':    'tuchoi', // KH từ chối → Từ chối
+    'nh_tu_choi':    'tuchoi', // NH từ chối → Từ chối
+    'von_tu_co':     'tuchoi', // Chuyển vốn tự có → Từ chối
+    'nop_du':        'cho',    // Đã nộp đủ HS → Chờ phê duyệt
+    'da_phe_duyet':  'choky',  // Đã phê duyệt → Chờ ký
+    'soan_hs':       'choky',  // Đã soạn HS → Chờ ký
+    'cho_gn':        'choky',  // Đã ký - chờ GN → Chờ ký
+    'da_gn':         'xong',   // Đã giải ngân → Hoàn thành
+    // Legacy values
+    'duoc_vay':      'choky',
+    'tu_choi_tn':    'tuchoi',
+    'tu_choi_cic':   'tuchoi',
+    'tu_choi_kh':    'tuchoi',
+    'da_lh':         'dang',
+    'hen_gap':       'dang',
+    'cho_bs':        'dang',
+  };
+  if (ktMap[kq.value]) hsList[idx].status = ktMap[kq.value];
   addLog('BC tuan: ' + (CT_STATUS_LABELS_FULL[kq.value]||kq.value) + ' - ' + hsList[idx].tenKH, 'green', currentHSId);
   persist(); renderHSTable(); renderDB();
   // Reset form + save DB + reload
