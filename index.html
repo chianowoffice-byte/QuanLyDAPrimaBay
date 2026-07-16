@@ -1391,12 +1391,11 @@ function mapDbHS(lf) {
         'new':'moi', 'processing':'dang', 'pending':'cho',
         'approved':'choky', 'signed':'choky', 'disbursed':'xong',
         'rejected':'tuchoi', 'cancelled':'tuchoi',
-        // đã là app status thì giữ nguyên
         'moi':'moi', 'dang':'dang', 'cho':'cho',
         'choky':'choky', 'xong':'xong', 'tuchoi':'tuchoi'
       };
       return dbToApp[lf.status] || 'moi';
-    })(),
+    })(), // NOTE: deriveHSStatus() sẽ override khi render bảng
     tenKH:         cust.full_name || '',
     cccd:          cust.id_number || '',
     sdt:           cust.phone     || '',
@@ -1631,7 +1630,8 @@ function renderHSTable(){
         }
         if (lwr) lastKQText = '<div style="font-size:10px;color:var(--txt3);margin-top:2px;line-height:1.3">' + getStatusLabel(lwr.ketQua) + '</div>';
       }
-      html += '<td>'+sBadge(h.status)+lastKQText+'</td>';
+      var displayStatus = deriveHSStatus(h);
+      html += '<td>'+sBadge(displayStatus)+lastKQText+'</td>';
       html += '<td style="font-size:11px;color:var(--txt3)">'+fmtDate(h.updatedAt||h.createdAt||'')+'</td>';
       html += '<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openHS(this.dataset.id)">Mở</button></td>';
       html += '</tr>';
@@ -3291,6 +3291,54 @@ var DB_STATUS_LABELS = {
   'other':           'Lý do khác'
 };
 
+
+// Derive trạng thái HS từ kết quả báo cáo gần nhất (ưu tiên hơn status DB)
+var KT_TO_STATUS = {
+  'chua_lh':          'dang',
+  'dang_can_nhac':    'dang',
+  'dong_y_cung_cap':  'dang',
+  'kh_tu_choi':       'tuchoi',
+  'nh_tu_choi':       'tuchoi',
+  'von_tu_co':        'tuchoi',
+  'nop_du':           'cho',
+  'da_phe_duyet':     'choky',
+  'soan_hs':          'choky',
+  'cho_gn':           'choky',
+  'da_gn':            'xong',
+  'khac':             'dang',
+  // Legacy
+  'da_lh':            'dang',
+  'hen_gap':          'dang',
+  'cho_bs':           'dang',
+  'kh_nghe':          'dang',
+  'kh_bao_luu':       'dang',
+  'duoc_vay':         'choky',
+  'tu_choi_tn':       'tuchoi',
+  'tu_choi_cic':      'tuchoi',
+  'tu_choi_kh':       'tuchoi',
+  // DB enum values
+  'contacted':        'dang',
+  'appointment':      'dang',
+  'waiting_docs':     'dang',
+  'no_answer':        'dang',
+  'on_hold':          'dang',
+  'docs_complete':    'cho',
+  'approved_loan':    'choky',
+  'rejected_income':  'tuchoi',
+  'rejected_cic':     'tuchoi',
+  'rejected_kh':      'tuchoi',
+  'other':            'dang'
+};
+
+function deriveHSStatus(h) {
+  // Tìm báo cáo gần nhất (không phải CDT feedback)
+  var wrs = (h.weeklyReports || []).filter(function(r){ return r.type !== 'cdt_feedback'; });
+  if (!wrs.length) return h.status || 'moi'; // Chưa có báo cáo → giữ nguyên
+  var last = wrs[wrs.length - 1];
+  var kt   = last.ketQua || '';
+  return KT_TO_STATUS[kt] || h.status || 'moi';
+}
+
 function getStatusLabel(val) {
   if (!val) return '—';
   return CT_STATUS_LABELS_FULL[val] || DB_STATUS_LABELS[val] || val;
@@ -3351,7 +3399,7 @@ function buildWeeklyReportForm(h) {
   if (!reports.length) {
     html2 += '<div class="text-sm" style="padding:8px 0">Chưa có báo cáo nào. Cập nhật đầu tiên sẽ hiển thị ở đây.</div>';
   } else {
-    html2 += '<div style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:6px"><table style="width:100%;font-size:12px;border-collapse:collapse">';
+    html2 += '<div style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:6px;background:#F0F8FF"><table style="width:100%;font-size:12px;border-collapse:collapse">';
     html2 += '<thead style="background:var(--surf2)"><tr>';
     html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Ngày cập nhật</th>';
     html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Kết quả khai thác</th>';
@@ -3361,14 +3409,14 @@ function buildWeeklyReportForm(h) {
     html2 += '</tr></thead><tbody>';
     reports.slice().reverse().forEach(function(r2) {
       if (r2.type === 'cdt_feedback') {
-        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#FFFDE7">';
+        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#FFF;color:#B8860B">';
         html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
-        html2 += '<td style="padding:6px 10px;font-weight:600;color:var(--teal)" colspan="3">💬 CĐT: ' + (r2.chiTiet || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;font-weight:600;color:#B8860B" colspan="3">💬 CĐT: ' + (r2.chiTiet || '') + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
         html2 += '</tr>';
       } else {
         var lbl = getStatusLabel(r2.ketQua);
-        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#F0F8FF">';
+        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#E8F4FD;color:#000">';
         html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
         html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.chiTiet || '') + '</td>';
