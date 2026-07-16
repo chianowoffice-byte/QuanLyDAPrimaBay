@@ -300,7 +300,7 @@ tr:hover td{background:var(--surf2)}
         <div class="twrap">
           <table>
             <thead><tr>
-              <th>Mã HS</th><th>Khách hàng</th><th>SĐT</th><th>Căn hộ</th>
+              <th>Khách hàng</th><th>SĐT</th><th>Căn hộ</th>
               <th>Deadline</th><th>Hồ sơ</th><th>CIC</th><th>Cán bộ</th><th>Trạng thái</th><th>Cập nhật</th><th></th>
             </tr></thead>
             <tbody id="hs-tbody"></tbody>
@@ -495,6 +495,7 @@ tr:hover td{background:var(--surf2)}
 </div>
 
 <script>
+// ══════════
 // ══════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════
@@ -1145,9 +1146,6 @@ function buildHSForm(h) {
   if (!isCDTUser && !locked && !kLocked) {
     html += '<button class="btn btn-sm btn-amber" onclick="lockKH()">🔒 Chốt thông tin KH</button>';
   }
-  if (isCDTUser) {
-    html += '<span style="font-size:11px;color:var(--txt3);font-style:italic">Chỉ BIDV cập nhật</span>';
-  }
   html += '</div>';
   html += '<div class="fgrid">';
   html += fld('Họ và tên *','f-tenKH',dv('tenKH'),isCDTUser?'disabled':kDis,'Nguyễn Văn A');
@@ -1208,7 +1206,6 @@ function buildHSForm(h) {
     // VTC — CB đọc, không nhập tay (lấy từ dữ liệu BIM)
     html += '<div class="fsec ' + vtcDimClass + '">';
     html += '<div class="fsec-title">Vốn tự có (VTC) & Nhu cầu vay';
-    if (isCDTUser) html += '<span style="font-size:11px;font-weight:400;color:var(--txt3);margin-left:8px;font-style:italic"> — Chỉ BIDV cập nhật</span>';
     html += '</div>';
     html += '<div class="fgrid fgrid3">';
     html += '<div class="fg"><label>VTC phải nộp (VNĐ)</label>' + numInput('f-vtcphai',dv('vtcPhaiNop'),(isQL()||isCDTUser)?'':'disabled') + '</div>';
@@ -1228,7 +1225,6 @@ function buildHSForm(h) {
     var gnDimClass = isCDTUser ? 'cdt-section-dim' : '';
     html += '<div class="fsec ' + gnDimClass + '">';
     html += '<div class="fsec-title">Phê duyệt & Giải ngân';
-    if (isCDTUser) html += '<span style="font-size:11px;font-weight:400;color:var(--txt3);margin-left:8px;font-style:italic"> — Chỉ BIDV cập nhật</span>';
     html += '</div>';
     if (!isCDTUser && !isQL() && h && h.canBoId !== currentUser.id) {
       html += '<div class="info-banner">ℹ️ Chỉ CB được phân công, Quản lý và Admin được nhập phần này.</div>';
@@ -1339,7 +1335,7 @@ function buildHSForm(h) {
     html += '</div>';
     if (h) {
       html += '<div class="divider"></div>';
-      html += '<div class="text-sm" style="line-height:2">Mã HS: <b>'+h.id+'</b> · Tạo: <b>'+(h.createdAt||'')+'</b>';
+      html += '<div class="text-sm" style="line-height:2">Tạo: <b>'+(h.createdAt||'')+'</b>';
       if (h.lockedBy) html += ' · Chốt: <b>'+h.lockedBy+'</b> lúc '+(h.lockedAt||'');
       html += '</div>';
     }
@@ -2565,6 +2561,5 @@ function unlockHS() {
     persist(); openHS(currentHSId); renderHSTable();
   });
 }
-</script>
-</body>
+dy>
 </html>
