@@ -604,59 +604,16 @@ var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // sbLogin: không dùng Supabase Auth (phương án 2)
 
 // Lấy danh sách hồ sơ từ DB
-async function sbLoadHS() {
-  var { data, error } = await sb
-    .from('loan_files')
-    .select(`
-      *,
-      customers(*),
-      apartments(*),
-      users!loan_files_officer_id_fkey(id, full_name, email, pgd),
-      weekly_reports(*),
-      checklist_items(*)
-    `)
-    .order('bim_seq', { ascending: true });
-  if (error) { console.error('sbLoadHS:', error); return []; }
-  return data || [];
-}
 
 // Lấy danh sách users từ DB
-async function sbLoadUsers() {
-  var { data, error } = await sb.from('users').select('*').order('full_name');
-  if (error) { console.error('sbLoadUsers:', error); return []; }
-  return data || [];
-}
 
 // Lưu weekly report
-async function sbSaveWeeklyReport(entry) {
-  var { error } = await sb.from('weekly_reports').insert(entry);
-  if (error) console.error('sbSaveWeeklyReport:', error);
-  return !error;
-}
 
 // Cập nhật loan_file
-async function sbUpdateLF(id, data) {
-  var { error } = await sb.from('loan_files').update(data).eq('id', id);
-  if (error) console.error('sbUpdateLF:', error);
-  return !error;
-}
 
 // Cập nhật customer
-async function sbUpdateCustomer(id, data) {
-  var { error } = await sb.from('customers').update(data).eq('id', id);
-  if (error) console.error('sbUpdateCustomer:', error);
-  return !error;
-}
 
 // Log hoạt động
-async function sbLog(action, desc, lf_id) {
-  await sb.from('activity_log').insert({
-    user_id: currentUser ? currentUser.db_id : null,
-    loan_file_id: lf_id || null,
-    action: action,
-    description: desc
-  });
-}
 
 var useSupabase = true; // flag: true = dùng DB thật, false = localStorage
 
@@ -1020,7 +977,6 @@ async function saveAndSync(saveFn, successMsg) {
 }
 
 // Alias để backward compatible
-function reloadFromDB() { syncFromDB(false); }
 
 function persist(){
   localStorage.setItem('pb5_users', JSON.stringify(users));
@@ -2235,24 +2191,6 @@ function saveProjCDT() {
   addLog('CĐT cập nhật căn hộ: '+hsList[idx].tenKH,'amber',currentHSId);
   persist(); renderHSTable();
   saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã lưu thông tin căn hộ!');
-}
-
-function saveGiaiNganInfo() {
-  if (!currentHSId) return;
-  var gvn = function(id) { var el=document.getElementById(id); return el?(el.value.replace(/\./g,'').replace(/,/g,'')):'' };
-  var h=hsList.find(function(x){return x.id===currentHSId;});
-  if (!h) return;
-  // Chỉ CB được phân công / QL / Admin
-  if (!isQL() && h.canBoId !== currentUser.id) { alert('Bạn không có quyền nhập thông tin giải ngân.'); return; }
-  var gv=function(id){var el=document.getElementById(id);return el?el.value:'';};
-  var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-  hsList[idx].hanMucDuocDuyet = gvn('f-hmduyet');
-  hsList[idx].ngayGiaiNgan    = gv('f-ngaygn');
-  hsList[idx].soTienGiaiNgan  = gvn('f-stgn');
-  hsList[idx].updatedAt       = nowStr();
-  addLog('Cập nhật GN: '+hsList[idx].tenKH,'green',currentHSId);
-  persist(); renderHSTable(); renderDB();
-  saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã lưu phê duyệt & GN!');
 }
 
 
