@@ -877,6 +877,7 @@ function mapDbHS(lf) {
     tenKH:         cust.full_name || '',
     cccd:          cust.id_number || '',
     sdt:           cust.phone     || '',
+    email:         cust.email     || '',
     diaChi:        cust.address   || '',
     vung:          cust.region    || '',
     daiLy:         cust.agent     || '',
@@ -1248,6 +1249,7 @@ function buildHSForm(h) {
   html += fld('Họ và tên *','f-tenKH',dv('tenKH'),isCDTUser?'disabled':kDis,'Nguyễn Văn A');
   html += fld('CCCD / CMND','f-cccd',dv('cccd'),isCDTUser?'disabled':kDis);
   html += fld('Số điện thoại','f-sdt',dv('sdt'),isCDTUser?'disabled':kDis);
+  html += fld('Email','f-email',dv('email'),isCDTUser?'disabled':kDis,'vd: nguyenvana@gmail.com');
   html += fld('Ngày sinh','f-ns',dv('ngaySinh'),isCDTUser?'disabled':kDis,'','date');
   html += fld('Địa chỉ thường trú','f-dc',dv('diaChi'),isCDTUser?'disabled':kDis,'','','ffull');
   html += fld('Nghề nghiệp','f-nn',dv('ngheNghiep'),isCDTUser?'disabled':kDis);
@@ -1258,13 +1260,13 @@ function buildHSForm(h) {
   var hasVC = h && h.coVoChong;
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">';
-  html += '<div id="vc-track" style="width:38px;height:22px;border-radius:11px;background:'+(hasVC?'var(--blue)':'var(--bdr2)')+';position:relative;'+(isCDTUser?'':'cursor:pointer;')+'flex-shrink:0"'+(isCDTUser?'':' onclick="'+(kLocked?'':'toggleVC()')+'"')+' >';
+  html += '<div id="vc-track" style="width:38px;height:22px;border-radius:11px;background:'+(hasVC?'var(--blue)':'var(--bdr2)')+';position:relative;cursor:'+(isCDTUser||kLocked?'default':'pointer')+';flex-shrink:0" onclick="'+(isCDTUser||kLocked?'':'toggleVC()')+'">';
   html += '<div id="vc-dot" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:'+(hasVC?'19px':'3px')+';transition:.2s"></div></div>';
   html += '<span style="font-size:13px;font-weight:500'+(isCDTUser?'':';cursor:pointer')+'"'+(isCDTUser?'':' onclick="'+(kLocked?'':'toggleVC()')+'"')+'>Có vợ / chồng đồng vay</span>';
   html += '<input type="checkbox" id="f-coVC" '+(hasVC?'checked':'')+' style="display:none">';
   html += '</div>';
-  if (hasVC) {
-    html += '<div id="sec-vc" style="display:block">';
+  html += '<div id="sec-vc" style="display:'+(hasVC?'block':'none')+'">';
+  if (hasVC || true) {
     html += '<div class="vc-section">';
     html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px">THÔNG TIN VỢ / CHỒNG ĐỒNG VAY</div>';
     html += '<div class="fgrid">';
@@ -1275,8 +1277,6 @@ function buildHSForm(h) {
     html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),isCDTUser?'disabled':kDis);
     html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),isCDTUser?'disabled':kDis) + '</div>';
     html += '</div></div>';
-  } else {
-    html += '<div id="sec-vc" style="display:none"></div>';
   }
   html += '</div>';
 
@@ -1318,10 +1318,20 @@ function buildHSForm(h) {
     html += '</div></div>';
 
     // Phê duyệt & Giải ngân — CB được phân công / QL / Admin nhập
-    var gnDis = (!locked && (isQL() || (h && h.canBoId === currentUser.id))) ? '' : 'disabled';
+    // Kiểm tra đủ HS (personal_id + income_proof + collateral) trước khi cho nhập GN
+    var ckObjNow = h ? (h.ck || {}) : {};
+    var requiredGroups = ['personal_id','income_proof','collateral'];
+    var ckSufficient = isQL() || requiredGroups.every(function(gid){
+      var grp = CK_GROUPS.find(function(g){ return g.id===gid; });
+      return grp && grp.items.every(function(it){ return ckObjNow[it.id]; });
+    });
+    var gnDis = (!locked && ckSufficient && (isQL() || (h && h.canBoId === currentUser.id))) ? '' : 'disabled';
     var gnDimClass = isCDTUser ? 'cdt-section-dim' : '';
     html += '<div class="fsec ' + gnDimClass + '">';
     html += '<div class="fsec-title">Phê duyệt & Giải ngân';
+    if (!ckSufficient && !isQL()) {
+      html += '<span style="font-size:11px;font-weight:400;color:var(--amber);margin-left:8px">⚠️ Cần đủ Giấy tờ CN + Thu nhập + TSBĐ</span>';
+    }
     html += '</div>';
     if (!isCDTUser && !isQL() && h && h.canBoId !== currentUser.id) {
       html += '<div class="info-banner">ℹ️ Chỉ CB được phân công, Quản lý và Admin được nhập phần này.</div>';
@@ -1392,7 +1402,11 @@ function buildHSForm(h) {
     // TAB 4: CẬP NHẬT TIẾN ĐỘ
     // =============================================
     html += '<div id="t-prog" style="display:none">';
-    html += buildProgTab(h);
+    if (locked) {
+      html += '<div class="lock-banner">🔒 Hồ sơ đã chốt. Không thể cập nhật tiến độ.</div>';
+    } else {
+      html += buildProgTab(h);
+    }
     html += '</div>';
   }
 
@@ -1410,10 +1424,7 @@ function buildHSForm(h) {
       stOpts+='<option value="'+k+'"'+(h&&h.status===k?' selected':'')+'>'+SC_VN[k]+'</option>';
     });
     html += '<div class="fgrid" style="gap:12px">';
-    html += '<div class="fg"><label>Cán bộ phụ trách</label><select id="f-cbid">'+cbOpts+'</select></div>';
-    html += '<div class="fg"><label>Trạng thái hồ sơ</label><select id="f-st">'+stOpts+'</select></div>';
-    html += '<div class="fg"><label>Ngày hẹn ký</label><input type="date" id="f-ngayen" value="'+dv('ngayHen')+'"></div>';
-    html += '<div class="fg"><label>Mã BIM / CĐT</label><input id="f-mabim" value="'+dv('maBIM')+'"'+(locked?' disabled':'')+' ></div>';
+    html += '<div class="fg ffull"><label>Cán bộ phụ trách</label><select id="f-cbid">'+cbOpts+'</select></div>';
     html += '<div class="fg ffull"><label>Ghi chú nội bộ</label><textarea id="f-gc">'+dv('ghiChu')+'</textarea></div>';
     html += '</div>';
     if (h) {
@@ -1562,7 +1573,7 @@ function buildProgTab(h) {
   var lv = hsAlertLevel(h || {});
   var html2 = '';
   if (lv === 'over') html2 += '<div class="perm-banner">Quá hạn cập nhật! Cần báo cáo tình trạng ngay.</div>';
-  else if (lv === 'warn') html2 += '<div class="lock-banner">Sap den han cap nhat 7 ngay. Vui long cap nhat bao cao tuan.</div>';
+  else if (lv === 'warn') html2 += '<div class="lock-banner">Sắp đến hạn cập nhật 7 ngày. Vui lòng cập nhật báo cáo tuần.</div>';
 
   // Countdown
   if (h) {
@@ -1572,9 +1583,9 @@ function buildProgTab(h) {
     var cCls = lv==='over'?'dc-over':lv==='warn'?'dc-warn':lv==='new'?'dc-new':'dc-ok';
     html2 += '<div style="display:flex;gap:12px;margin-bottom:14px;align-items:center;flex-wrap:wrap">';
     if (dA !== null) {
-      html2 += '<div class="days-circle ' + cCls + '">' + dA + '<span style="font-size:9px">ngay</span></div>';
-      html2 += '<div><div style="font-size:13px;font-weight:600">Cap nhat gan nhat: ' + (h.lastContactAt || '--') + '</div>';
-      html2 += '<div class="text-sm">Con ' + (dL !== null ? dL : '--') + ' ngay den han (chu ky 7 ngay)</div></div>';
+      html2 += '<div class="days-circle ' + cCls + '">' + dA + '<span style="font-size:9px">ngày</span></div>';
+      html2 += '<div><div style="font-size:13px;font-weight:600">Cập nhật gần nhất: ' + fmtDate(h.lastContactAt || '') + '</div>';
+      html2 += '<div class="text-sm">Còn ' + (dL !== null ? dL : '--') + ' ngày đến hạn (chu kỳ 7 ngày)</div></div>';
     } else {
       html2 += '<div class="days-circle dc-new">?</div>';
       html2 += '<div><div style="font-size:13px;font-weight:600">Chưa có báo cáo lần nào</div>';
@@ -1584,12 +1595,12 @@ function buildProgTab(h) {
       var gCls = dGN !== null ? (dGN<=3?'dc-over':dGN<=7?'dc-warn':'dc-ok') : 'dc-ok';
       html2 += '<div style="margin-left:auto;text-align:center">';
       html2 += '<div class="days-circle ' + gCls + '" style="margin:0 auto 4px">' + (dGN !== null ? dGN : '--') + '</div>';
-      html2 += '<div style="font-size:11px;color:var(--txt3)">ngay den GN</div></div>';
+      html2 += '<div style="font-size:11px;color:var(--txt3)">ngày đến GN</div></div>';
     }
     // Latest status badge
     if (h.ketQuaKhaiThac) {
       html2 += '<div style="margin-left:8px">';
-      html2 += '<div style="font-size:11px;color:var(--txt3);margin-bottom:4px">Tinh trang hien tai</div>';
+      html2 += '<div style="font-size:11px;color:var(--txt3);margin-bottom:4px">Tình trạng hiện tại</div>';
       html2 += '<span class="badge b-dang">' + (CT_STATUS_LABELS_FULL[h.ketQuaKhaiThac]||h.ketQuaKhaiThac) + '</span>';
       html2 += '</div>';
     }
@@ -1717,6 +1728,7 @@ function saveProj() {
   var data = {
     tenKH: gv('f-tenKH'), cccd: gv('f-cccd'), sdt: gv('f-sdt'),
     ngaySinh: gv('f-ns'), diaChi: gv('f-dc'),
+    email: gv('f-email'),
     ngheNghiep: gv('f-nn'), thuNhap: gv('f-tn'),
     coVoChong: document.getElementById('f-coVC')?document.getElementById('f-coVC').checked:false,
     tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'), ngaySinhVC: gv('f-nsVC'),
@@ -2045,12 +2057,9 @@ function saveAdm(){
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
   var gv=function(id){var el=document.getElementById(id);return el?el.value:null;};
   var cb=gv('f-cbid'); if(cb) hsList[idx].canBoId=cb;
-  var st=gv('f-st'); if(st) hsList[idx].status=st;
-  hsList[idx].ngayHen=gv('f-ngayen')||'';
-  hsList[idx].maBIM=gv('f-mabim')||'';
   hsList[idx].ghiChu=gv('f-gc')||'';
   hsList[idx].updatedAt=nowStr();
-  addLog('Cap nhat phan cong: '+hsList[idx].tenKH, 'amber', currentHSId);
+  addLog('Cập nhật phân công: '+hsList[idx].tenKH,'amber',currentHSId);
   persist(); renderHSTable(); renderDB(); alert('Đã lưu phân công!');
 }
 
@@ -2510,17 +2519,17 @@ function onCICGroupChange(){
 // WEEKLY REPORT - 6 TRUONG BIM
 // ==================================================
 var CT_STATUS_LABELS_FULL = {
-  da_lh: 'Da lien he - KH dang chuan bi HS',
-  hen_gap: 'Da hen gap truc tiep',
-  cho_bs: 'Cho KH bo sung giay to',
-  kh_nghe: 'KH khong nghe may / khong lien lac duoc',
-  kh_bao_luu: 'KH bao luu - chua muon tiep tuc',
-  nop_du: 'KH da nop du ho so',
-  duoc_vay: 'Duoc vay - cho ky HĐ',
-  tu_choi_tn: 'Tu choi - Khong du thu nhap',
-  tu_choi_cic: 'Tu choi - No xau / CIC nhom 2+',
-  tu_choi_kh: 'Tu choi - KH khong hop tac',
-  khac: 'Lý do khác'
+  da_lh:       'Đã liên hệ - KH đang chuẩn bị HS',
+  hen_gap:     'Đã hẹn gặp trực tiếp',
+  cho_bs:      'Chờ KH bổ sung giấy tờ',
+  kh_nghe:     'KH không nghe máy / không liên lạc được',
+  kh_bao_luu:  'KH bảo lưu - chưa muốn tiếp tục',
+  nop_du:      'KH đã nộp đủ hồ sơ',
+  duoc_vay:    'Được vay - chờ ký HĐTD',
+  tu_choi_tn:  'Từ chối - Không đủ thu nhập',
+  tu_choi_cic: 'Từ chối - Nợ xấu / CIC nhóm 2+',
+  tu_choi_kh:  'Từ chối - KH không hợp tác',
+  khac:        'Lý do khác'
 };
 
 function buildWeeklyReportForm(h) {
@@ -2544,6 +2553,19 @@ function buildWeeklyReportForm(h) {
   html2 += '<button class="btn btn-primary btn-sm" onclick="saveWeeklyReport()">💾 Lưu cập nhật báo cáo</button>';
   html2 += '</div>';
 
+  // Phản hồi CĐT (hiện với cả BIDV và CĐT)
+  html2 += '<div class="divider"></div>';
+  html2 += '<div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">PHẢN HỒI CỦA CHỦ ĐẦU TƯ</div>';
+  html2 += '<div class="contact-form-box" style="background:var(--teal-l);border-color:#9DD5E0">';
+  if (isCDT()) {
+    html2 += '<div class="fg" style="margin-bottom:8px"><label>Nội dung phản hồi</label>';
+    html2 += '<textarea id="cdt-feedback" rows="2" placeholder="Nhập phản hồi, yêu cầu hỗ trợ từ CĐT..."></textarea></div>';
+    html2 += '<button class="btn btn-sm" style="background:var(--teal);color:#fff;border-color:var(--teal)" onclick="saveCDTFeedback()">💬 Gửi phản hồi</button>';
+  } else {
+    html2 += '<div style="font-size:12px;color:var(--txt3)">Xem phản hồi từ Chủ đầu tư bên dưới.</div>';
+  }
+  html2 += '</div>';
+
   // Lịch sử báo cáo
   html2 += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Lịch sử cập nhật (' + reports.length + ' lần)</div>';
   if (!reports.length) {
@@ -2558,18 +2580,51 @@ function buildWeeklyReportForm(h) {
     html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">CB cập nhật</th>';
     html2 += '</tr></thead><tbody>';
     reports.slice().reverse().forEach(function(r2) {
-      var lbl = CT_STATUS_LABELS_FULL[r2.ketQua] || r2.ketQua;
-      html2 += '<tr style="border-bottom:1px solid var(--bdr)">';
-      html2 += '<td style="padding:6px 10px;white-space:nowrap">' + r2.time + '</td>';
-      html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
-      html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.chiTiet || '') + '</td>';
-      html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.deXuat || '') + '</td>';
-      html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + r2.who + '</td>';
-      html2 += '</tr>';
+      if (r2.type === 'cdt_feedback') {
+        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:var(--teal-l)">';
+        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + r2.time + '</td>';
+        html2 += '<td style="padding:6px 10px;font-weight:600;color:var(--teal)" colspan="3">💬 CĐT: ' + (r2.chiTiet || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + r2.who + '</td>';
+        html2 += '</tr>';
+      } else {
+        var lbl = CT_STATUS_LABELS_FULL[r2.ketQua] || r2.ketQua;
+        html2 += '<tr style="border-bottom:1px solid var(--bdr)">';
+        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + r2.time + '</td>';
+        html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.chiTiet || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.deXuat || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + r2.who + '</td>';
+        html2 += '</tr>';
+      }
     });
     html2 += '</tbody></table></div>';
   }
   return html2;
+}
+
+
+function saveCDTFeedback() {
+  if (!currentHSId || !isCDT()) return;
+  var el = document.getElementById('cdt-feedback');
+  if (!el || !el.value.trim()) { alert('Vui lòng nhập nội dung phản hồi!'); return; }
+  var idx = hsList.findIndex(function(x){ return x.id===currentHSId; });
+  if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
+  hsList[idx].weeklyReports.push({
+    time:    nowStr(),
+    type:    'cdt_feedback',
+    ketQua:  'cdt_feedback',
+    chiTiet: el.value.trim(),
+    deXuat:  '',
+    who:     currentUser.name,
+    weekNum: getWeekNum()
+  });
+  hsList[idx].updatedAt = nowStr();
+  el.value = '';
+  addLog('CĐT phản hồi: ' + hsList[idx].tenKH, 'teal', currentHSId);
+  persist(); renderHSTable();
+  alert('Đã gửi phản hồi!');
+  openHS(currentHSId);
+  setTimeout(function(){ var tabs=document.querySelectorAll('#mhs-body .tab'); if(tabs[3]) swTab(tabs[3],'t-prog'); },60);
 }
 
 function saveWeeklyReport() {
