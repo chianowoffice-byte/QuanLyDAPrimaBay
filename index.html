@@ -727,13 +727,32 @@ async function dbSaveLoanFile(h) {
   var errors   = [];
 
   // Update loan_files
+  console.log('[DB] Saving loan_file', h.id, lfData);
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id);
-  if (r1.error) { console.error('dbSaveLoanFile LF:', r1.error); errors.push('loan_files: ' + r1.error.message); }
+  if (r1.error) {
+    console.error('[DB] loan_files ERROR:', r1.error);
+    errors.push('loan_files: ' + r1.error.message);
+  } else {
+    console.log('[DB] loan_files saved OK');
+  }
 
   // Update customers (nếu có customer_id)
   if (h.customerId) {
+    console.log('[DB] Saving customer', h.customerId, custData);
     var r2 = await sb.from('customers').update(custData).eq('id', h.customerId);
-    if (r2.error) { console.error('dbSaveLoanFile CUST:', r2.error); errors.push('customers: ' + r2.error.message); }
+    if (r2.error) { console.error('[DB] customers ERROR:', r2.error); errors.push('customers: ' + r2.error.message); }
+    else { console.log('[DB] customers saved OK'); }
+  } else {
+    // Thử tìm customer_id từ loan_file trong DB
+    var lfCheck = await sb.from('loan_files').select('customer_id,apartment_id').eq('id', h.id).single();
+    if (!lfCheck.error && lfCheck.data) {
+      if (lfCheck.data.customer_id) {
+        h.customerId = lfCheck.data.customer_id;
+        var r2b = await sb.from('customers').update(custData).eq('id', h.customerId);
+        if (r2b.error) console.error('dbSaveLoanFile CUST fallback:', r2b.error);
+      }
+      if (lfCheck.data.apartment_id) h.apartmentId = lfCheck.data.apartment_id;
+    }
   }
 
   // Ghi activity log
@@ -1295,6 +1314,8 @@ function mapDbHS(lf) {
   var off  = lf['users'] || {};
   return {
     id:            lf.id,
+    customerId:    lf.customer_id || null,
+    apartmentId:   lf.apartment_id || null,
     maBIM:         lf.bim_ref || '',
     sttBIM:        lf.bim_seq || 0,
     status: (function(){
@@ -2238,6 +2259,7 @@ function saveProj() {
   }
   persist(); renderHSTable(); renderDB();
   var _h = hsList.find(function(x){return x.id===currentHSId;});
+  console.log('[SAVE] currentHSId:', currentHSId, '_h:', _h ? 'found' : 'NOT FOUND', 'customerId:', _h && _h.customerId);
   if(_h) saveAndSync(function(){ return dbSaveLoanFile(_h); }, 'Đã lưu thông tin!');
 }
 
@@ -2259,6 +2281,7 @@ function saveProjQL() {
   hsList[idx].updatedAt  = nowStr();
   addLog('Cập nhật Căn hộ & HĐMB: '+hsList[idx].tenKH,'amber',currentHSId);
   persist(); renderHSTable();
+  console.log('[SAVE QL] idx:', idx, 'id:', hsList[idx].id, 'customerId:', hsList[idx].customerId);
   saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã lưu Căn hộ & HĐMB!');
 }
 
@@ -2557,6 +2580,7 @@ function saveDA(){
   }
   persist(); renderHSTable(); renderDB();
   var _h = hsList.find(function(x){return x.id===currentHSId;});
+  console.log('[SAVE] currentHSId:', currentHSId, '_h:', _h ? 'found' : 'NOT FOUND', 'customerId:', _h && _h.customerId);
   if(_h) saveAndSync(function(){ return dbSaveLoanFile(_h); }, 'Đã lưu thông tin!');
 }
 
