@@ -257,6 +257,23 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
 /* ── Sticky tabs & save bar ── */
 #mhs-body .tabs{position:sticky;top:-20px;z-index:10;margin:-20px -24px 16px -24px;padding:0 24px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .save-bar{position:sticky;bottom:-20px;margin:16px -24px -20px -24px;padding:12px 24px;background:var(--surf);border-top:1px solid var(--bdr);box-shadow:0 -2px 8px rgba(0,0,0,.06);display:flex;gap:8px;z-index:10}
+
+/* ── Missing classes ── */
+.mbody{padding:16px 20px;font-size:14px}
+.mft{display:flex;gap:8px;padding:12px 20px;justify-content:flex-end;border-top:1px solid var(--bdr)}
+.mhd{padding:16px 20px;font-weight:600;font-size:15px;border-bottom:1px solid var(--bdr);color:var(--blue)}
+.sb-footer-branch{margin-bottom:8px}
+.sb-footer-divider{height:1px;background:rgba(255,255,255,.2);margin-bottom:10px}
+/* ── Numeric input ── */
+.num-input{text-align:right;font-variant-numeric:tabular-nums}
+/* ── HS table ── */
+.hs-tbl{width:100%}
+.kh-bold{font-weight:600}
+/* ── Update log ── */
+.update-log{background:var(--surf2);border-radius:var(--r);padding:12px 14px}
+.update-log-hd{font-size:12px;font-weight:700;color:var(--txt2);margin-bottom:8px}
+.update-entry{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.update-entry:last-child{border-bottom:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -575,6 +592,13 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
 
 <script>
 // v20260716_113025
+window.onerror = function(msg,src,line,col,err){
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;background:#C0392B;color:#fff;padding:12px 16px;z-index:99999;font-size:13px;font-family:monospace';
+  d.textContent='JS Error: '+msg+' (L'+line+')';
+  document.body && document.body.appendChild(d);
+  return false;
+};
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════
 var SUPABASE_URL = 'https://oodeswfnxnqabjbmecmi.supabase.co';
