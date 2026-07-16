@@ -781,7 +781,7 @@ async function dbSaveWeeklyReport(h, entry) {
   var statusMap = {
     'chua_lh':         'no_answer',
     'dang_can_nhac':   'contacted',
-    'dong_y_cung_cap': 'waiting_docs',
+    'dong_y_cung_cap': 'docs_complete',  // KH đồng ý + cung cấp HS
     'kh_tu_choi':      'rejected_kh',
     'nh_tu_choi':      'rejected_income',
     'von_tu_co':       'other',
@@ -789,7 +789,7 @@ async function dbSaveWeeklyReport(h, entry) {
     'da_phe_duyet':    'approved_loan',
     'soan_hs':         'approved_loan',
     'cho_gn':          'approved_loan',
-    'da_gn':           'approved_loan',
+    'da_gn':           'approved_loan',  // Đã GN - dùng approved_loan vì enum không có disbursed
     'khac':            'other',
     // Legacy
     'da_lh':           'contacted',
@@ -1606,7 +1606,15 @@ function renderHSTable(){
       html += '<td>'+progHtml+'</td>';
       html += '<td>'+cicHtml+'</td>';
       html += '<td>'+getUserName(h.canBoId)+'</td>';
-      html += '<td>'+sBadge(h.status)+'</td>';
+      var lastKQText = '';
+      if (h.weeklyReports && h.weeklyReports.length) {
+        var lwr = null;
+        for (var wi=h.weeklyReports.length-1;wi>=0;wi--) {
+          if (h.weeklyReports[wi].type !== 'cdt_feedback') { lwr=h.weeklyReports[wi]; break; }
+        }
+        if (lwr) lastKQText = '<div style="font-size:10px;color:var(--txt3);margin-top:2px;line-height:1.3">' + getStatusLabel(lwr.ketQua) + '</div>';
+      }
+      html += '<td>'+sBadge(h.status)+lastKQText+'</td>';
       html += '<td style="font-size:11px;color:var(--txt3)">'+fmtDate(h.updatedAt||h.createdAt||'')+'</td>';
       html += '<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openHS(this.dataset.id)">Mở</button></td>';
       html += '</tr>';
@@ -3104,6 +3112,14 @@ function alertBadge(h){
   var lv = hsAlertLevel(h);
   var days = h.lastContactAt ? daysSince(h.lastContactAt) : null;
   var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
+  // Kết quả khai thác gần nhất
+  var lastKQ = '';
+  if (h.weeklyReports && h.weeklyReports.length) {
+    var lastWR = h.weeklyReports[h.weeklyReports.length-1];
+    if (lastWR && lastWR.type !== 'cdt_feedback') {
+      lastKQ = getStatusLabel(lastWR.ketQua);
+    }
+  }
   var sp = '<span class="dl-badge ';
   if(lv==='done')  return sp+'dl-ok">\u2713 Ho\u00e0n t\u1ea5t</span>';
   if(lv==='over'){
@@ -3245,13 +3261,13 @@ function onCICGroupChange(){
 
 // Map DB enum → nhãn tiếng Việt (cho weekly_reports load từ DB)
 var DB_STATUS_LABELS = {
-  'contacted':       'Đã liên hệ - KH đang chuẩn bị HS',
+  'contacted':       'Đã liên hệ - KH đang cân nhắc',
   'appointment':     'Đã hẹn gặp trực tiếp',
-  'waiting_docs':    'Chờ KH bổ sung giấy tờ',
+  'waiting_docs':    'Chưa liên hệ được với KH',
   'no_answer':       'KH không nghe máy / không liên lạc được',
   'on_hold':         'KH bảo lưu - chưa muốn tiếp tục',
-  'docs_complete':   'KH đã nộp đủ hồ sơ',
-  'approved_loan':   'Được vay - chờ ký HĐTD',
+  'docs_complete':   'KH đồng ý vay - Đang cung cấp / Đã nộp đủ hồ sơ',
+  'approved_loan':   'Đã phê duyệt / Đã ký / Đã giải ngân',
   'rejected_income': 'Từ chối - Không đủ thu nhập',
   'rejected_cic':    'Từ chối - Nợ xấu / CIC nhóm 2+',
   'rejected_kh':     'Từ chối - KH không hợp tác',
@@ -3401,7 +3417,7 @@ function saveWeeklyReport() {
   // Auto update status based on result
   // Tự động cập nhật trạng thái hồ sơ theo kết quả khai thác
   var ktMap = {
-    'chua_lh':       'moi',    // Chưa liên hệ → Mới nhận
+    'chua_lh':       'dang',   // Chưa liên hệ được → Đang xử lý (đã tiếp cận)
     'dang_can_nhac': 'dang',   // Đang cân nhắc → Đang xử lý
     'dong_y_cung_cap':'dang',  // Đồng ý - đang cung cấp HS → Đang xử lý
     'kh_tu_choi':    'tuchoi', // KH từ chối → Từ chối
