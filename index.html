@@ -474,7 +474,7 @@ tr:hover td{background:var(--surf2)}
             <option value="ql">CB Quản lý</option>
             <option value="cdt">CĐT (BIM)</option>
             <option value="admin">Admin</option>
-          </select>
+          <option value="viewer">Lãnh đạo / Kiểm tra</option></select>
         </div>
       </div>
     </div>
@@ -504,12 +504,7 @@ tr:hover td{background:var(--surf2)}
 
 <!-- MODAL: CONFIRM -->
 <div class="overlay" id="modal-conf">
-  <div class="modal sm">
-    </div>
-  </div>
-</div>
-
-<script>
+  <div cla
 // ══════════
 // ══════════════════════════════════════════════════
 // SUPABASE CONFIG
@@ -1053,10 +1048,11 @@ function todayStr(){
 }
 function getUserName(id){ var u=users.find(function(x){return x.id===id;}); return u?u.name:'—'; }
 function isAdmin(){ return currentUser && currentUser.role==='admin'; }
+function isViewer(){ return currentUser && currentUser.role==='viewer'; }
 function isQL(){ return currentUser && (currentUser.role==='admin' || currentUser.role==='ql'); }
 function isCDT(){ return currentUser && (currentUser.role==='cdt'||currentUser.role==='cdt_view'||currentUser.role==='cdt_admin'); }
 function canSetGiaiNgan(){ return isQL() || (currentUser && currentUser.canSetGiaiNgan===true); }
-function myHS(){ return (isQL()||isCDT()) ? hsList : hsList.filter(function(h){return h.canBoId===currentUser.id;}); }
+function myHS(){ return (isQL()||isCDT()||isViewer()) ? hsList : hsList.filter(function(h){return h.canBoId===currentUser.id;}); }
 function addLog(msg, type, hsId){
   actLog.unshift({msg:msg, type:type||'default', time:nowStr(), who:currentUser?currentUser.name:'?', hsId:hsId||null});
   persist();
@@ -1081,8 +1077,8 @@ function sBadge(s){
   var c = SC[s] || SC.moi;
   return '<span class="badge ' + c.c + '">' + (SC_VN[s]||s) + '</span>';
 }
-var ROLE_LBL = {admin:'Admin', ql:'CB Quản lý', cb:'Cán bộ BIDV', cdt:'CĐT (BIM)'};
-var ROLE_CLS = {admin:'rb-admin', ql:'rb-ql', cb:'rb-cb', cdt:'rb-cdt'};
+var ROLE_LBL = {admin:'Admin', ql:'CB Quản lý', viewer:'Lãnh đạo / Kiểm tra', cb:'Cán bộ BIDV', cdt:'CĐT (BIM)'};
+var ROLE_CLS = {admin:'rb-admin', viewer:'rb-ql', ql:'rb-ql', cb:'rb-cb', cdt:'rb-cdt'};
 function rBadge(r){ return '<span class="rb ' + (ROLE_CLS[r]||'rb-cb') + '">' + (ROLE_LBL[r]||r) + '</span>'; }
 
 // ==================================================
@@ -1234,6 +1230,7 @@ function mapDbUser(u) {
     role:  u.role === 'officer' ? 'cb' :
            u.role === 'manager' ? 'ql' :
            u.role === 'admin'   ? 'admin' :
+           u.role === 'viewer'  ? 'viewer' :
            (u.role === 'cdt_view' || u.role === 'cdt_admin') ? 'cdt' : u.role,
     db_role: u.role,
     pgd:   u.pgd || '',
@@ -1341,11 +1338,11 @@ function applyPerms(){
   tog('ni-imp',       isQL());
   tog('ns-sys',       isAdmin());
   tog('ni-usr',       isAdmin());
-  tog('btn-new-hs',   isQL() && !isCDT());
-  tog('s-cb',         isQL());
-  tog('panel-cbload', isQL());
+  tog('btn-new-hs',   isQL() && !isCDT() && !isViewer());
+  tog('s-cb',         isQL() || isViewer());
+  tog('panel-cbload', isQL() || isViewer());
   tog('ni-db',        !isCDT());
-  tog('ni-hs',        true); // CĐT được xem danh sách hồ sơ
+  tog('ni-hs',        true);
   tog('ni-cdt-up',    isCDT());
   tog('ni-cdt-view',  isCDT());
 }
@@ -1375,7 +1372,7 @@ function renderDB(){
   renderAlertPanels(list);
   var c = {moi:0,dang:0,cho:0,choky:0,xong:0,tuchoi:0};
   list.forEach(function(h){ if(c[h.status]!==undefined) c[h.status]++; });
-  var scope = isQL() ? 'Toàn chi nhánh' : 'Của tôi';
+  var scope = (isQL()||isViewer()) ? 'Toàn chi nhánh' : 'Của tôi';
   var s = '';
   s += '<div class="stat-card bl"><div class="stat-lbl">Tổng hồ sơ</div><div class="stat-val">'+list.length+'</div><div class="stat-sub">'+scope+'</div></div>';
   s += '<div class="stat-card am"><div class="stat-lbl">Đang xử lý</div><div class="stat-val">'+(c.dang+c.cho)+'</div><div class="stat-sub">Cần chú ý</div></div>';
@@ -1384,7 +1381,7 @@ function renderDB(){
   s += '<div class="stat-card rd"><div class="stat-lbl">Từ chối</div><div class="stat-val">'+c.tuchoi+'</div><div class="stat-sub">Tháng này</div></div>';
   document.getElementById('db-stats').innerHTML = s;
 
-  if(isQL()){
+  if(isQL()||isViewer()){
     var cbs = users.filter(function(u){ return u.active && (u.role==='cb'||u.role==='ql'); });
     var html = '';
     cbs.forEach(function(cb){
@@ -1397,7 +1394,7 @@ function renderDB(){
     document.getElementById('cb-load-list').innerHTML = html || '<div class="text-sm">Chưa có cán bộ</div>';
   }
 
-  var logs = isQL() ? actLog : actLog.filter(function(a){return a.who===currentUser.name;});
+  var logs = (isQL()||isViewer()) ? actLog : actLog.filter(function(a){return a.who===currentUser.name;});
   var aHtml = '';
   logs.slice(0,6).forEach(function(a){
     aHtml += '<div class="tl-item"><div class="tl-dot '+(a.type||'')+'"></div>';
@@ -1425,7 +1422,7 @@ function renderDB(){
 // HS TABLE
 // ==================================================
 function renderHSFilterCB(){
-  if(!isQL()) return;
+  if(!isQL() && !isViewer()) return;
   var sel = document.getElementById('s-cb');
   var html = '<option value="">Tất cả cán bộ</option>';
   users.filter(function(u){ return u.active && (u.role==='cb'||u.role==='ql'); }).forEach(function(u){
@@ -1604,8 +1601,11 @@ function buildHSForm(h) {
   var isCBOwner  = !isQLAdmin && !isCDTUser && h && h.canBoId === currentUser.id;
   var isCBOther  = !isQLAdmin && !isCDTUser && !(h && h.canBoId === currentUser.id);
 
+  // Viewer: xem tất cả nhưng không sửa
+  var isViewerUser = isViewer();
+
   // CB không phải phân công: không được xem
-  if (isCBOther) {
+  if (isCBOther && !isViewerUser) {
     body.innerHTML = '<div class="perm-banner">Bạn không có quyền xem hồ sơ này.</div>';
     document.getElementById('mhs-fl').innerHTML = '';
     document.getElementById('mhs-fr').innerHTML = '<button class="btn" onclick="closeHS()">Đóng</button>';
@@ -1648,13 +1648,13 @@ function buildHSForm(h) {
 
   // ── Thông tin KH chính ──
   // Tất cả thấy rõ | CB sửa được | QL/Admin/CĐT xem (dim)
-  var khDim = (isCDTUser || isQLAdmin) ? 'disabled' : (kLocked ? 'disabled' : '');
-  var khDimClass = (isCDTUser || isQLAdmin) ? 'cdt-section-dim' : '';
+  var khDim = (isCDTUser || isQLAdmin || isViewerUser) ? 'disabled' : (kLocked ? 'disabled' : '');
+  var khDimClass = (isCDTUser || isQLAdmin || isViewerUser) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div class="fsec-title" style="display:flex;align-items:center;justify-content:space-between">';
   html += '<span>Thông tin khách hàng chính</span>';
   // Nút chốt KH: chỉ CB/QL/Admin (không phải CĐT)
-  if (!isCDTUser && !locked && !kLocked) {
+  if (!isCDTUser && !locked && !kLocked && !isViewerUser) {
     html += '<button class="btn btn-sm btn-amber" onclick="lockKH()">🔒 Chốt thông tin KH</button>';
   }
   html += '</div>';
@@ -1696,7 +1696,7 @@ function buildHSForm(h) {
 
   // ── Căn hộ & HĐMB ──
   // CĐT / QL / Admin sửa | CB xem (dim)
-  var hdmbDim = (isQLAdmin || isCDTUser) ? (locked?'disabled':'') : 'disabled';
+  var hdmbDim = (isQLAdmin || isCDTUser || isViewerUser) ? 'disabled' : 'disabled';
   var hdmbDimClass = (!isQLAdmin && !isCDTUser) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + hdmbDimClass + '">';
   html += '<div class="fsec-title">Căn hộ & Hợp đồng mua bán</div>';
@@ -1712,7 +1712,7 @@ function buildHSForm(h) {
 
   // ── VTC & Nhu cầu vay ──
   // CĐT / QL / Admin sửa | CB xem (dim)
-  var vtcDim = (isQLAdmin || isCDTUser) ? (locked?'disabled':'') : 'disabled';
+  var vtcDim = (isQLAdmin || isCDTUser || isViewerUser) ? 'disabled' : 'disabled';
   var vtcDimClass = (!isQLAdmin && !isCDTUser) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + vtcDimClass + '">';
   html += '<div class="fsec-title">Vốn tự có (VTC) & Nhu cầu vay</div>';
@@ -1736,7 +1736,7 @@ function buildHSForm(h) {
     var grp=CK_GROUPS.find(function(g){return g.id===gid;});
     return grp && grp.items.every(function(it){return ckObj[it.id];});
   });
-  var gnCanEdit = isCBOwner && !locked && ckOK;
+  var gnCanEdit = isCBOwner && !locked && ckOK && !isViewerUser;
   var gnDim = gnCanEdit ? '' : 'disabled';
   var gnDimClass = (!isCBOwner && !isQLAdmin) ? 'cdt-section-dim' : (isCBOwner && !ckOK ? 'cdt-section-dim' : '');
   html += '<div class="fsec ' + gnDimClass + '">';
@@ -1757,7 +1757,7 @@ function buildHSForm(h) {
   html += '</div></div>';
 
   // Nút lưu
-  if (!locked) {
+  if (!locked && !isViewerUser) {
     html += '<button class="btn btn-primary" onclick="saveAll()" style="margin-bottom:12px">💾 Lưu tất cả</button>';
   }
   html += '</div>'; // t-proj
@@ -1768,7 +1768,7 @@ function buildHSForm(h) {
   // ════════════════════════════════════════════
   var docLocked = locked || (!isCBOwner && !isQLAdmin);
   html += '<div id="t-docs" style="display:none">';
-  if (isCDTUser || (isQLAdmin && locked)) {
+  if (isCDTUser || isViewerUser || (isQLAdmin && locked)) {
     html += '<div class="info-banner">📋 Chỉ xem — chỉ Cán bộ phụ trách được cập nhật hồ sơ tài liệu.</div>';
   }
   html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
@@ -1786,8 +1786,8 @@ function buildHSForm(h) {
   // Tất cả thấy | CB nhập | QL/Admin/CĐT xem (dim)
   // ════════════════════════════════════════════
   var cic = h && h.cic ? h.cic : {};
-  var cicDim = (!isCBOwner || locked) ? 'disabled' : '';
-  var cicDimClass = (!isCBOwner) ? 'cdt-section-dim' : '';
+  var cicDim = (!isCBOwner || locked || isViewerUser) ? 'disabled' : '';
+  var cicDimClass = (!isCBOwner || isViewerUser) ? 'cdt-section-dim' : '';
   html += '<div id="t-cic" style="display:none">';
   if (isCDTUser || isQLAdmin) {
     html += '<div class="info-banner">🔍 Chỉ xem — chỉ Cán bộ phụ trách được nhập kết quả CIC.</div>';
@@ -1815,7 +1815,7 @@ function buildHSForm(h) {
   html += '</div>';
   html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD — KH chính:</div>';
   html += '<div id="cic-tctd-list"></div>';
-  if (isCBOwner && !locked) {
+  if (isCBOwner && !locked && !isViewerUser) {
     html += '<button class="btn btn-sm" style="margin-top:8px" onclick="addCICRow()">+ Thêm TCTD</button>';
   }
 
@@ -1849,7 +1849,7 @@ function buildHSForm(h) {
   }
 
   if (isCBOwner && !locked) {
-    html += '<div style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="saveCIC()">💾 Lưu kết quả CIC</button></div>';
+    if (!isViewerUser) html += '<div style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="saveCIC()">💾 Lưu kết quả CIC</button></div>';
   }
   html += '</div></div>';
 
@@ -3041,7 +3041,7 @@ function buildWeeklyReportForm(h) {
   var html2 = '';
 
   // Cập nhật báo cáo: CB/QL/Admin nhập | CĐT xem
-  var canReport = !isCDT();
+  var canReport = !isCDT() && !isViewer();
   html2 += '<div class="contact-form-box" style="margin-bottom:16px">';
   html2 += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">Cập nhật báo cáo (gửi CĐT)</div>';
   if (!canReport) {
@@ -3232,11 +3232,11 @@ function buildHSFooter(h, locked) {
   }
   rightHtml += '<button class="btn" onclick="closeHS()">Đóng</button>';
   // CB được chốt hồ sơ (khi chưa chốt)
-  if (h && !locked && !isCDT()) {
+  if (h && !locked && !isCDT() && !isViewer()) {
     rightHtml += ' <button class="btn btn-amber" onclick="lockHS()">🔒 Chốt hồ sơ</button>';
   }
   // QL/Admin mở lại
-  if (h && locked && isQL()) {
+  if (h && locked && isQL() && !isViewer()) {
     rightHtml += ' <button class="btn btn-success" onclick="unlockHS()">🔓 Mở lại hồ sơ</button>';
   }
   fl.innerHTML = leftHtml;
@@ -3296,6 +3296,10 @@ function unlockHS() {
     hsList[idx].locked=false; hsList[idx].updatedAt=nowStr();
     addLog('Mở lại hồ sơ: '+hsList[idx].tenKH,'amber',currentHSId);
     persist(); openHS(currentHSId); renderHSTable();
+  });
+}
+
+(); openHS(currentHSId); renderHSTable();
   });
 }
 
