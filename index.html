@@ -772,19 +772,77 @@ async function dbSaveLoanFile(h) {
 // Lưu báo cáo tuần lên DB
 async function dbSaveWeeklyReport(h, entry) {
   if (!h || !h.id) return;
+
+  // Map app status mới → enum contact_status trong DB
+  var statusMap = {
+    'chua_lh':         'no_answer',
+    'dang_can_nhac':   'contacted',
+    'dong_y_cung_cap': 'waiting_docs',
+    'kh_tu_choi':      'rejected_kh',
+    'nh_tu_choi':      'rejected_income',
+    'von_tu_co':       'other',
+    'nop_du':          'docs_complete',
+    'da_phe_duyet':    'approved_loan',
+    'soan_hs':         'approved_loan',
+    'cho_gn':          'approved_loan',
+    'da_gn':           'approved_loan',
+    'khac':            'other',
+    // Legacy
+    'da_lh':           'contacted',
+    'hen_gap':         'appointment',
+    'cho_bs':          'waiting_docs',
+    'kh_nghe':         'no_answer',
+    'kh_bao_luu':      'on_hold',
+    'duoc_vay':        'approved_loan',
+    'tu_choi_tn':      'rejected_income',
+    'tu_choi_cic':     'rejected_cic',
+    'tu_choi_kh':      'rejected_kh',
+  };
+
+  // Lấy officer_id của currentUser từ DB
+  var officerId = null;
+  if (currentUser && currentUser.db_id) {
+    officerId = currentUser.db_id;
+  } else if (currentUser && currentUser.id) {
+    // Thử tìm trong users list
+    var dbU = users.find(function(u){ return u.login === currentUser.login; });
+    if (dbU) officerId = dbU.id;
+  }
+
+  if (!officerId) {
+    console.warn('[DB] dbSaveWeeklyReport: no officer_id, skipping DB save');
+    return true; // Không lỗi, chỉ skip
+  }
+
+  var dbStatus = statusMap[entry.ketQua] || 'other';
+
   var data = {
     loan_file_id:   h.id,
+    officer_id:     officerId,
     report_date:    new Date().toISOString().slice(0,10),
     week_number:    getWeekNum(),
-    contact_status: entry.ketQua,
+    year:           new Date().getFullYear(),
+    contact_status: dbStatus,
     detail:         entry.chiTiet || null,
     support_request:entry.deXuat  || null,
-    type:           entry.type    || 'report',
     created_at:     new Date().toISOString()
   };
+
+  console.log('[DB] Saving weekly_report:', data);
   var r = await sb.from('weekly_reports').insert(data);
-  if (r.error) console.error('dbSaveWeeklyReport:', r.error);
-  return !r.error;
+  if (r.error) {
+    console.error('[DB] weekly_reports ERROR:', r.error);
+    // Nếu lỗi enum → thử với 'other'
+    if (r.error.message && r.error.message.includes('contact_status')) {
+      data.contact_status = 'other';
+      var r2 = await sb.from('weekly_reports').insert(data);
+      if (r2.error) { console.error('[DB] weekly_reports retry ERROR:', r2.error); return false; }
+      return true;
+    }
+    return false;
+  }
+  console.log('[DB] weekly_reports saved OK');
+  return true;
 }
 
 // Lưu CIC lên DB
