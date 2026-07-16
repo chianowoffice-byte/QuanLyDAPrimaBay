@@ -1274,6 +1274,7 @@ function buildHSForm(h) {
     html += fld('CCCD / CMND','f-cccdVC',dv('cccdVC'),isCDTUser?'disabled':kDis);
     html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),isCDTUser?'disabled':kDis,'','date');
     html += fld('Số điện thoại','f-sdtVC',dv('sdtVC'),isCDTUser?'disabled':kDis);
+    html += fld('Email','f-emailVC',dv('emailVC'),isCDTUser?'disabled':kDis,'vd: email@gmail.com');
     html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),isCDTUser?'disabled':kDis);
     html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),isCDTUser?'disabled':kDis) + '</div>';
     html += '</div></div>';
@@ -1320,7 +1321,7 @@ function buildHSForm(h) {
     // Phê duyệt & Giải ngân — CB được phân công / QL / Admin nhập
     // Kiểm tra đủ HS (personal_id + income_proof + collateral) trước khi cho nhập GN
     var ckObjNow = h ? (h.ck || {}) : {};
-    var requiredGroups = ['personal_id','income_proof','collateral'];
+    var requiredGroups = ['gt','tn','tsbd']; // id trong CK_GROUPS
     var ckSufficient = isQL() || requiredGroups.every(function(gid){
       var grp = CK_GROUPS.find(function(g){ return g.id===gid; });
       return grp && grp.items.every(function(it){ return ckObjNow[it.id]; });
@@ -1405,7 +1406,12 @@ function buildHSForm(h) {
     if (locked) {
       html += '<div class="lock-banner">🔒 Hồ sơ đã chốt. Không thể cập nhật tiến độ.</div>';
     } else {
-      html += buildProgTab(h);
+      try {
+        html += buildProgTab(h);
+      } catch(err2) {
+        html += '<div class="perm-banner">Lỗi hiển thị: ' + err2.message + '</div>';
+        console.error('buildProgTab error:', err2);
+      }
     }
     html += '</div>';
   }
@@ -1439,8 +1445,8 @@ function buildHSForm(h) {
 
   body.innerHTML = html;
   if (!isCDTUser) {
-    renderDocsGrid(h, locked);
-    renderCICTCTDs(h&&h.cic?h.cic.tctds||[]:[]);
+    try { renderDocsGrid(h, locked); } catch(e1){ console.error('renderDocsGrid:', e1); }
+    try { renderCICTCTDs(h&&h.cic?h.cic.tctds||[]:[]); } catch(e2){ console.error('renderCICTCTDs:', e2); }
   }
   buildHSFooter(h, locked);
 }
@@ -1732,7 +1738,7 @@ function saveProj() {
     ngheNghiep: gv('f-nn'), thuNhap: gv('f-tn'),
     coVoChong: document.getElementById('f-coVC')?document.getElementById('f-coVC').checked:false,
     tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'), ngaySinhVC: gv('f-nsVC'),
-    sdtVC: gv('f-sdtVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
+    sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
     vtcDaNop: gvn('f-vtcdanop'),
     soTienVay: gvn('f-stv'), kyHan: gv('f-kh'),
     hinhThucVay: gv('f-htls'), csChinhSach: gv('f-csbh'),
