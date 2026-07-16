@@ -1199,6 +1199,36 @@ function collectCK(){
 // ================================================
 // BUILD HS FORM - 5 TAB REDESIGN
 // ================================================
+function fmt(val) {
+  if (val === '' || val === null || val === undefined) return '';
+  var n = Number(String(val).replace(/,/g,''));
+  if (isNaN(n)) return val;
+  return n.toLocaleString('vi-VN');
+}
+// Parse lại khi lưu — bỏ dấu phẩy
+function unFmt(val) {
+  if (!val) return '';
+  return String(val).replace(/\./g,'').replace(/,/g,'.');
+}
+// Cho input number dạng text với dấu phẩy
+function numInput(id, val, dis, extra) {
+  var v = fmt(val);
+  var d = dis ? ' ' + dis : '';
+  var x = extra ? ' ' + extra : '';
+  return '<input type="text" inputmode="numeric" id="' + id + '" value="' + v + '"' + d + x
+       + ' onInput="this.value=fmt(this.value.replace(/[^0-9]/g,\'\'))"'
+       + ' style="font-variant-numeric:tabular-nums">';
+}
+
+function fld(label, id, val, dis, placeholder, type, full, extra) {
+  var cls = full ? 'fg ffull' : 'fg';
+  var t = type || 'text';
+  var p = placeholder ? ' placeholder="' + placeholder + '"' : '';
+  var d = dis ? ' ' + dis : '';
+  var x = extra ? ' ' + extra : '';
+  return '<div class="' + cls + '"><label>' + label + '</label><input type="' + t + '" id="' + id + '" value="' + (val || '') + '"' + p + d + x + '></div>';
+}
+
 function buildHSForm(h) {
   var locked  = h && h.locked;
   var kLocked = h && h.kLocked;
@@ -1286,9 +1316,9 @@ function buildHSForm(h) {
     html += '<div class="fgrid">';
     html += fld('Họ và tên','f-tenVC',dv('tenVC'),isCDTUser?'disabled':kDis);
     html += fld('CCCD / CMND','f-cccdVC',dv('cccdVC'),isCDTUser?'disabled':kDis);
-    html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),isCDTUser?'disabled':kDis,'','date');
     html += fld('Số điện thoại','f-sdtVC',dv('sdtVC'),isCDTUser?'disabled':kDis);
     html += fld('Email','f-emailVC',dv('emailVC'),isCDTUser?'disabled':kDis,'vd: email@gmail.com');
+    html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),isCDTUser?'disabled':kDis,'','date');
     html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),isCDTUser?'disabled':kDis);
     html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),isCDTUser?'disabled':kDis) + '</div>';
     html += '</div></div>';
@@ -1489,36 +1519,6 @@ function calcHanGN(ngayKy) {
 // Helper: build a form field
 
 // Format số có dấu (,) ngăn cách hàng nghìn
-function fmt(val) {
-  if (val === '' || val === null || val === undefined) return '';
-  var n = Number(String(val).replace(/,/g,''));
-  if (isNaN(n)) return val;
-  return n.toLocaleString('vi-VN');
-}
-// Parse lại khi lưu — bỏ dấu phẩy
-function unFmt(val) {
-  if (!val) return '';
-  return String(val).replace(/\./g,'').replace(/,/g,'.');
-}
-// Cho input number dạng text với dấu phẩy
-function numInput(id, val, dis, extra) {
-  var v = fmt(val);
-  var d = dis ? ' ' + dis : '';
-  var x = extra ? ' ' + extra : '';
-  return '<input type="text" inputmode="numeric" id="' + id + '" value="' + v + '"' + d + x
-       + ' onInput="this.value=fmt(this.value.replace(/[^0-9]/g,\'\'))"'
-       + ' style="font-variant-numeric:tabular-nums">';
-}
-
-function fld(label, id, val, dis, placeholder, type, full, extra) {
-  var cls = full ? 'fg ffull' : 'fg';
-  var t = type || 'text';
-  var p = placeholder ? ' placeholder="' + placeholder + '"' : '';
-  var d = dis ? ' ' + dis : '';
-  var x = extra ? ' ' + extra : '';
-  return '<div class="' + cls + '"><label>' + label + '</label><input type="' + t + '" id="' + id + '" value="' + (val || '') + '"' + p + d + x + '></div>';
-}
-
 function toggleVC() {
   var cb = document.getElementById('f-coVC'); if (!cb) return;
   cb.checked = !cb.checked;
@@ -2723,7 +2723,6 @@ function buildHSFooter(h, locked) {
   if (!fl || !fr) return;
   var leftHtml='', rightHtml='';
   if (h) {
-    leftHtml='<span class="text-sm" style="color:var(--txt3)">Mã: <b>'+h.id+'</b></span>';
   }
   rightHtml += '<button class="btn" onclick="closeHS()">Đóng</button>';
   // CB được chốt hồ sơ (khi chưa chốt)
