@@ -675,88 +675,82 @@ function ckGroupDone(h, gid){
 // ==================================================
 // AUTH
 // ==================================================
-function doLogin(){
+async function doLogin(){
   var u = document.getElementById('lu').value.trim().toLowerCase();
   var p = document.getElementById('lp').value;
   if(!u || !p){ showLoginErr('Vui lòng nhập đầy đủ thông tin.'); return; }
 
-  // Ghép email đầy đủ
+  // Ghép email
   var email = u;
-  if (u.indexOf('@') === -1) {
-    if (u === 'bim1') email = 'bim1@bimgroup.vn';
-    else if (u === 'bim2') email = 'bim2@bimgroup.vn';
-    else email = u + '@bidv.com.vn';
+  if(u.indexOf('@') === -1){
+    if(u==='bim1') email='bim1@bimgroup.vn';
+    else if(u==='bim2') email='bim2@bimgroup.vn';
+    else email=u+'@bidv.com.vn';
   }
 
-  var btn = document.getElementById('login-btn');
-  if(btn){ btn.textContent = 'Đang đăng nhập...'; btn.disabled = true; }
+  var btn=document.getElementById('login-btn');
+  if(btn){ btn.textContent='Đang đăng nhập...'; btn.disabled=true; }
 
-  // Xác thực trực tiếp qua bảng users — không dùng Supabase Auth
-  sb.from('users')
-    .select('*')
-    .eq('email', email)
-    .eq('is_active', true)
-    .single()
-    .then(function(r){
-      if(btn){ btn.textContent = 'Đăng nhập'; btn.disabled = false; }
+  try {
+    // Tìm user trong DB
+    var { data: dbUser, error: err1 } = await sb
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .eq('is_active', true)
+      .single();
 
-      if(r.error || !r.data){
-        showLoginErr('Tên đăng nhập không tồn tại hoặc đã bị khoá.');
-        return;
-      }
-      var dbUser = r.data;
+    if(err1 || !dbUser){
+      showLoginErr('Tên đăng nhập không tồn tại hoặc đã bị khoá.');
+      if(btn){ btn.textContent='Đăng nhập'; btn.disabled=false; }
+      return;
+    }
 
-      // Kiểm tra mật khẩu = mã CB (hoặc pass đặc biệt)
-      var validPass = false;
-      if(dbUser.ma_cb && p === dbUser.ma_cb) validPass = true;
-      if(p === 'admin2025' && dbUser.role === 'admin') validPass = true;
-      if(p === 'bim2025' && (dbUser.role === 'cdt_view' || dbUser.role === 'cdt_admin')) validPass = true;
+    // Kiểm tra mật khẩu
+    var ok = false;
+    if(dbUser.ma_cb && p===dbUser.ma_cb) ok=true;
+    if(p==='admin2025' && dbUser.role==='admin') ok=true;
+    if(p==='bim2025' && (dbUser.role==='cdt_view'||dbUser.role==='cdt_admin')) ok=true;
 
-      if(!validPass){
-        showLoginErr('Mật khẩu không đúng.');
-        return;
-      }
+    if(!ok){
+      showLoginErr('Mật khẩu không đúng.');
+      if(btn){ btn.textContent='Đăng nhập'; btn.disabled=false; }
+      return;
+    }
 
-      // Map sang currentUser
-      currentUser = {
-        id:             dbUser.id,
-        db_id:          dbUser.id,
-        name:           dbUser.full_name,
-        login:          u,
-        email:          dbUser.email,
-        role:           dbUser.role === 'officer'   ? 'cb'    :
-                        dbUser.role === 'manager'   ? 'ql'    :
-                        dbUser.role === 'admin'     ? 'admin' :
-                        (dbUser.role === 'cdt_view' ||
-                         dbUser.role === 'cdt_admin') ? 'cdt' : dbUser.role,
-        db_role:        dbUser.role,
-        pgd:            dbUser.pgd   || '',
-        phone:          dbUser.phone || '',
-        maCB:           dbUser.ma_cb || '',
-        active:         dbUser.is_active,
-        canSetGiaiNgan: dbUser.can_set_disbursement
-      };
+    // Set currentUser
+    currentUser = {
+      id: dbUser.id, db_id: dbUser.id,
+      name: dbUser.full_name,
+      login: u, email: dbUser.email,
+      role: dbUser.role==='officer' ? 'cb' :
+            dbUser.role==='manager' ? 'ql' :
+            dbUser.role==='admin'   ? 'admin' :
+            (dbUser.role==='cdt_view'||dbUser.role==='cdt_admin') ? 'cdt' : dbUser.role,
+      db_role: dbUser.role,
+      pgd: dbUser.pgd||'', phone: dbUser.phone||'',
+      maCB: dbUser.ma_cb||'',
+      active: dbUser.is_active,
+      canSetGiaiNgan: dbUser.can_set_disbursement
+    };
 
-      // Load dữ liệu từ DB
-      Promise.all([sbLoadUsers(), sbLoadHS()]).then(function(results){
-        var dbUsers = results[0];
-        var dbHS    = results[1];
-        if(dbUsers.length) users   = dbUsers.map(mapDbUser);
-        if(dbHS.length)    hsList  = dbHS.map(mapDbHS);
-        persist();
-        document.getElementById('login-wrap').style.display = 'none';
-        document.getElementById('app-wrap').classList.add('show');
-        applyPerms();
-        showPage(isCDT() ? 'cdt-view' : 'db');
-      }).catch(function(err){
-        showLoginErr('Lỗi tải dữ liệu: ' + err.message);
-      });
-    })
-    .catch(function(err){
-      if(btn){ btn.textContent = 'Đăng nhập'; btn.disabled = false; }
-      showLoginErr('Lỗi kết nối database. Vui lòng thử lại.');
-    });
+    // Load dữ liệu
+    var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
+    if(dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
+    if(dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
+    persist();
+
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('app-wrap').classList.add('show');
+    applyPerms();
+    showPage(isCDT()?'cdt-view':'db');
+
+  } catch(err) {
+    showLoginErr('Lỗi kết nối: '+err.message);
+    if(btn){ btn.textContent='Đăng nhập'; btn.disabled=false; }
+  }
 }
+
 
 function showLoginErr(msg){
   var el = document.getElementById('lerr');
