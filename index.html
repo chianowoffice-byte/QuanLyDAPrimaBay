@@ -745,6 +745,20 @@ var CK_GROUPS = [
     {id:'saokeno',label:'Sao kê dư nợ tại ngân hàng khác (nếu có)'}
   ]}
 ];
+
+var CT_STATUS_LABELS_FULL = {
+  da_lh:       'Đã liên hệ - KH đang chuẩn bị HS',
+  hen_gap:     'Đã hẹn gặp trực tiếp',
+  cho_bs:      'Chờ KH bổ sung giấy tờ',
+  kh_nghe:     'KH không nghe máy / không liên lạc được',
+  kh_bao_luu:  'KH bảo lưu - chưa muốn tiếp tục',
+  nop_du:      'KH đã nộp đủ hồ sơ',
+  duoc_vay:    'Được vay - chờ ký HĐTD',
+  tu_choi_tn:  'Từ chối - Không đủ thu nhập',
+  tu_choi_cic: 'Từ chối - Nợ xấu / CIC nhóm 2+',
+  tu_choi_kh:  'Từ chối - KH không hợp tác',
+  khac:        'Lý do khác'
+};
 function ckProgress(h){
   var total=0, done=0;
   CK_GROUPS.forEach(function(g){ g.items.forEach(function(it){ total++; if(h.ck && h.ck[it.id]) done++; }); });
@@ -1289,6 +1303,7 @@ function buildHSForm(h) {
   }
   html += '<div class="fgrid fgrid3">';
   html += fld('Mã căn hộ','f-mach',dv('maCanHo'),hDis);
+  html += fld('Đại lý','f-daily',dv('daiLy'),hDis,'VD: An Việt Homes');
   html += fld('Tầng','f-tang',dv('tang'),hDis);
   html += fld('Diện tích (m²)','f-dt',dv('dienTich'),hDis);
   html += '<div class="fg"><label>Giá HĐMB (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hDis) + '</div>';
@@ -1783,6 +1798,7 @@ function saveProjCDT() {
   var gvn=function(id){var el=document.getElementById(id);return el?(el.value.replace(/\./g,'').replace(/,/g,'')):''};
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
   hsList[idx].maCanHo    = gv('f-mach');
+  hsList[idx].daiLy      = gv('f-daily');
   hsList[idx].tang        = gv('f-tang');
   hsList[idx].dienTich    = gv('f-dt');
   hsList[idx].giaHDMB     = gv('f-giahdmb');
@@ -2524,19 +2540,7 @@ function onCICGroupChange(){
 // ==================================================
 // WEEKLY REPORT - 6 TRUONG BIM
 // ==================================================
-var CT_STATUS_LABELS_FULL = {
-  da_lh:       'Đã liên hệ - KH đang chuẩn bị HS',
-  hen_gap:     'Đã hẹn gặp trực tiếp',
-  cho_bs:      'Chờ KH bổ sung giấy tờ',
-  kh_nghe:     'KH không nghe máy / không liên lạc được',
-  kh_bao_luu:  'KH bảo lưu - chưa muốn tiếp tục',
-  nop_du:      'KH đã nộp đủ hồ sơ',
-  duoc_vay:    'Được vay - chờ ký HĐTD',
-  tu_choi_tn:  'Từ chối - Không đủ thu nhập',
-  tu_choi_cic: 'Từ chối - Nợ xấu / CIC nhóm 2+',
-  tu_choi_kh:  'Từ chối - KH không hợp tác',
-  khac:        'Lý do khác'
-};
+
 
 function buildWeeklyReportForm(h) {
   var reports = h && h.weeklyReports ? h.weeklyReports : [];
