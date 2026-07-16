@@ -13,19 +13,20 @@
 <title>PrimaBay Credit — BIDV Tràng Tiền</title>
 <style>
 :root{
-  --bg:#F7F6F3;--surf:#FFF;--surf2:#F0EEE9;--bdr:#E2DED6;--bdr2:#C8C4BB;
-  --txt:#1A1916;--txt2:#6B6760;--txt3:#9B9792;
-  --blue:#1B4F8A;--blue-l:#E8EFF8;--blue-m:#3B72B8;
-  --green:#1A6B45;--green-l:#E6F4EE;
-  --amber:#8A4F00;--amber-l:#FFF3E0;
-  --red:#8A1F1F;--red-l:#FDEAEA;
-  --purple:#4A2E8A;--purple-l:#EEE9FA;
-  --teal:#0D5C6E;--teal-l:#E0F4F8;
+  --bg:#F4F9F8;--surf:#FFF;--surf2:#EDF6F4;--bdr:#C8E0DC;--bdr2:#9ECBC5;
+  --txt:#0D1F1D;--txt2:#4A6B67;--txt3:#7A9E9A;
+  --blue:#006B5E;--blue-l:#E0F5F1;--blue-m:#008F7A;
+  --green:#006B5E;--green-l:#E0F5F1;
+  --amber:#CC8A00;--amber-l:#FFF4DC;
+  --gold:#F5A623;--gold-l:#FFF8E7;--gold-m:#E09400;
+  --red:#C0392B;--red-l:#FDEAEA;
+  --purple:#006B5E;--purple-l:#E0F5F1;
+  --teal:#006B5E;--teal-l:#E0F5F1;
   --r:8px;--rl:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif;font-size:14px;color:var(--txt);min-height:100vh}
-#login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1B4F8A,#0D2E52)}
+#login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#006B5E 0%,#004D43 60%,#003D35 100%)}
 .lcard{background:var(--surf);border-radius:16px;padding:44px 40px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
 .logo-top{text-align:center;margin-bottom:28px}
 .logo-top .bn{font-size:22px;font-weight:800;color:var(--blue)}
@@ -93,9 +94,9 @@ td{padding:10px 14px;border-bottom:1px solid var(--bdr);font-size:13px;vertical-
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surf2)}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
-.b-moi{background:var(--surf2);color:var(--txt2)}.b-dang{background:var(--amber-l);color:var(--amber)}
-.b-cho{background:var(--blue-l);color:var(--blue)}.b-choky{background:var(--purple-l);color:var(--purple)}
-.b-xong{background:var(--green-l);color:var(--green)}.b-tuchoi{background:var(--red-l);color:var(--red)}
+.b-moi{background:#EDF6F4;color:#4A6B67}.b-dang{background:#FFF4DC;color:#CC8A00}
+.b-cho{background:#E0F5F1;color:#006B5E}.b-choky{background:#FFF8E7;color:#CC8A00}
+.b-xong{background:#E0F5F1;color:#006B5E;font-weight:600}.b-tuchoi{background:var(--red-l);color:var(--red)}
 .rb{padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .rb-admin{background:#1A1916;color:#fff}.rb-ql{background:var(--purple-l);color:var(--purple)}
 .rb-cb{background:var(--blue-l);color:var(--blue)}.rb-cdt{background:var(--teal-l);color:var(--teal)}
@@ -176,8 +177,8 @@ tr:hover td{background:var(--surf2)}
 
 .dl-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .dl-over{background:#FDEAEA;color:#8A1F1F;border:1px solid #F5BEBE}
-.dl-warn{background:#FFF3E0;color:#8A4F00;border:1px solid #F5D87A}
-.dl-ok{background:#E6F4EE;color:#1A6B45;border:1px solid #A8D8C0}
+.dl-warn{background:#FFF4DC;color:#CC8A00;border:1px solid #F5C842}
+.dl-ok{background:#E0F5F1;color:#006B5E;border:1px solid #9ECBC5}
 .dl-new{background:#EEE9FA;color:#4A2E8A;border:1px solid #C9BEEE}
 .alert-panel{background:#FFF;border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;margin-bottom:14px}
 .alert-panel-hd{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr)}
@@ -247,32 +248,73 @@ tr:hover td{background:var(--surf2)}
 
 /* Sidebar footer */
 .sb-footer {
-  padding: 12px 14px;
-  border-top: 1px solid rgba(255,255,255,.15);
+  padding: 12px 14px 16px;
   margin-top: auto;
+  flex-shrink: 0;
 }
-.sb-footer-logos {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sb-footer-divider {
+  height: 1px;
+  background: rgba(255,255,255,.2);
   margin-bottom: 10px;
-  padding: 8px;
-  background: rgba(255,255,255,.08);
-  border-radius: 8px;
 }
-.sb-footer-info {
+.sb-footer-branch {
+  margin-bottom: 8px;
+}
+.sb-footer-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.sb-footer-addr,
+.sb-footer-phone {
   font-size: 10px;
   color: rgba(255,255,255,.65);
-  line-height: 1.7;
+  line-height: 1.6;
 }
-/* Login page logos */
-.login-logos {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 16px;
+.sb-footer-credit {
+  font-size: 10px;
+  color: rgba(255,255,255,.45);
+  font-style: italic;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,.1);
 }
+
+/* BIDV Theme Overrides */
+.btn-primary { background: #006B5E !important; border-color: #006B5E !important; color: #fff !important; }
+.btn-primary:hover { background: #008F7A !important; }
+input:focus, select:focus, textarea:focus { border-color: #006B5E !important; box-shadow: 0 0 0 3px rgba(0,107,94,.12) !important; }
+.nav-it.active { background: rgba(245,166,35,.18) !important; border-left: 3px solid #F5A623 !important; }
+.tab.active { color: #006B5E !important; border-bottom: 3px solid #006B5E !important; font-weight: 600; }
+.rb-admin { background: #006B5E !important; color: #fff !important; }
+.rb-ql    { background: #E0F5F1 !important; color: #006B5E !important; border: 1px solid #9ECBC5 !important; }
+.fsec-title { color: #006B5E !important; border-bottom: 2px solid #E0F5F1 !important; padding-bottom: 6px; }
+.ck-item.checked { background: #E0F5F1 !important; border-color: #9ECBC5 !important; }
+.ck-item.checked .ck-label { color: #006B5E !important; font-weight: 600; }
+/* Checkbox tích màu xanh */
+input[type=checkbox]:checked { accent-color: #006B5E; }
+/* Progress bar */
+.prog-bar-fill { background: linear-gradient(90deg, #006B5E, #F5A623) !important; }
+/* CIC box */
+.cic-box { border-left: 3px solid #006B5E !important; }
+/* Hover row table */
+.hs-tbl tr:hover td { background: #EDF6F4 !important; }
+/* Badge mới nhận */
+.b-moi { background: #EDF6F4; color: #4A6B67; }
+/* Section dim */
+.cdt-section-dim { opacity: 0.45; }
+/* Modal header */
+.mh { border-bottom: 2px solid #006B5E !important; }
+.mh h2 { color: #006B5E !important; }
+/* Nút reload */
+#btn-reload-data:hover { background: #E0F5F1 !important; color: #006B5E !important; border-color: #006B5E !important; }
+/* Login card accent */
+.lcard { border-top: 4px solid #F5A623 !important; }
+.lbtn { background: #006B5E !important; }
+.lbtn:hover { background: #008F7A !important; }
+/* Save bar */
+.save-bar { border-top: 1px solid #C8E0DC !important; background: #F4F9F8 !important; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -282,19 +324,9 @@ tr:hover td{background:var(--surf2)}
 <div id="login-wrap">
   <div class="lcard">
     <div class="logo-top">
-  <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px">
-    <div style="text-align:center">
-      <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:38px;object-fit:contain">
-      <div style="font-size:9px;color:var(--txt3);margin-top:3px;line-height:1.3">Chi nhánh<br>Tràng Tiền</div>
-    </div>
-    <div style="font-size:18px;color:var(--bdr);font-weight:300">✕</div>
-    <div style="text-align:center">
-      <img src="BIM_LOGO_B64_PLACEHOLDER" alt="BIMLand" style="height:28px;object-fit:contain">
-      <div style="font-size:9px;color:var(--txt3);margin-top:3px;line-height:1.3">Chủ đầu tư<br>BIM Land</div>
-    </div>
-  </div>
-  <div class="bn" style="color:var(--blue)">PrimaBay Credit</div>
-  <div class="bs">Hệ thống quản lý hồ sơ vay vốn</div>
+  <div style="font-size:28px;font-weight:700;color:var(--blue);letter-spacing:-0.5px">PrimaBay Credit</div>
+  <div class="bs" style="margin-top:4px">Hệ thống quản lý hồ sơ vay vốn</div>
+  <div style="font-size:11px;color:var(--txt3);margin-top:2px">BIDV Chi nhánh Tràng Tiền – Hà Nội</div>
 </div>
     <div class="lerr" id="lerr"></div>
     <div class="lfield"><label>Tên đăng nhập</label>
@@ -340,22 +372,13 @@ tr:hover td{background:var(--surf2)}
       </div>
     </div>
   <div class="sb-footer">
-    <div class="sb-footer-logos">
-      <div style="text-align:center">
-        <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:24px;object-fit:contain;display:block;margin:0 auto 3px">
-        <div style="font-size:9px;color:#fff;opacity:.7;line-height:1.2">Chi nhánh Tràng Tiền<br>Hà Nội</div>
-      </div>
-      <div style="width:1px;background:rgba(255,255,255,.2);margin:0 8px"></div>
-      <div style="text-align:center">
-        <img src="BIM_LOGO_B64_PLACEHOLDER" alt="BIMLand" style="height:20px;object-fit:contain;display:block;margin:0 auto 3px;filter:brightness(0) invert(1)">
-        <div style="font-size:9px;color:#fff;opacity:.7;line-height:1.2">Chủ đầu tư<br>BIM Land</div>
-      </div>
+    <div class="sb-footer-divider"></div>
+    <div class="sb-footer-branch">
+      <div class="sb-footer-name">BIDV Tràng Tiền – Hà Nội</div>
+      <div class="sb-footer-addr">📍 41 Hai Bà Trưng, Cửa Nam, TP. Hà Nội</div>
+      <div class="sb-footer-phone">📞 024 7300 1999</div>
     </div>
-    <div class="sb-footer-info">
-      <div>📍 41 Hai Bà Trưng, Cửa Nam, Hà Nội</div>
-      <div>📞 024 7300 1999</div>
-      <div style="margin-top:4px;opacity:.6">Triển khai: Nguyễn Việt Anh</div>
-    </div>
+    <div class="sb-footer-credit">Phụ trách: Nguyễn Việt Anh</div>
   </div>
   </aside>
 
