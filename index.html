@@ -271,15 +271,10 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 <div id="app-wrap">
   <aside class="sidebar">
     <div class="sb-logo">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-    <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:26px;object-fit:contain">
-  </div>
-  <div class="bn">PrimaBay Credit</div>
-  <div class="bs">Chi nhánh Tràng Tiền – Hà Nội</div>
-</div>
-  <div class="bn" style="font-size:13px;color:#fff">PrimaBay Credit</div>
-  <div class="bs" style="font-size:10px;color:rgba(255,255,255,.7)">Chi nhánh Tràng Tiền – HN</div>
-</div>
+      <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:26px;object-fit:contain;margin-bottom:6px;display:block">
+      <div class="bn">PrimaBay Credit</div>
+      <div class="bs">Chi nhánh Tràng Tiền – Hà Nội</div>
+    </div>
     <nav class="sb-nav">
       <div class="nav-sec">Tổng quan</div>
       <div class="nav-it active" id="ni-db" onclick="showPage('db')">📊 Dashboard</div>
@@ -3691,27 +3686,29 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (!restoreSession()) return; // Không có session hoặc đã hết hạn → ở lại màn hình login
 
   // Có session hợp lệ → load dữ liệu và vào app
-  try {
-    var btn = document.getElementById('login-btn');
-    if (btn) { btn.textContent = '⏳ Đang khôi phục...'; btn.disabled = true; }
+  // Luôn vào app ngay với data localStorage, sau đó load DB ngầm
+  function enterApp() {
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('app-wrap').classList.add('show');
+    try { applyPerms(); } catch(e){ console.error('applyPerms:', e); }
+    try { showPage(isCDT() ? 'cdt-view' : 'db'); } catch(e){ console.error('showPage:', e); }
+    try { initIdleWatcher(); } catch(e){ console.error('initIdleWatcher:', e); }
+  }
 
+  // Vào app ngay với data cũ
+  enterApp();
+
+  // Load DB ngầm để cập nhật mới nhất
+  try {
     var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
     if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
     if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
     persist();
-
-    // Hiển thị app
-    document.getElementById('login-wrap').style.display = 'none';
-    document.getElementById('app-wrap').classList.add('show');
-    applyPerms();
-    showPage(isCDT() ? 'cdt-view' : 'db');
-    initIdleWatcher();
-    showNotif('✅ Đã khôi phục phiên đăng nhập');
+    try { renderDB(); renderHSTable(); } catch(e){}
+    showNotif('✅ Dữ liệu đã được cập nhật');
   } catch(e) {
-    console.error('Restore session failed:', e);
-    // Nếu load DB thất bại → ở lại login
-    currentUser = null;
-    localStorage.removeItem('pb5_session');
+    console.warn('Load DB failed, using cached data:', e.message);
+    showNotif('⚠️ Dùng dữ liệu cache (không có mạng?)');
   }
 });
 
