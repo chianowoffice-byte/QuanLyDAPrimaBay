@@ -747,17 +747,18 @@ var CK_GROUPS = [
 ];
 
 var CT_STATUS_LABELS_FULL = {
-  da_lh:       'Đã liên hệ - KH đang chuẩn bị HS',
-  hen_gap:     'Đã hẹn gặp trực tiếp',
-  cho_bs:      'Chờ KH bổ sung giấy tờ',
-  kh_nghe:     'KH không nghe máy / không liên lạc được',
-  kh_bao_luu:  'KH bảo lưu - chưa muốn tiếp tục',
-  nop_du:      'KH đã nộp đủ hồ sơ',
-  duoc_vay:    'Được vay - chờ ký HĐTD',
-  tu_choi_tn:  'Từ chối - Không đủ thu nhập',
-  tu_choi_cic: 'Từ chối - Nợ xấu / CIC nhóm 2+',
-  tu_choi_kh:  'Từ chối - KH không hợp tác',
-  khac:        'Lý do khác'
+  chua_lh:     'Chưa liên hệ được với KH',
+  dang_can_nhac:'KH đang cân nhắc phương án vay',
+  dong_y_cung_cap:'KH đồng ý vay - Đang cung cấp hồ sơ',
+  kh_tu_choi:  'KH từ chối vay',
+  nh_tu_choi:  'NH từ chối cho vay',
+  von_tu_co:   'Chuyển sang thanh toán bằng vốn tự có',
+  nop_du:      'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
+  da_phe_duyet:'Đã phê duyệt cho vay',
+  soan_hs:     'Đã soạn hồ sơ và check file mềm',
+  cho_gn:      'Đã ký hồ sơ - Chờ giải ngân',
+  da_gn:       'Đã giải ngân',
+  khac:        'Khác'
 };
 function ckProgress(h){
   var total=0, done=0;
@@ -892,6 +893,7 @@ function mapDbHS(lf) {
     cccd:          cust.id_number || '',
     sdt:           cust.phone     || '',
     email:         cust.email     || '',
+    cif:           cust.cif       || '',
     diaChi:        cust.address   || '',
     vung:          cust.region    || '',
     daiLy:         cust.agent     || '',
@@ -1297,6 +1299,7 @@ function buildHSForm(h) {
   html += fld('CCCD / CMND','f-cccd',dv('cccd'),khDim);
   html += fld('Số điện thoại','f-sdt',dv('sdt'),khDim);
   html += fld('Email','f-email',dv('email'),khDim,'vd: nguyenvana@gmail.com');
+  html += fld('Số CIF','f-cif',dv('cif'),khDim,'VD: 1234567890');
   html += fld('Ngày sinh','f-ns',dv('ngaySinh'),khDim,'','date');
   html += fld('Địa chỉ thường trú','f-dc',dv('diaChi'),khDim,'','','ffull');
   html += fld('Nghề nghiệp','f-nn',dv('ngheNghiep'),khDim);
@@ -1321,6 +1324,7 @@ function buildHSForm(h) {
   html += fld('CCCD / CMND','f-cccdVC',dv('cccdVC'),khDim);
   html += fld('Số điện thoại','f-sdtVC',dv('sdtVC'),khDim);
   html += fld('Email','f-emailVC',dv('emailVC'),khDim,'vd: email@gmail.com');
+  html += fld('Số CIF','f-cifVC',dv('cifVC'),khDim,'VD: 1234567890');
   html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),khDim,'','date');
   html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),khDim);
   html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),khDim) + '</div>';
@@ -1425,9 +1429,13 @@ function buildHSForm(h) {
     html += '<div class="info-banner">🔍 Chỉ xem — chỉ Cán bộ phụ trách được nhập kết quả CIC.</div>';
   }
   html += '<div class="cic-box ' + cicDimClass + '">';
-  html += '<div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px">Kết quả tra cứu CIC</div>';
+
+  // ── KH CHÍNH ────────────────────────────────
+  html += '<div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">CIC — Khách hàng chính: ' + (dv('tenKH')||'—') + '</div>';
   html += '<div class="fgrid fgrid3" style="margin-bottom:14px">';
+  html += fld('Mã số CIC','cic-masocic',cic.maSoCIC||'',cicDim,'VD: 0100001234');
   html += fld('Tổng dư nợ (VNĐ)','cic-dn',String(cic.tongDuNo||''),cicDim,'','number');
+  html += fld('Dư nợ thẻ tín dụng (VNĐ)','cic-the',String(cic.duNoThe||''),cicDim,'','number');
   html += '<div class="fg"><label>Nhóm nợ cao nhất</label>';
   html += '<select id="cic-nn" '+(cicDim?'disabled':'')+' onchange="onCICGroupChange()">';
   html += '<option value="">-- Chọn --</option>';
@@ -1438,14 +1446,46 @@ function buildHSForm(h) {
   }
   html+='</select>';
   html+='<div id="cic-nn-warn" style="display:'+(cic.nhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
-  html+='❌ Điều kiện KHÔNG ĐẠT: Nhóm nợ ≥ 2 sẽ tự động Từ chối và khoá hồ sơ!</div></div>';
+  html+='❌ Điều kiện KHÔNG ĐẠT: Nhóm nợ ≥ 2 → Tự động Từ chối hồ sơ!</div></div>';
   html += fld('Ngày tra CIC','cic-ngay',cic.ngay||'',cicDim,'','date');
   html += '</div>';
-  html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD:</div>';
+  html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD — KH chính:</div>';
   html += '<div id="cic-tctd-list"></div>';
   if (isCBOwner && !locked) {
     html += '<button class="btn btn-sm" style="margin-top:8px" onclick="addCICRow()">+ Thêm TCTD</button>';
-    html += '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveCIC()">💾 Lưu kết quả CIC</button></div>';
+  }
+
+  // ── VỢ/CHỒNG (nếu có) ────────────────────────
+  var hasVCNow = (h && h.coVoChong) || (document.getElementById('f-coVC') && document.getElementById('f-coVC').checked);
+  if (hasVCNow || (cic.vcTongDuNo || cic.vcNhomNo)) {
+    html += '<div class="divider" style="margin:14px 0"></div>';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">CIC — Vợ / Chồng: ' + (dv('tenVC')||'—') + '</div>';
+    html += '<div class="fgrid fgrid3" style="margin-bottom:14px">';
+    html += fld('Mã số CIC','cic-vcmasocic',cic.vcMaSoCIC||'',cicDim,'VD: 0100001234');
+    html += fld('Tổng dư nợ (VNĐ)','cic-vcdn',String(cic.vcTongDuNo||''),cicDim,'','number');
+    html += fld('Dư nợ thẻ tín dụng (VNĐ)','cic-vcthe',String(cic.vcDuNoThe||''),cicDim,'','number');
+    html += '<div class="fg"><label>Nhóm nợ cao nhất</label>';
+    html += '<select id="cic-vcnn" '+(cicDim?'disabled':'')+' onchange="onCICVCGroupChange()">';
+    html += '<option value="">-- Chọn --</option>';
+    for (var n2=1;n2<=5;n2++){
+      var sel3=(cic.vcNhomNo==n2)?'selected':'';
+      var lbl2=n2===1?' (✅ Đủ tiêu chuẩn)':' (❌ Sẽ từ chối tự động)';
+      html+='<option value="'+n2+'" '+sel3+'>Nhóm '+n2+lbl2+'</option>';
+    }
+    html += '</select>';
+    html += '<div id="cic-vcnn-warn" style="display:'+(cic.vcNhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
+    html += '❌ Vợ/Chồng: Nhóm nợ ≥ 2 → Tự động Từ chối!</div></div>';
+    html += fld('Ngày tra CIC vợ/chồng','cic-vcngay',cic.vcNgay||'',cicDim,'','date');
+    html += '</div>';
+    html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD — Vợ/Chồng:</div>';
+    html += '<div id="cic-vc-tctd-list"></div>';
+    if (isCBOwner && !locked) {
+      html += '<button class="btn btn-sm" style="margin-top:8px" onclick="addCICVCRow()">+ Thêm TCTD vợ/chồng</button>';
+    }
+  }
+
+  if (isCBOwner && !locked) {
+    html += '<div style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="saveCIC()">💾 Lưu kết quả CIC</button></div>';
   }
   html += '</div></div>';
 
@@ -1492,7 +1532,11 @@ function buildHSForm(h) {
 
   body.innerHTML = html;
   try { renderDocsGrid(h, docLocked); } catch(e1){ console.error('renderDocsGrid:', e1); }
-  try { renderCICTCTDs(h&&h.cic?h.cic.tctds||[]:[]); } catch(e2){ console.error('renderCICTCTDs:', e2); }
+  try {
+    renderCICTCTDs(h&&h.cic?h.cic.tctds||[]:[]);
+    var vcTctdEl=document.getElementById('cic-vc-tctd-list');
+    if(vcTctdEl) renderCICVCTCTDs(h&&h.cic?h.cic.vcTctds||[]:[]);
+  } catch(e2){ console.error('renderCICTCTDs:', e2); }
   buildHSFooter(h, locked);
 }
 
@@ -1749,10 +1793,11 @@ function saveProj() {
     tenKH: gv('f-tenKH'), cccd: gv('f-cccd'), sdt: gv('f-sdt'),
     ngaySinh: gv('f-ns'), diaChi: gv('f-dc'),
     email: gv('f-email'),
+    cif:   gv('f-cif'),
     ngheNghiep: gv('f-nn'), thuNhap: gv('f-tn'),
     coVoChong: document.getElementById('f-coVC')?document.getElementById('f-coVC').checked:false,
     tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'), ngaySinhVC: gv('f-nsVC'),
-    sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
+    sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), cifVC: gv('f-cifVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
     vtcDaNop: gvn('f-vtcdanop'),
     soTienVay: gvn('f-stv'), kyHan: gv('f-kh'),
     hinhThucVay: gv('f-htls'), csChinhSach: gv('f-csbh'),
@@ -1971,6 +2016,24 @@ function saveOutcome(){
 }
 
 // CIC TCTD
+
+function renderCICVCTCTDs(tctds) {
+  var el = document.getElementById('cic-vc-tctd-list'); if(!el) return;
+  if(!tctds||!tctds.length){ el.innerHTML='<div class="text-sm" style="color:var(--txt3);padding:4px 0">Chưa có dư nợ TCTD nào của vợ/chồng.</div>'; return; }
+  var h2='';
+  tctds.forEach(function(t,i){
+    h2+='<div class="cic-row">'
+      +'<input id="vc-tctd-name-'+i+'" value="'+(t.name||'')+'" placeholder="Tên TCTD"> '
+      +'<input id="vc-tctd-dn-'+i+'" type="number" value="'+(t.duNo||'')+'" placeholder="Dư nợ (VNĐ)" style="width:130px"> '
+      +'<select id="vc-tctd-grp-'+i+'"><option value="">Nhóm</option>'
+      +[1,2,3,4,5].map(function(n){return '<option value="'+n+'"'+(t.group==n?' selected':'')+'>Nhóm '+n+'</option>';}).join('')
+      +'</select> '
+      +'<button class="btn btn-sm" style="padding:3px 8px;background:#fee" onclick="this.parentNode.remove()">✕</button>'
+      +'</div>';
+  });
+  el.innerHTML=h2;
+}
+
 function renderCICTCTDs(tctds){
   var el=document.getElementById('cic-tctd-list'); if(!el) return;
   var html='';
@@ -2001,34 +2064,46 @@ function delCICRow(i){
 }
 function saveCIC(){
   if(!currentHSId) return;
-  var nn=document.getElementById('cic-nn')?document.getElementById('cic-nn').value:'';
-  var dn=document.getElementById('cic-dn')?document.getElementById('cic-dn').value:'';
-  var ngay=document.getElementById('cic-ngay')?document.getElementById('cic-ngay').value:'';
-  var tctds=collectCICTCTDs();
-  // Kiem tra nhom no tu tung TCTD
-  var worstGroup = parseInt(nn)||0;
-  tctds.forEach(function(t){ var g=parseInt(t.nhomNo)||0; if(g>worstGroup) worstGroup=g; });
+  var gv=function(id){var el=document.getElementById(id);return el?el.value:'';};
+  var nhomNo = parseInt(gv('cic-nn'))||0;
+  var vcNhomNo = parseInt(gv('cic-vcnn'))||0;
+  var worstGroup = Math.max(nhomNo, vcNhomNo);
+  var cic = {
+    maSoCIC:    gv('cic-masocic'),
+    tongDuNo:   gv('cic-dn'),
+    duNoThe:    gv('cic-the'),
+    nhomNo:     nhomNo,
+    ngay:       gv('cic-ngay'),
+    tctds:      collectCICTCTDs(),
+    // Vợ/chồng
+    vcMaSoCIC:  gv('cic-vcmasocic'),
+    vcTongDuNo: gv('cic-vcdn'),
+    vcDuNoThe:  gv('cic-vcthe'),
+    vcNhomNo:   vcNhomNo,
+    vcNgay:     gv('cic-vcngay'),
+    vcTctds:    collectCICVCTCTDs()
+  };
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-  hsList[idx].cic={nhomNo:worstGroup, tongDuNo:parseFloat(dn)||0, ngay:ngay, tctds:tctds};
+  hsList[idx].cic=cic;
   hsList[idx].updatedAt=nowStr();
-  // DIEU KIEN CUNG: Nhom 2 tro len -> tu choi, khoa ho so
+  addLog('Cập nhật CIC: nhóm nợ '+worstGroup, 'amber', currentHSId);
+
+  // Hard stop: nhóm nợ >= 2 (KH hoặc vợ/chồng)
   if(worstGroup >= 2){
     hsList[idx].status='tuchoi';
-    hsList[idx].outcome='no_xau';
-    hsList[idx].outcomeNote='Tu choi tu dong: Co no nhom '+worstGroup+' tai BIDV hoac TCTD khac. Khong du dieu kien vay theo chinh sach BIDV (yeu cau khong co no qua han, no nhom 2, no xau).';
     hsList[idx].locked=true;
-    hsList[idx].lockedBy=currentUser.name;
+    hsList[idx].lockedBy='Hệ thống';
     hsList[idx].lockedAt=nowStr();
-    addLog('TỪ CHỐI tự động - Nợ nhóm '+worstGroup+': '+hsList[idx].tenKH, 'red', currentHSId);
-    persist(); renderHSTable(); renderDB();
-    alert('ĐIỀU KIỆN KHÔNG ĐẠT: Hồ sơ có nợ nhóm '+worstGroup+'. He thong tu dong Tu choi va khoa ho so nay theo dieu kien tin dung BIDV (chi chap nhan Nhom 1 - Du tieu chuan).');
-    openHS(currentHSId);
+    addLog('TỪ CHỐI tự động - Nợ nhóm '+worstGroup, 'red', currentHSId);
+    persist(); renderHSTable(); openHS(currentHSId);
+    alert('❌ ĐIỀU KIỆN KHÔNG ĐẠT!\nNhóm nợ '+(nhomNo>=2?'KH chính':'vợ/chồng')+' = '+worstGroup+'\nHệ thống tự động Từ chối và khoá hồ sơ.');
     return;
   }
-  addLog('CIC dat: Nhom '+worstGroup+', du no '+dn+' tr.d - '+hsList[idx].tenKH, 'green', currentHSId);
-  persist(); renderHSTable(); renderDB();
-  alert('CIC đạt điều kiện! Nhóm nợ: '+worstGroup+' (Đủ tiêu chuẩn - Nhóm 1).');
+  persist(); renderHSTable();
+  alert('✅ CIC đạt điều kiện! Nhóm nợ cao nhất: '+worstGroup+' (Đủ tiêu chuẩn).');
+  openHS(currentHSId);
 }
+
 
 // HS LOG
 function renderHSLog(h){
@@ -2529,6 +2604,41 @@ function onTCTDGroupChange(el){
     el.style.border = '';
     el.style.background = '';
   }
+}
+
+
+function onCICVCGroupChange() {
+  var sel = document.getElementById('cic-vcnn');
+  var warn = document.getElementById('cic-vcnn-warn');
+  if (!sel || !warn) return;
+  warn.style.display = parseInt(sel.value) >= 2 ? 'block' : 'none';
+}
+
+function addCICVCRow() {
+  var el = document.getElementById('cic-vc-tctd-list');
+  if (!el) return;
+  var idx = el.querySelectorAll('.cic-row').length;
+  var row = document.createElement('div');
+  row.className = 'cic-row';
+  row.innerHTML = '<input placeholder="Tên TCTD" id="vc-tctd-name-'+idx+'"> '
+    + '<input placeholder="Dư nợ (VNĐ)" id="vc-tctd-dn-'+idx+'" type="number" style="width:130px"> '
+    + '<select id="vc-tctd-grp-'+idx+'"><option value="">Nhóm</option>'
+    + [1,2,3,4,5].map(function(n){return '<option value="'+n+'">Nhóm '+n+'</option>';}).join('')
+    + '</select> '
+    + '<button class="btn btn-sm" style="padding:3px 8px;background:#fee" onclick="this.parentNode.remove()">✕</button>';
+  el.appendChild(row);
+}
+
+function collectCICVCTCTDs() {
+  var el = document.getElementById('cic-vc-tctd-list'); if (!el) return [];
+  var rows = el.querySelectorAll('.cic-row'); var result = [];
+  rows.forEach(function(r, i) {
+    var n=document.getElementById('vc-tctd-name-'+i);
+    var d=document.getElementById('vc-tctd-dn-'+i);
+    var g=document.getElementById('vc-tctd-grp-'+i);
+    if(n&&n.value) result.push({name:n.value, duNo:d?d.value:'', group:g?g.value:''});
+  });
+  return result;
 }
 
 function onCICGroupChange(){
