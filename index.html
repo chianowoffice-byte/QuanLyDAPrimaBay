@@ -1434,11 +1434,11 @@ function mapDbHS(lf) {
     })(),
     weeklyReports: (lf.weekly_reports || []).map(function(wr){
       return {
-        time:    wr.report_date || wr.created_at || '',
+        time:    wr.created_at || wr.report_date || '',
         ketQua:  wr.contact_status || '',
         chiTiet: wr.detail || '',
         deXuat:  wr.support_request || '',
-        who:     wr.officer_id || '',
+        who:     wr.officer_id || '',  // UUID — getWhoName() sẽ resolve tên
         weekNum: wr.week_number || 0
       };
     }),
@@ -3238,6 +3238,36 @@ function onCICGroupChange(){
 // ==================================================
 
 
+
+// Map DB enum → nhãn tiếng Việt (cho weekly_reports load từ DB)
+var DB_STATUS_LABELS = {
+  'contacted':       'Đã liên hệ - KH đang chuẩn bị HS',
+  'appointment':     'Đã hẹn gặp trực tiếp',
+  'waiting_docs':    'Chờ KH bổ sung giấy tờ',
+  'no_answer':       'KH không nghe máy / không liên lạc được',
+  'on_hold':         'KH bảo lưu - chưa muốn tiếp tục',
+  'docs_complete':   'KH đã nộp đủ hồ sơ',
+  'approved_loan':   'Được vay - chờ ký HĐTD',
+  'rejected_income': 'Từ chối - Không đủ thu nhập',
+  'rejected_cic':    'Từ chối - Nợ xấu / CIC nhóm 2+',
+  'rejected_kh':     'Từ chối - KH không hợp tác',
+  'other':           'Lý do khác'
+};
+
+function getStatusLabel(val) {
+  if (!val) return '—';
+  return CT_STATUS_LABELS_FULL[val] || DB_STATUS_LABELS[val] || val;
+}
+
+function getWhoName(whoVal) {
+  if (!whoVal) return '—';
+  // Nếu là UUID → tìm tên trong users
+  var u = users.find(function(u){ return u.id === whoVal || u.db_id === whoVal; });
+  if (u) return u.name;
+  // Nếu không phải UUID → đã là tên
+  return whoVal;
+}
+
 function buildWeeklyReportForm(h) {
   var reports = h && h.weeklyReports ? h.weeklyReports : [];
   var html2 = '';
@@ -3295,18 +3325,18 @@ function buildWeeklyReportForm(h) {
     reports.slice().reverse().forEach(function(r2) {
       if (r2.type === 'cdt_feedback') {
         html2 += '<tr style="border-bottom:1px solid var(--bdr);background:var(--teal-l)">';
-        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + r2.time + '</td>';
+        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
         html2 += '<td style="padding:6px 10px;font-weight:600;color:var(--teal)" colspan="3">💬 CĐT: ' + (r2.chiTiet || '') + '</td>';
-        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + r2.who + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
         html2 += '</tr>';
       } else {
-        var lbl = CT_STATUS_LABELS_FULL[r2.ketQua] || r2.ketQua;
+        var lbl = getStatusLabel(r2.ketQua);
         html2 += '<tr style="border-bottom:1px solid var(--bdr)">';
-        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + r2.time + '</td>';
+        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
         html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.chiTiet || '') + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.deXuat || '') + '</td>';
-        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + r2.who + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
         html2 += '</tr>';
       }
     });
