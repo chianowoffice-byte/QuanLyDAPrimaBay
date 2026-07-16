@@ -1164,9 +1164,7 @@ function renderCKGrid(h, locked){
       html += '<span class="ck-lbl">'+it.label+'</span></div>';
     });
     html += '</div>';
-    html += '<div class="ck-all" onclick="'+(locked?'':'toggleCKGroup(this.dataset.gid)')+'">';
-    html += '<input type="checkbox" '+(done?'checked':'')+' '+(locked?'disabled':'')+' onclick="event.stopPropagation()">';
-    html += '<span>'+(done?'✓ Đã đủ nhóm này':'Tích tất cả nhóm này')+'</span></div>';
+    // Bỏ nút tích tất cả theo yêu cầu
     html += '</div>';
   });
   el.innerHTML = html;
@@ -1839,34 +1837,44 @@ function saveGiaiNganInfo() {
 function lockKH() {
   if (!currentHSId) return;
   var gv = function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
-  // Kiểm tra đủ các trường KH bắt buộc
   var errors = [];
-  if (!gv('f-tenKH'))  errors.push('Họ và tên KH');
-  if (!gv('f-cccd'))   errors.push('CCCD / CMND');
-  if (!gv('f-sdt'))    errors.push('Số điện thoại');
-  if (!gv('f-ns'))     errors.push('Ngày sinh');
-  if (!gv('f-dc'))     errors.push('Địa chỉ thường trú');
-  if (!gv('f-nn'))     errors.push('Nghề nghiệp');
-  if (!gv('f-tn'))     errors.push('Thu nhập/tháng');
-  // Nếu có vợ/chồng thì kiểm tra thêm
+
+  // Thông tin KH chính — bắt buộc đủ
+  if (!gv('f-tenKH')) errors.push('Họ và tên KH');
+  if (!gv('f-cccd'))  errors.push('CCCD / CMND');
+  if (!gv('f-sdt'))   errors.push('Số điện thoại');
+  if (!gv('f-ns'))    errors.push('Ngày sinh');
+  if (!gv('f-dc'))    errors.push('Địa chỉ thường trú');
+  if (!gv('f-nn'))    errors.push('Nghề nghiệp');
+  if (!gv('f-tn'))    errors.push('Thu nhập/tháng');
+
+  // Nếu có vợ/chồng: bắt buộc đủ thông tin vợ/chồng
   var coVC = document.getElementById('f-coVC');
   if (coVC && coVC.checked) {
-    if (!gv('f-tenVC'))  errors.push('Họ tên vợ/chồng');
+    if (!gv('f-tenVC'))  errors.push('Họ và tên vợ/chồng');
     if (!gv('f-cccdVC')) errors.push('CCCD vợ/chồng');
+    if (!gv('f-sdtVC'))  errors.push('Số điện thoại vợ/chồng');
+    if (!gv('f-nsVC'))   errors.push('Ngày sinh vợ/chồng');
+    if (!gv('f-nnVC'))   errors.push('Nghề nghiệp vợ/chồng');
+    if (!gv('f-tnVC'))   errors.push('Thu nhập vợ/chồng');
   }
+
   if (errors.length) {
     alert('Vui lòng nhập đủ thông tin trước khi chốt:\n• ' + errors.join('\n• '));
     return;
   }
-  showConf('Chốt thông tin KH?', 'Sau khi chốt, thông tin KH và nhu cầu vay sẽ không chỉnh sửa được (chỉ CB Quản lý mới mở lại).', function() {
-    var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
-    hsList[idx].kLocked    = true;
-    hsList[idx].kLockedBy  = currentUser.name;
-    hsList[idx].kLockedAt  = nowStr();
-    hsList[idx].updatedAt  = nowStr();
-    addLog('Chốt TT KH: ' + hsList[idx].tenKH, 'default', currentHSId);
-    persist(); openHS(currentHSId); renderHSTable();
-  });
+
+  showConf('Chốt thông tin KH?',
+    'Sau khi chốt, thông tin KH và vợ/chồng sẽ không chỉnh sửa được (chỉ Quản lý / Admin mới mở lại).',
+    function() {
+      var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
+      hsList[idx].kLocked   = true;
+      hsList[idx].kLockedBy = currentUser.name;
+      hsList[idx].kLockedAt = nowStr();
+      hsList[idx].updatedAt = nowStr();
+      addLog('Chốt TT KH: ' + hsList[idx].tenKH, 'default', currentHSId);
+      persist(); openHS(currentHSId); renderHSTable();
+    });
 }
 
 function unlockKH() {
@@ -2547,24 +2555,31 @@ function buildWeeklyReportForm(h) {
   var reports = h && h.weeklyReports ? h.weeklyReports : [];
   var html2 = '';
 
+  // Cập nhật báo cáo: CB/QL/Admin nhập | CĐT xem
+  var canReport = !isCDT();
   html2 += '<div class="contact-form-box" style="margin-bottom:16px">';
-  html2 += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:12px">Cập nhật báo cáo (gửi CĐT)</div>';
+  html2 += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">Cập nhật báo cáo (gửi CĐT)</div>';
+  if (!canReport) {
+    html2 += '<div class="info-banner" style="margin-bottom:8px">📋 Chỉ Cán bộ / Quản lý / Admin được cập nhật báo cáo.</div>';
+  }
   html2 += '<div class="fgrid" style="gap:10px;margin-bottom:12px">';
   html2 += '<div class="fg ffull"><label>Kết quả khai thác hiện tại</label>';
-  html2 += '<select id="wr-ketqua"><option value="">-- Chọn tình trạng --</option>';
+  html2 += '<select id="wr-ketqua" '+(canReport?'':'disabled')+'><option value="">-- Chọn tình trạng --</option>';
   Object.keys(CT_STATUS_LABELS_FULL).forEach(function(k) {
     html2 += '<option value="' + k + '">' + CT_STATUS_LABELS_FULL[k] + '</option>';
   });
   html2 += '</select></div>';
   html2 += '<div class="fg ffull"><label>Chi tiết</label>';
-  html2 += '<textarea id="wr-chitiet" rows="2" placeholder="Mô tả chi tiết tình trạng, vấn đề gặp phải..."></textarea></div>';
+  html2 += '<textarea id="wr-chitiet" rows="2" '+(canReport?'':'disabled')+' placeholder="Mô tả chi tiết tình trạng..."></textarea></div>';
   html2 += '<div class="fg ffull"><label>Đề xuất hỗ trợ từ CĐT</label>';
-  html2 += '<textarea id="wr-dexuat" rows="2" placeholder="Đề xuất hỗ trợ từ CĐT nếu cần..."></textarea></div>';
+  html2 += '<textarea id="wr-dexuat" rows="2" '+(canReport?'':'disabled')+' placeholder="Đề xuất hỗ trợ từ CĐT nếu cần..."></textarea></div>';
   html2 += '</div>';
-  html2 += '<button class="btn btn-primary btn-sm" onclick="saveWeeklyReport()">💾 Lưu cập nhật báo cáo</button>';
+  if (canReport) {
+    html2 += '<button class="btn btn-primary btn-sm" onclick="saveWeeklyReport()">💾 Lưu cập nhật báo cáo</button>';
+  }
   html2 += '</div>';
 
-  // Phản hồi CĐT (hiện với cả BIDV và CĐT)
+  // Phản hồi CĐT: CĐT nhập | CB/QL/Admin xem
   html2 += '<div class="divider"></div>';
   html2 += '<div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">PHẢN HỒI CỦA CHỦ ĐẦU TƯ</div>';
   html2 += '<div class="contact-form-box" style="background:var(--teal-l);border-color:#9DD5E0">';
@@ -2573,7 +2588,7 @@ function buildWeeklyReportForm(h) {
     html2 += '<textarea id="cdt-feedback" rows="2" placeholder="Nhập phản hồi, yêu cầu hỗ trợ từ CĐT..."></textarea></div>';
     html2 += '<button class="btn btn-sm" style="background:var(--teal);color:#fff;border-color:var(--teal)" onclick="saveCDTFeedback()">💬 Gửi phản hồi</button>';
   } else {
-    html2 += '<div style="font-size:12px;color:var(--txt3)">Xem phản hồi từ Chủ đầu tư bên dưới.</div>';
+    html2 += '<div style="font-size:12px;color:var(--txt3)">👀 Phần này Chủ đầu tư sẽ nhập phản hồi. Xem lịch sử bên dưới.</div>';
   }
   html2 += '</div>';
 
@@ -2743,47 +2758,44 @@ function lockHS() {
   var h = hsList.find(function(x){ return x.id===currentHSId; });
   if (!h) return;
   var gv = function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
-
   var errors = [];
 
-  // Căn hộ & HĐMB (bỏ qua Diện tích)
-  if (!gv('f-mach'))    errors.push('Mã căn hộ');
-  if (!(h.giaHDMB||gv('f-giahdmb'))) errors.push('Giá HĐMB');
-  if (!gv('f-sohdmb') && !h.soHDMB)  errors.push('Số HĐMB');
-  if (!gv('f-ngayky') && !h.ngayKyHDMB) errors.push('Ngày ký HĐMB');
+  // 1. Kiểm tra checklist 3 nhóm bắt buộc (gt + tn + tsbd)
+  var ck = h.ck || {};
+  var reqGroups = [
+    {id:'gt',   label:'Giấy tờ cá nhân'},
+    {id:'tn',   label:'Chứng minh thu nhập'},
+    {id:'tsbd', label:'Hồ sơ tài sản bảo đảm'}
+  ];
+  reqGroups.forEach(function(rg){
+    var grp = CK_GROUPS.find(function(g){return g.id===rg.id;});
+    if(!grp) return;
+    var allChecked = grp.items.every(function(it){return ck[it.id];});
+    if(!allChecked) errors.push('Chưa tích đủ mục "' + rg.label + '"');
+  });
 
-  // VTC & Nhu cầu vay
-  var vtcPhai = gv('f-vtcphai') || String(h.vtcPhaiNop||'');
-  var vtcDa   = gv('f-vtcdanop')|| String(h.vtcDaNop||'');
-  var stv     = gv('f-stv')     || String(h.soTienVay||'');
-  var htls    = gv('f-htls')    || h.hinhThucVay || '';
-  if (!vtcPhai || vtcPhai==='0') errors.push('VTC phải nộp');
-  if (!vtcDa   || vtcDa==='0')   errors.push('VTC đã nộp hiện tại');
-  if (!stv     || stv==='0')     errors.push('Số tiền vay đề xuất');
-  if (!htls)                     errors.push('Hình thức vay (HTLS)');
-
-  // Phê duyệt & Giải ngân
-  var hm  = gv('f-hmduyet')|| String(h.hanMucDuocDuyet||'');
-  var ngn = gv('f-ngaygn') || h.ngayGiaiNgan || '';
-  var stgn= gv('f-stgn')   || String(h.soTienGiaiNgan||'');
-  if (!hm  || hm==='0')   errors.push('Phê duyệt hạn mức vay');
-  if (!ngn)               errors.push('Ngày giải ngân');
-  if (!stgn|| stgn==='0') errors.push('Số tiền giải ngân');
+  // 2. Kiểm tra đủ trường TSBĐ (Căn hộ & HĐMB)
+  if (!gv('f-mach') && !h.maCanHo)       errors.push('Mã căn hộ');
+  if (!(h.giaHDMB || gv('f-giahdmb')))   errors.push('Giá HĐMB');
+  if (!gv('f-sohdmb') && !h.soHDMB)      errors.push('Số HĐMB');
+  if (!gv('f-ngayky') && !h.ngayKyHDMB)  errors.push('Ngày ký HĐMB');
 
   if (errors.length) {
-    alert('Vui lòng nhập đủ thông tin trước khi chốt hồ sơ:\n• ' + errors.join('\n• '));
+    alert('Chưa đủ điều kiện chốt hồ sơ:\n• ' + errors.join('\n• '));
     return;
   }
 
-  showConf('Chốt hồ sơ?', 'Sau khi chốt, toàn bộ hồ sơ sẽ không chỉnh sửa được. Chỉ CB Quản lý mới mở lại.', function(){
-    var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-    hsList[idx].locked    = true;
-    hsList[idx].lockedBy  = currentUser.name;
-    hsList[idx].lockedAt  = nowStr();
-    hsList[idx].updatedAt = nowStr();
-    addLog('Chốt hồ sơ: '+hsList[idx].tenKH, 'green', currentHSId);
-    persist(); openHS(currentHSId); renderHSTable();
-  });
+  showConf('Chốt hồ sơ?',
+    'Sau khi chốt, toàn bộ hồ sơ sẽ không chỉnh sửa được. Chỉ Quản lý / Admin mới mở lại.',
+    function(){
+      var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
+      hsList[idx].locked    = true;
+      hsList[idx].lockedBy  = currentUser.name;
+      hsList[idx].lockedAt  = nowStr();
+      hsList[idx].updatedAt = nowStr();
+      addLog('Chốt hồ sơ: '+hsList[idx].tenKH, 'green', currentHSId);
+      persist(); openHS(currentHSId); renderHSTable();
+    });
 }
 
 function unlockHS() {
@@ -2795,15 +2807,7 @@ function unlockHS() {
     persist(); openHS(currentHSId); renderHSTable();
   });
 }
-function unlockHS() {
-  if (!isQL() || !currentHSId) return;
-  showConf('Mở lại hồ sơ?', 'Thao tác sẽ được ghi log.', function(){
-    var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-    hsList[idx].locked=false; hsList[idx].updatedAt=nowStr();
-    addLog('Mở lại hồ sơ: '+hsList[idx].tenKH,'amber',currentHSId);
-    persist(); openHS(currentHSId); renderHSTable();
-  });
-}
+
 </script>
 </body>
 </html>
