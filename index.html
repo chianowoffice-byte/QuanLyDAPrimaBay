@@ -201,6 +201,21 @@ tr:hover td{background:var(--surf2)}
 }
 .cdt-section-dim { opacity: 0.42; pointer-events: none; }
 .cdt-section-dim .fsec-title { color: var(--txt3); }
+
+#toast-notif {
+  position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+  background: var(--blue); color: #fff; padding: 10px 18px;
+  border-radius: 8px; font-size: 13px; font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2); display: none;
+  transition: opacity .4s;
+}
+#btn-reload-data {
+  display: none; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--bdr);
+  background: var(--surf2); cursor: pointer; font-size: 12px;
+  color: var(--txt2); transition: .15s;
+}
+#btn-reload-data:hover { background: var(--blue-l); color: var(--blue); border-color: var(--blue); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -656,6 +671,354 @@ var selOutcome = null;
 var editUserId = null;
 var confFn = null;
 
+// ══════════════════════════════════════════════════════════
+// DATABASE SYNC — Lưu dữ liệu lên Supabase
+// ══════════════════════════════════════════════════════════
+
+// Map app HS object → loan_files columns
+function mapHSToLF(h) {
+  return {
+    status:                 h.status      || 'new',
+    officer_id:             h.canBoId     || null,
+    sale_price:             parseInt(h.giaHDMB)            || null,
+    vtc_required:           parseInt(h.vtcPhaiNop)         || null,
+    vtc_paid:               parseInt(h.vtcDaNop)           || null,
+    loan_amount_requested:  parseInt(h.soTienVay)          || null,
+    loan_amount_approved:   parseInt(h.hanMucDuocDuyet)    || null,
+    loan_form:              h.hinhThucVay  || null,
+    loan_policy_ref:        h.csChinhSach  || null,
+    loan_term_months:       parseInt(h.kyHan) || null,
+    hdmb_code:              h.soHDMB       || null,
+    hdmb_date:              h.ngayKyHDMB   || null,
+    max_disbursement_date:  h.hanGiaiNgan  || null,
+    disbursement_date:      h.ngayGiaiNgan || null,
+    disbursement_amount:    parseInt(h.soTienGiaiNgan) || null,
+    is_locked:              h.locked       || false,
+    is_kh_locked:           h.kLocked      || false,
+    locked_by:              h.lockedBy     || null,
+    outcome:                h.outcome      || null,
+    outcome_note:           h.outcomeNote  || null,
+    notes:                  h.ghiChu       || null,
+    updated_at:             new Date().toISOString()
+  };
+}
+
+// Map app KH object → customers columns
+function mapHSToCust(h) {
+  return {
+    full_name:          h.tenKH         || null,
+    id_number:          h.cccd          || null,
+    phone:              h.sdt           || null,
+    email:              h.email         || null,
+    cif:                h.cif           || null,
+    address:            h.diaChi        || null,
+    region:             h.vung          || null,
+    agent:              h.daiLy         || null,
+    occupation:         h.ngheNghiep    || null,
+    monthly_income:     parseFloat(h.thuNhap) || null,
+    has_co_borrower:    h.coVoChong     || false,
+    co_name:            h.tenVC         || null,
+    co_id_number:       h.cccdVC        || null,
+    co_phone:           h.sdtVC         || null,
+    co_email:           h.emailVC       || null,
+    cif_co_borrower:    h.cifVC         || null,
+    co_occupation:      h.ngheNghiepVC  || null,
+    co_monthly_income:  parseFloat(h.thuNhapVC) || null,
+    updated_at:         new Date().toISOString()
+  };
+}
+
+// Lưu loan_file + customer lên DB
+async function dbSaveLoanFile(h) {
+  if (!h || !h.id) return;
+  var lfData   = mapHSToLF(h);
+  var custData = mapHSToCust(h);
+  var errors   = [];
+
+  // Update loan_files
+  var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id);
+  if (r1.error) { console.error('dbSaveLoanFile LF:', r1.error); errors.push('loan_files: ' + r1.error.message); }
+
+  // Update customers (nếu có customer_id)
+  if (h.customerId) {
+    var r2 = await sb.from('customers').update(custData).eq('id', h.customerId);
+    if (r2.error) { console.error('dbSaveLoanFile CUST:', r2.error); errors.push('customers: ' + r2.error.message); }
+  }
+
+  // Ghi activity log
+  await sb.from('activity_log').insert({
+    loan_file_id: h.id,
+    action: 'update',
+    description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
+    created_at: new Date().toISOString()
+  }).catch(function(){});
+
+  if (errors.length) {
+    console.warn('dbSaveLoanFile warnings:', errors);
+  }
+  return errors.length === 0;
+}
+
+// Lưu báo cáo tuần lên DB
+async function dbSaveWeeklyReport(h, entry) {
+  if (!h || !h.id) return;
+  var data = {
+    loan_file_id:   h.id,
+    report_date:    new Date().toISOString().slice(0,10),
+    week_number:    getWeekNum(),
+    contact_status: entry.ketQua,
+    detail:         entry.chiTiet || null,
+    support_request:entry.deXuat  || null,
+    type:           entry.type    || 'report',
+    created_at:     new Date().toISOString()
+  };
+  var r = await sb.from('weekly_reports').insert(data);
+  if (r.error) console.error('dbSaveWeeklyReport:', r.error);
+  return !r.error;
+}
+
+// Lưu CIC lên DB
+async function dbSaveCIC(h, cic) {
+  if (!h || !h.id) return;
+  // Xoá CIC cũ rồi insert mới
+  await sb.from('cic_results').delete().eq('loan_file_id', h.id);
+  var data = {
+    loan_file_id: h.id,
+    ma_so_cic:    cic.maSoCIC   || null,
+    total_debt:   parseInt(cic.tongDuNo) || null,
+    du_no_the:    parseInt(cic.duNoThe)  || null,
+    worst_group:  cic.nhomNo ? 'group' + cic.nhomNo : null,
+    is_qualified: (cic.nhomNo || 0) <= 1,
+    check_date:   cic.ngay     || null,
+    vc_ma_so_cic: cic.vcMaSoCIC   || null,
+    vc_tong_du_no:parseInt(cic.vcTongDuNo) || null,
+    vc_du_no_the: parseInt(cic.vcDuNoThe)  || null,
+    vc_nhom_no:   cic.vcNhomNo   || null,
+    vc_ngay:      cic.vcNgay     || null,
+    created_at:   new Date().toISOString()
+  };
+  var r = await sb.from('cic_results').insert(data);
+  if (r.error) console.error('dbSaveCIC:', r.error);
+  return !r.error;
+}
+
+// Lưu checklist lên DB
+async function dbSaveCK(h, ck) {
+  if (!h || !h.id) return;
+  // Upsert từng item
+  var updates = [];
+  Object.keys(ck).forEach(function(code) {
+    updates.push(
+      sb.from('checklist_items')
+        .update({ is_collected: ck[code], collected_at: ck[code] ? new Date().toISOString() : null })
+        .eq('loan_file_id', h.id)
+        .eq('item_code', code)
+    );
+  });
+  await Promise.all(updates).catch(function(e){ console.error('dbSaveCK:', e); });
+}
+
+// Lưu phân công CB lên DB
+async function dbSaveAssignment(h) {
+  if (!h || !h.id) return;
+  var r = await sb.from('loan_files').update({
+    officer_id: h.canBoId || null,
+    notes:      h.ghiChu  || null,
+    updated_at: new Date().toISOString()
+  }).eq('id', h.id);
+  if (r.error) console.error('dbSaveAssignment:', r.error);
+  return !r.error;
+}
+
+// ── Auto-refresh: Supabase Realtime subscription ──────────
+var realtimeChannel = null;
+
+
+async function reloadFromDB() {
+  var btn = document.getElementById('btn-reload-data');
+  if (btn) { btn.textContent = '⏳ Đang tải...'; btn.disabled = true; }
+  try {
+    var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
+    if (dbUsers && dbUsers.length) users   = dbUsers.map(mapDbUser);
+    if (dbHS    && dbHS.length)    hsList  = dbHS.map(mapDbHS);
+    persist();
+    renderHSTable();
+    renderDB();
+    showNotif('✅ Đã tải lại dữ liệu mới nhất từ DB');
+    if (currentHSId) openHS(currentHSId); // refresh popup nếu đang mở
+  } catch(e) {
+    showNotif('❌ Lỗi tải lại: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = '🔄 Tải lại'; btn.disabled = false; }
+  }
+}
+
+function startRealtimeSync() {
+  if (realtimeChannel) return; // đã subscribe
+  try {
+    realtimeChannel = sb
+      .channel('loan_files_changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'loan_files' },
+        function(payload) {
+          console.log('Realtime update:', payload.eventType, payload.new?.id);
+          // Reload nhẹ — chỉ update record bị thay đổi trong hsList
+          var changed = payload.new;
+          if (!changed || !changed.id) return;
+          var idx = hsList.findIndex(function(x){ return x.id === changed.id; });
+          if (idx !== -1) {
+            // Merge các trường thay đổi vào hsList
+            hsList[idx].status   = changed.status   || hsList[idx].status;
+            hsList[idx].locked   = changed.is_locked !== undefined ? changed.is_locked : hsList[idx].locked;
+            hsList[idx].kLocked  = changed.is_kh_locked !== undefined ? changed.is_kh_locked : hsList[idx].kLocked;
+            hsList[idx].canBoId  = changed.officer_id || hsList[idx].canBoId;
+            persist();
+            renderHSTable();
+            renderDB();
+            // Nếu popup đang mở hồ sơ này → refresh popup
+            if (currentHSId === changed.id) {
+              showNotif('🔄 Dữ liệu hồ sơ vừa được cập nhật bởi người khác.');
+            }
+          }
+        }
+      )
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'weekly_reports' },
+        function(payload) {
+          var wr = payload.new;
+          if (!wr || !wr.loan_file_id) return;
+          var idx = hsList.findIndex(function(x){ return x.id === wr.loan_file_id; });
+          if (idx !== -1) {
+            if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
+            // Thêm báo cáo mới vào list (tránh trùng)
+            var exists = hsList[idx].weeklyReports.find(function(r){ return r.dbId === wr.id; });
+            if (!exists) {
+              hsList[idx].weeklyReports.push({
+                dbId:    wr.id,
+                time:    wr.created_at,
+                ketQua:  wr.contact_status,
+                chiTiet: wr.detail || '',
+                deXuat:  wr.support_request || '',
+                who:     wr.officer_id || '',
+                type:    wr.type || 'report'
+              });
+              hsList[idx].lastContactAt = wr.created_at;
+              persist(); renderHSTable(); renderDB();
+            }
+          }
+        }
+      )
+      .subscribe();
+    console.log('✅ Realtime sync started');
+  } catch(e) {
+    console.warn('Realtime không khả dụng:', e.message);
+  }
+}
+
+function stopRealtimeSync() {
+  if (realtimeChannel) {
+    sb.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+}
+
+// Hiển thị thông báo nhẹ (toast)
+function showNotif(msg) {
+  var el = document.getElementById('toast-notif');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(function(){
+    el.style.opacity = '0';
+    setTimeout(function(){ el.style.display = 'none'; }, 400);
+  }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════
+// AUTO-SYNC ENGINE
+// - Sau khi lưu: reload ngay từ DB
+// - Idle 60 giây không tương tác: tự reload
+// ══════════════════════════════════════════════════════════
+
+var _idleTimer    = null;
+var _isSyncing    = false;
+var IDLE_SECONDS  = 60; // reload sau 60 giây không tương tác
+
+// Reload toàn bộ dữ liệu từ DB (không block UI)
+async function syncFromDB(silent) {
+  if (_isSyncing) return;
+  _isSyncing = true;
+  var btn = document.getElementById('btn-reload-data');
+  if (btn && !silent) { btn.textContent = '⏳'; btn.disabled = true; }
+  try {
+    var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
+    if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
+    if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
+    persist();
+    renderHSTable();
+    renderDB();
+    // Nếu popup đang mở → refresh popup
+    if (currentHSId) {
+      var h = hsList.find(function(x){ return x.id === currentHSId; });
+      if (h) {
+        buildHSForm(h);
+        buildHSFooter(h, h.locked);
+      }
+    }
+    if (!silent) showNotif('✅ Đã tải lại dữ liệu mới nhất');
+  } catch(e) {
+    console.error('syncFromDB error:', e);
+    if (!silent) showNotif('❌ Lỗi tải dữ liệu: ' + e.message);
+  } finally {
+    _isSyncing = false;
+    if (btn) { btn.textContent = '🔄 Tải lại'; btn.disabled = false; }
+    resetIdleTimer(); // reset lại timer sau khi sync xong
+  }
+}
+
+// Reset bộ đếm idle
+function resetIdleTimer() {
+  clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(function(){
+    // Chỉ auto-sync khi đã đăng nhập và không có modal đang mở
+    if (!currentUser) return;
+    var modal = document.getElementById('modal-hs');
+    var modalOpen = modal && modal.classList.contains('open');
+    if (modalOpen) {
+      // Đang trong popup → đặt lại timer, không reload
+      resetIdleTimer();
+      return;
+    }
+    syncFromDB(true); // silent = không hiện alert
+  }, IDLE_SECONDS * 1000);
+}
+
+// Gắn listener theo dõi tương tác người dùng
+function initIdleWatcher() {
+  ['mousemove','keydown','click','scroll','touchstart'].forEach(function(evt){
+    document.addEventListener(evt, resetIdleTimer, { passive: true });
+  });
+  resetIdleTimer(); // bắt đầu đếm ngay
+}
+
+// Gọi sau save: lưu DB xong → reload → hiện kết quả
+async function saveAndSync(saveFn, successMsg) {
+  var ok = false;
+  try {
+    ok = await saveFn();
+  } catch(e) {
+    console.error('saveAndSync error:', e);
+  }
+  // Dù lỗi hay không → reload để đảm bảo dữ liệu đúng
+  await syncFromDB(true);
+  showNotif(ok !== false ? ('✅ ' + (successMsg||'Đã lưu!')) : '⚠️ Lỗi lưu DB, đã reload dữ liệu.');
+}
+
+// Alias để backward compatible
+function reloadFromDB() { syncFromDB(false); }
+
 function persist(){
   localStorage.setItem('pb5_users', JSON.stringify(users));
   localStorage.setItem('pb5_hs',    JSON.stringify(hsList));
@@ -846,6 +1209,7 @@ async function doLogin(){
     document.getElementById('app-wrap').classList.add('show');
     applyPerms();
     showPage(isCDT()?'cdt-view':'db');
+    initIdleWatcher();
 
   } catch(err) {
     showLoginErr('Lỗi kết nối: '+err.message);
@@ -1813,7 +2177,9 @@ function saveProj() {
     hsList.unshift(hs); currentHSId=hs.id;
     addLog('Tạo hồ sơ mới: '+hs.tenKH,'green',hs.id);
   }
-  persist(); renderHSTable(); renderDB(); alert('Đã lưu thông tin!');
+  persist(); renderHSTable(); renderDB();
+  var _h = hsList.find(function(x){return x.id===currentHSId;});
+  if(_h) saveAndSync(function(){ return dbSaveLoanFile(_h); }, 'Đã lưu thông tin!');
 }
 
 
@@ -1833,7 +2199,8 @@ function saveProjQL() {
   hsList[idx].hanGiaiNgan = hanGNEl && hanGNEl.value ? hanGNEl.value : calcHanGN(gv('f-ngayky'));
   hsList[idx].updatedAt  = nowStr();
   addLog('Cập nhật Căn hộ & HĐMB: '+hsList[idx].tenKH,'amber',currentHSId);
-  persist(); renderHSTable(); alert('Đã lưu Căn hộ & HĐMB!');
+  persist(); renderHSTable();
+  saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã lưu Căn hộ & HĐMB!');
 }
 
 function saveProjCDT() {
@@ -1858,7 +2225,8 @@ function saveProjCDT() {
   if (document.getElementById('f-csbh'))     hsList[idx].csChinhSach = gv('f-csbh');
   hsList[idx].updatedAt   = nowStr();
   addLog('CĐT cập nhật căn hộ: '+hsList[idx].tenKH,'amber',currentHSId);
-  persist(); renderHSTable(); alert('Đã lưu thông tin căn hộ!');
+  persist(); renderHSTable();
+  saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã lưu thông tin căn hộ!');
 }
 
 function saveGiaiNganInfo() {
@@ -1875,7 +2243,8 @@ function saveGiaiNganInfo() {
   hsList[idx].soTienGiaiNgan  = gvn('f-stgn');
   hsList[idx].updatedAt       = nowStr();
   addLog('Cập nhật GN: '+hsList[idx].tenKH,'green',currentHSId);
-  persist(); renderHSTable(); renderDB(); alert('Đã lưu thông tin phê duyệt & giải ngân!');
+  persist(); renderHSTable(); renderDB();
+  saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã lưu phê duyệt & GN!');
 }
 
 
@@ -1919,6 +2288,7 @@ function lockKH() {
       hsList[idx].updatedAt = nowStr();
       addLog('Chốt TT KH: ' + hsList[idx].tenKH, 'default', currentHSId);
       persist(); openHS(currentHSId); renderHSTable();
+      saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã chốt thông tin KH!');
     });
 }
 
@@ -1941,6 +2311,8 @@ function saveCK(){
     hsList[idx].ck=ck; hsList[idx].updatedAt=nowStr();
     addLog('Cap nhat checklist ('+done+'/'+total+' muc)', 'green', currentHSId);
     persist(); renderHSTable();
+    var _ckH = hsList.find(function(x){return x.id===currentHSId;});
+    if(_ckH) saveAndSync(function(){ return Promise.all([dbSaveLoanFile(_ckH), dbSaveCK(_ckH, ck)]); }, 'Checklist đã lưu!');
     var s=document.getElementById('ck-saved'); if(s){s.style.display='inline';setTimeout(function(){s.style.display='none';},2000);}
   }
 }
@@ -2100,8 +2472,8 @@ function saveCIC(){
     return;
   }
   persist(); renderHSTable();
-  alert('✅ CIC đạt điều kiện! Nhóm nợ cao nhất: '+worstGroup+' (Đủ tiêu chuẩn).');
-  openHS(currentHSId);
+  var _cicH = hsList.find(function(x){return x.id===currentHSId;});
+  saveAndSync(function(){ return Promise.all([dbSaveLoanFile(_cicH), dbSaveCIC(_cicH, cic)]); }, 'CIC đã lưu! Nhóm nợ: '+worstGroup);
 }
 
 
@@ -2142,7 +2514,9 @@ function saveDA(){
     hsList.unshift(hs); currentHSId=hs.id;
     addLog('Tạo hồ sơ mới: '+hs.tenKH, 'green', hs.id);
   }
-  persist(); renderHSTable(); renderDB(); alert('Đã lưu thông tin!');
+  persist(); renderHSTable(); renderDB();
+  var _h = hsList.find(function(x){return x.id===currentHSId;});
+  if(_h) saveAndSync(function(){ return dbSaveLoanFile(_h); }, 'Đã lưu thông tin!');
 }
 
 // SAVE ADM
@@ -2166,7 +2540,8 @@ function saveAdm(){
   hsList[idx].ghiChu=gv('f-gc')||'';
   hsList[idx].updatedAt=nowStr();
   addLog('Cập nhật phân công: '+hsList[idx].tenKH,'amber',currentHSId);
-  persist(); renderHSTable(); renderDB(); alert('Đã lưu phân công!');
+  persist(); renderHSTable(); renderDB();
+  saveAndSync(function(){ return dbSaveAssignment(hsList[idx]); }, 'Đã lưu phân công!');
 }
 
 // FOOTER BUTTONS
@@ -2757,9 +3132,10 @@ function saveCDTFeedback() {
   hsList[idx].updatedAt = nowStr();
   el.value = '';
   addLog('CĐT phản hồi: ' + hsList[idx].tenKH, 'teal', currentHSId);
-  persist(); renderHSTable();
-  alert('Đã gửi phản hồi!');
-  openHS(currentHSId);
+  persist();
+  var _cdtH = hsList[idx];
+  var _lastEntry = _cdtH.weeklyReports[_cdtH.weeklyReports.length-1];
+  saveAndSync(function(){ return dbSaveWeeklyReport(_cdtH, _lastEntry); }, 'Đã gửi phản hồi CĐT!');
   setTimeout(function(){ var tabs=document.querySelectorAll('#mhs-body .tab'); if(tabs[3]) swTab(tabs[3],'t-prog'); },60);
 }
 
@@ -2793,14 +3169,18 @@ function saveWeeklyReport() {
   else if (['da_lh','hen_gap','cho_bs'].includes(kq.value)) hsList[idx].status = 'dang';
   addLog('BC tuan: ' + (CT_STATUS_LABELS_FULL[kq.value]||kq.value) + ' - ' + hsList[idx].tenKH, 'green', currentHSId);
   persist(); renderHSTable(); renderDB();
-  // Reset form
+  // Reset form + save DB + reload
   if(kq) kq.value=''; if(ct) ct.value=''; if(dx) dx.value='';
-  alert('Đã lưu cập nhật báo cáo!');
-  openHS(currentHSId);
-  setTimeout(function(){
-    var tabs=document.querySelectorAll('#mhs-body .tab');
-    if(tabs[3]) swTab(tabs[3],'t-prog');
-  },60);
+  var _wrH = hsList[idx];
+  saveAndSync(
+    function(){ return dbSaveWeeklyReport(_wrH, entry); },
+    'Đã lưu báo cáo!'
+  ).then(function(){
+    setTimeout(function(){
+      var tabs=document.querySelectorAll('#mhs-body .tab');
+      if(tabs[3]) swTab(tabs[3],'t-prog');
+    },60);
+  });
 }
 
 function saveGiaiNganInfo() {
@@ -2905,6 +3285,7 @@ function lockHS() {
       hsList[idx].updatedAt = nowStr();
       addLog('Chốt hồ sơ: '+hsList[idx].tenKH, 'green', currentHSId);
       persist(); openHS(currentHSId); renderHSTable();
+      saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã chốt hồ sơ!');
     });
 }
 
@@ -2919,5 +3300,7 @@ function unlockHS() {
 }
 
 </script>
+
+<div id="toast-notif"></div>
 </body>
 </html>
