@@ -906,6 +906,17 @@ function mapDbHS(lf) {
     kLocked:       lf.is_kh_locked || false,
     outcome:       lf.outcome     || '',
     outcomeNote:   lf.outcome_note || '',
+    lastContactAt: (function(){
+      var wrs = lf.weekly_reports || [];
+      if(wrs.length) {
+        var sorted = wrs.slice().sort(function(a,b){
+          return new Date(b.created_at||b.report_date) - new Date(a.created_at||a.report_date);
+        });
+        return sorted[0].created_at || sorted[0].report_date || lf.created_at || '';
+      }
+      // Chưa có báo cáo nào → dùng ngày tạo hồ sơ (ngày upload đầu tiên)
+      return lf.created_at || '';
+    })(),
     weeklyReports: (lf.weekly_reports || []).map(function(wr){
       return {
         time:    wr.report_date || wr.created_at || '',
@@ -1566,8 +1577,8 @@ function buildProgTab(h) {
       html2 += '<div class="text-sm">Con ' + (dL !== null ? dL : '--') + ' ngay den han (chu ky 7 ngay)</div></div>';
     } else {
       html2 += '<div class="days-circle dc-new">?</div>';
-      html2 += '<div><div style="font-size:13px;font-weight:600">Chua co bao cao lan nao</div>';
-      html2 += '<div class="text-sm">Hay tao bao cao dau tien ben duoi</div></div>';
+      html2 += '<div><div style="font-size:13px;font-weight:600">Chưa có báo cáo lần nào</div>';
+      html2 += '<div class="text-sm">Hãy tạo báo cáo đầu tiên bên dưới</div></div>';
     }
     if (h.ngayGiaiNgan) {
       var gCls = dGN !== null ? (dGN<=3?'dc-over':dGN<=7?'dc-warn':'dc-ok') : 'dc-ok';
@@ -2358,11 +2369,19 @@ document.querySelectorAll('.overlay').forEach(function(el){
 function daysSince(dStr){
   if(!dStr) return 9999;
   var now = new Date(); now.setHours(0,0,0,0);
-  var sp = dStr.split(' ')[0].split('/');
-  var d,m,y;
-  if(sp.length===3){ d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=parseInt(sp[2]); }
-  else { d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=now.getFullYear(); }
-  var then = new Date(y,m,d,0,0,0);
+  var then;
+  // ISO format: 2026-07-16T... hoặc 2026-07-16
+  if(dStr.indexOf('-')===4 || dStr.indexOf('T')!==-1){
+    then = new Date(dStr); then.setHours(0,0,0,0);
+  } else {
+    // dd/MM hoặc dd/MM/yyyy
+    var sp = dStr.split(' ')[0].split('/');
+    var d,m,y;
+    if(sp.length===3){ d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=parseInt(sp[2]); }
+    else { d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=now.getFullYear(); }
+    then = new Date(y,m,d,0,0,0);
+  }
+  if(isNaN(then)) return 9999;
   return Math.max(0, Math.floor((now-then)/86400000));
 }
 function daysUntil(iso){
@@ -2373,10 +2392,12 @@ function daysUntil(iso){
 }
 function hsAlertLevel(h){
   if(!h) return 'ok';
-  if(h.status==='xong'||h.status==='tuchoi'||ckProgress(h).pct===100) return 'done';
+  if(h.status==='xong'||h.status==='tuchoi'||h.status==='disbursed'||h.status==='rejected') return 'done';
+  if(ckProgress(h).pct===100) return 'done';
   var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
   if(dGN !== null && dGN <= 3) return 'over';
   if(dGN !== null && dGN <= 7) return 'warn';
+  // Tính từ lastContactAt (hoặc ngày tạo HS nếu chưa có báo cáo)
   if(!h.lastContactAt) return 'new';
   var days = daysSince(h.lastContactAt);
   if(days > 7) return 'over';
