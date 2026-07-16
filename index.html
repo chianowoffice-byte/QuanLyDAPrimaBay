@@ -902,9 +902,11 @@ function showNotif(msg) {
 // - Idle 60 giây không tương tác: tự reload
 // ══════════════════════════════════════════════════════════
 
-var _idleTimer    = null;
-var _isSyncing    = false;
-var IDLE_SECONDS  = 60; // reload sau 60 giây không tương tác
+var _idleTimer      = null;
+var _logoutTimer    = null;
+var _isSyncing      = false;
+var IDLE_SECONDS    = 60;          // auto-reload dữ liệu sau 60 giây idle
+var LOGOUT_SECONDS  = 10 * 60;    // auto-logout sau 10 phút idle
 
 // Reload toàn bộ dữ liệu từ DB (không block UI)
 async function syncFromDB(silent) {
@@ -938,21 +940,39 @@ async function syncFromDB(silent) {
   }
 }
 
-// Reset bộ đếm idle
+// Reset bộ đếm idle (reload data + auto-logout)
 function resetIdleTimer() {
+  // Cập nhật lastActive trong session
+  if (currentUser) {
+    try {
+      var raw = localStorage.getItem('pb5_session');
+      if (raw) {
+        var sess = JSON.parse(raw);
+        sess.lastActive = new Date().toISOString();
+        localStorage.setItem('pb5_session', JSON.stringify(sess));
+      }
+    } catch(e) {}
+  }
+
+  // Timer 1: reload dữ liệu sau 60 giây không tương tác
   clearTimeout(_idleTimer);
   _idleTimer = setTimeout(function(){
-    // Chỉ auto-sync khi đã đăng nhập và không có modal đang mở
     if (!currentUser) return;
     var modal = document.getElementById('modal-hs');
     var modalOpen = modal && modal.classList.contains('open');
-    if (modalOpen) {
-      // Đang trong popup → đặt lại timer, không reload
-      resetIdleTimer();
-      return;
-    }
-    syncFromDB(true); // silent = không hiện alert
+    if (modalOpen) { resetIdleTimer(); return; }
+    syncFromDB(true);
   }, IDLE_SECONDS * 1000);
+
+  // Timer 2: auto-logout sau 10 phút không tương tác
+  clearTimeout(_logoutTimer);
+  _logoutTimer = setTimeout(function(){
+    if (!currentUser) return;
+    showNotif('⏰ Phiên đăng nhập hết hạn do không hoạt động (10 phút). Đang đăng xuất...');
+    setTimeout(function(){
+      doLogout();
+    }, 2000);
+  }, LOGOUT_SECONDS * 1000);
 }
 
 // Gắn listener theo dõi tương tác người dùng
@@ -960,7 +980,7 @@ function initIdleWatcher() {
   ['mousemove','keydown','click','scroll','touchstart'].forEach(function(evt){
     document.addEventListener(evt, resetIdleTimer, { passive: true });
   });
-  resetIdleTimer(); // bắt đầu đếm ngay
+  resetIdleTimer();
 }
 
 // Gọi sau save: lưu DB xong → reload → hiện kết quả
@@ -982,6 +1002,38 @@ function persist(){
   localStorage.setItem('pb5_users', JSON.stringify(users));
   localStorage.setItem('pb5_hs',    JSON.stringify(hsList));
   localStorage.setItem('pb5_log',   JSON.stringify(actLog.slice(0,80)));
+  // Lưu session hiện tại
+  if (currentUser) {
+    localStorage.setItem('pb5_session', JSON.stringify({
+      user:      currentUser,
+      loginAt:   localStorage.getItem('pb5_login_at') || new Date().toISOString(),
+      lastActive: new Date().toISOString()
+    }));
+  }
+}
+
+// Khôi phục session khi reload trang
+function restoreSession() {
+  try {
+    var raw = localStorage.getItem('pb5_session');
+    if (!raw) return false;
+    var sess = JSON.parse(raw);
+    if (!sess || !sess.user || !sess.lastActive) return false;
+    // Kiểm tra timeout 10 phút
+    var last = new Date(sess.lastActive).getTime();
+    var now  = Date.now();
+    var TIMEOUT_MS = 10 * 60 * 1000; // 10 phút
+    if (now - last > TIMEOUT_MS) {
+      localStorage.removeItem('pb5_session');
+      console.log('Session expired (10 min idle)');
+      return false;
+    }
+    // Khôi phục
+    currentUser = sess.user;
+    return true;
+  } catch(e) {
+    return false;
+  }
 }
 function genId(){ return 'HS' + Date.now().toString().slice(-7); }
 
@@ -1163,6 +1215,7 @@ async function doLogin(){
     persist();
 
     localStorage.removeItem('pb5_log');  // Xoá log cũ
+    localStorage.setItem('pb5_login_at', new Date().toISOString());
     localStorage.removeItem('pb5_hs');   // Xoá HS cache cũ, load lại từ DB
     localStorage.removeItem('pb5_users');// Xoá users cache cũ
     document.getElementById('login-wrap').style.display='none';
@@ -3245,7 +3298,36 @@ function unlockHS() {
   });
 }
 
+// ════════════════════════════════════════════════════════
+// RESTORE SESSION KHI RELOAD TRANG
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async function() {
+  if (!restoreSession()) return; // Không có session hoặc đã hết hạn → ở lại màn hình login
 
+  // Có session hợp lệ → load dữ liệu và vào app
+  try {
+    var btn = document.getElementById('login-btn');
+    if (btn) { btn.textContent = '⏳ Đang khôi phục...'; btn.disabled = true; }
+
+    var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
+    if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
+    if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
+    persist();
+
+    // Hiển thị app
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('app-wrap').classList.add('show');
+    applyPerms();
+    showPage(isCDT() ? 'cdt-view' : 'db');
+    initIdleWatcher();
+    showNotif('✅ Đã khôi phục phiên đăng nhập');
+  } catch(e) {
+    console.error('Restore session failed:', e);
+    // Nếu load DB thất bại → ở lại login
+    currentUser = null;
+    localStorage.removeItem('pb5_session');
+  }
+});
 </script>
 
 <div id="toast-notif"></div>
