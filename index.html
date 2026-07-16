@@ -2868,37 +2868,116 @@ function renderUsrTable(){
 }
 
 function openAddUser(){ editUserId=null; document.getElementById('musr-title').textContent='Thêm người dùng'; ['u-name','u-login','u-pw'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('u-role').value='cb'; document.getElementById('modal-usr').classList.add('open'); }
-function openEditUser(id){ editUserId=id; var u=users.find(function(x){return x.id===id;}); if(!u) return; document.getElementById('musr-title').textContent='Sửa: '+u.name; document.getElementById('u-name').value=u.name; document.getElementById('u-login').value=u.login; document.getElementById('u-pw').value=u.pw; document.getElementById('u-role').value=u.role; document.getElementById('modal-usr').classList.add('open'); }
+function openEditUser(id){
+  editUserId=id;
+  var u=users.find(function(x){return x.id===id;});
+  if(!u) return;
+  document.getElementById('musr-title').textContent='Sửa: '+u.name;
+  document.getElementById('u-name').value=u.name;
+  document.getElementById('u-login').value=u.login;
+  document.getElementById('u-pw').value=''; // Không hiện mật khẩu cũ — để trống = giữ nguyên
+  document.getElementById('u-pw').placeholder='Để trống = giữ mật khẩu hiện tại';
+  document.getElementById('u-role').value=u.role;
+  document.getElementById('modal-usr').classList.add('open');
+}
+
+async function delUsr(id){
+  showConf('Xoá người dùng?','Không thể khôi phục.',async function(){
+    var { error }=await sb.from('users').delete().eq('id',id);
+    if(error){ console.error('[DB] delUsr:', error); alert('Lỗi xoá: '+error.message); return; }
+    users=users.filter(function(u){return u.id!==id;});
+    persist(); renderUsrTable();
+    showNotif('✅ Đã xoá người dùng');
+  });
+}
+
 function closeUsrModal(){ document.getElementById('modal-usr').classList.remove('open'); editUserId=null; }
-function saveUser(){
-  var name=document.getElementById('u-name').value.trim();
-  var login=document.getElementById('u-login').value.trim().toLowerCase();
-  var pw=document.getElementById('u-pw').value;
-  var role=document.getElementById('u-role').value;
-  if(!name||!login||!pw){alert('Vui lòng điền đầy đủ!');return;}
-  if(!editUserId && users.find(function(u){return u.login===login;})){alert('Tên đăng nhập đã tồn tại!');return;}
-  if(editUserId){ var u=users.find(function(x){return x.id===editUserId;}); if(u){u.name=name;u.login=login;u.pw=pw;u.role=role;} }
-  else users.push({id:'u'+Date.now(),name:name,login:login,pw:pw,role:role,active:true});
+async function saveUser(){
+  var name  = document.getElementById('u-name').value.trim();
+  var login = document.getElementById('u-login').value.trim().toLowerCase();
+  var pw    = document.getElementById('u-pw').value;
+  var role  = document.getElementById('u-role').value;
+
+  // Khi thêm mới: bắt buộc pw; khi sửa: pw để trống = giữ nguyên
+  if(!name || !login) { alert('Vui lòng điền họ tên và tên đăng nhập!'); return; }
+  if(!editUserId && !pw) { alert('Vui lòng nhập mật khẩu!'); return; }
+  if(!editUserId && users.find(function(u){return u.login===login;})){
+    alert('Tên đăng nhập đã tồn tại!'); return;
+  }
+
+  // Ghép email từ login
+  var email = login.indexOf('@') !== -1 ? login :
+              (login === 'bim1' ? 'bim1@bimgroup.vn' :
+               login === 'bim2' ? 'bim2@bimgroup.vn' :
+               login + '@bidv.com.vn');
+
+  // Map role app → DB role
+  var dbRole = role === 'cb'    ? 'officer' :
+               role === 'ql'    ? 'manager' :
+               role === 'admin' ? 'admin'   :
+               role === 'cdt'   ? 'cdt_view':
+               role === 'viewer'? 'viewer'  : role;
+
+  var saveBtn = document.querySelector('#modal-usr .btn-primary');
+  if(saveBtn){ saveBtn.textContent='⏳ Đang lưu...'; saveBtn.disabled=true; }
+
+  try {
+    if(editUserId) {
+      // Sửa user hiện có
+      var u = users.find(function(x){return x.id===editUserId;});
+      if(u) {
+        u.name  = name;
+        u.login = login;
+        u.role  = role;
+        if(pw) u.pw = pw; // Chỉ update pw nếu nhập mới
+
+        // Cập nhật DB
+        var updateData = { full_name: name, email: email, role: dbRole, updated_at: new Date().toISOString() };
+        if(pw) updateData.ma_cb = pw; // Dùng ma_cb làm password
+
+        var { error } = await sb.from('users').update(updateData).eq('id', editUserId);
+        if(error) {
+          console.error('[DB] saveUser update:', error);
+          alert('⚠️ Lưu local OK nhưng lỗi DB: ' + error.message);
+        } else {
+          showNotif('✅ Đã cập nhật người dùng: ' + name);
+        }
+      }
+    } else {
+      // Thêm user mới
+      var newUser = { id: 'u'+Date.now(), name:name, login:login, pw:pw, role:role, active:true, email:email };
+      users.push(newUser);
+
+      var insertData = {
+        full_name: name, email: email, role: dbRole,
+        ma_cb: pw, is_active: true, created_at: new Date().toISOString()
+      };
+      var { data: inserted, error: insErr } = await sb.from('users').insert(insertData).select().single();
+      if(insErr) {
+        console.error('[DB] saveUser insert:', insErr);
+        alert('⚠️ Lưu local OK nhưng lỗi DB: ' + insErr.message);
+      } else {
+        if(inserted) newUser.id = inserted.id; // Dùng UUID từ DB
+        showNotif('✅ Đã thêm người dùng: ' + name);
+      }
+    }
+  } catch(e) {
+    console.error('[DB] saveUser exception:', e);
+    alert('⚠️ Lỗi: ' + e.message);
+  } finally {
+    if(saveBtn){ saveBtn.textContent='Lưu'; saveBtn.disabled=false; }
+  }
+
   persist(); closeUsrModal(); renderUsrTable();
 }
-function toggleUsr(id){ var u=users.find(function(x){return x.id===id;}); if(u) u.active=!u.active; persist(); renderUsrTable(); }
-function delUsr(id){ showConf('Xoá người dùng?','Không thể khôi phục.',function(){ users=users.filter(function(x){return x.id!==id;}); persist(); renderUsrTable(); }); }
-
-// ==================================================
-// PASSWORD
-// ==================================================
-function openPwModal(){ ['pw-old','pw-new','pw-c'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('pw-err').style.display='none'; document.getElementById('modal-pw').classList.add('open'); }
-function closePwModal(){ document.getElementById('modal-pw').classList.remove('open'); }
-function savePw(){
-  var old=document.getElementById('pw-old').value;
-  var nw=document.getElementById('pw-new').value;
-  var c=document.getElementById('pw-c').value;
-  var err=document.getElementById('pw-err');
-  if(currentUser.pw!==old){err.textContent='Mật khẩu hiện tại không đúng';err.style.display='block';return;}
-  if(nw.length<6){err.textContent='Mật khẩu mới phải ít nhất 6 ký tự';err.style.display='block';return;}
-  if(nw!==c){err.textContent='Xác nhận không khớp';err.style.display='block';return;}
-  var u=users.find(function(x){return x.id===currentUser.id;}); if(u) u.pw=nw;
-  currentUser.pw=nw; persist(); closePwModal(); alert('Đã đổi mật khẩu!');
+async function toggleUsr(id){
+  var u=users.find(function(x){return x.id===id;});
+  if(!u) return;
+  u.active=!u.active;
+  var { error }=await sb.from('users').update({is_active:u.active}).eq('id',id);
+  if(error) console.error('[DB] toggleUsr:', error);
+  else showNotif((u.active?'✅ Kích hoạt: ':'🚫 Tạm ngừng: ')+u.name);
+  persist(); renderUsrTable();
 }
 
 // ==================================================
