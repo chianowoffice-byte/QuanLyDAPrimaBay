@@ -1232,168 +1232,163 @@ function fld(label, id, val, dis, placeholder, type, full, extra) {
 function buildHSForm(h) {
   var locked  = h && h.locked;
   var kLocked = h && h.kLocked;
-  var isCDTUser = isCDT();
-  var body = document.getElementById('mhs-body');
+  var body    = document.getElementById('mhs-body');
 
-  // CB chỉ xem hồ sơ của mình
-  if (h && !isQL() && !isCDTUser && h.canBoId !== currentUser.id) {
+  // Phân quyền
+  var isCDTUser  = isCDT();
+  var isQLAdmin  = isQL();
+  var isCBOwner  = !isQLAdmin && !isCDTUser && h && h.canBoId === currentUser.id;
+  var isCBOther  = !isQLAdmin && !isCDTUser && !(h && h.canBoId === currentUser.id);
+
+  // CB không phải phân công: không được xem
+  if (isCBOther) {
     body.innerHTML = '<div class="perm-banner">Bạn không có quyền xem hồ sơ này.</div>';
     document.getElementById('mhs-fl').innerHTML = '';
     document.getElementById('mhs-fr').innerHTML = '<button class="btn" onclick="closeHS()">Đóng</button>';
     return;
   }
 
-  var dv  = function(f) { return h ? (h[f] || '') : ''; };
-  var kDis = kLocked ? 'disabled' : '';
-  // CĐT chỉ sửa được phần dự án/căn hộ (không khoá), QL/Admin sửa tất cả
-  var hDis = (isQL() || isCDTUser) ? '' : 'disabled';
-  // CB thường sửa thông tin KH (khi chưa khoá)
+  var dv = function(f) { return h ? (h[f] || '') : ''; };
   var html = '';
 
-  // Banner khoá hồ sơ
+  // ── Banner khoá ──
   if (locked) {
     html += '<div class="lock-banner">🔒 Hồ sơ đã chốt. ';
-    html += isQL() ? 'Nhấn <b>Mở lại</b> để chỉnh sửa.' : 'Liên hệ CB Quản lý để mở lại.';
+    html += isQLAdmin ? 'Nhấn <b>Mở lại</b> để chỉnh sửa.' : 'Liên hệ Quản lý để mở lại.';
     html += '</div>';
   }
   if (kLocked && !locked) {
     html += '<div class="lock-banner" style="background:var(--surf2);border-color:var(--bdr2);color:var(--txt2)">🔒 Thông tin KH đã chốt. ';
-    html += isQL() ? '<button class="btn btn-sm" style="margin-left:8px" onclick="unlockKH()">Mở lại</button>' : 'Liên hệ CB Quản lý để mở lại.';
+    html += isQLAdmin ? '<button class="btn btn-sm" style="margin-left:8px" onclick="unlockKH()">Mở lại</button>' : 'Liên hệ Quản lý để mở lại.';
     html += '</div>';
   }
 
-  // ── TABS ──────────────────────────────────────────────────
+  // ── TABS ──
+  // Dự án & Căn hộ: tất cả thấy
+  // Hồ sơ/CIC/Tiến độ: CB + QL + Admin + CĐT thấy (ẩn với nobody)
+  // Phân công: chỉ QL/Admin
   html += '<div class="tabs">';
   html += '<div class="tab active" onclick="swTab(this,\'t-proj\')">🏢 Dự án & Căn hộ</div>';
-  if (!isCDTUser) {
-    html += '<div class="tab" onclick="swTab(this,\'t-docs\')">📋 Hồ sơ & Tài liệu</div>';
-    html += '<div class="tab" onclick="swTab(this,\'t-cic\')">🔍 CIC</div>';
-    html += '<div class="tab" onclick="swTab(this,\'t-prog\')">📞 Cập nhật tiến độ</div>';
-  }
-  if (isQL()) {
+  html += '<div class="tab" onclick="swTab(this,\'t-docs\')">📋 Hồ sơ & Tài liệu</div>';
+  html += '<div class="tab" onclick="swTab(this,\'t-cic\')">🔍 CIC</div>';
+  html += '<div class="tab" onclick="swTab(this,\'t-prog\')">📞 Cập nhật tiến độ</div>';
+  if (isQLAdmin) {
     html += '<div class="tab" onclick="swTab(this,\'t-adm\')">⚙️ Phân công</div>';
   }
   html += '</div>';
 
-  // =============================================
+  // ════════════════════════════════════════════
   // TAB 1: DỰ ÁN & CĂN HỘ
-  // =============================================
+  // ════════════════════════════════════════════
   html += '<div id="t-proj">';
 
-  // ── Thông tin KH: CB sửa được, CĐT thấy nhưng mờ (readonly) ──
-  var khDimClass = isCDTUser ? 'cdt-section-dim' : '';
+  // ── Thông tin KH chính ──
+  // Tất cả thấy rõ | CB sửa được | QL/Admin/CĐT xem (dim)
+  var khDim = (isCDTUser || isQLAdmin) ? 'disabled' : (kLocked ? 'disabled' : '');
+  var khDimClass = (isCDTUser || isQLAdmin) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div class="fsec-title" style="display:flex;align-items:center;justify-content:space-between">';
   html += '<span>Thông tin khách hàng chính</span>';
+  // Nút chốt KH: chỉ CB/QL/Admin (không phải CĐT)
   if (!isCDTUser && !locked && !kLocked) {
     html += '<button class="btn btn-sm btn-amber" onclick="lockKH()">🔒 Chốt thông tin KH</button>';
   }
   html += '</div>';
   html += '<div class="fgrid">';
-  html += fld('Họ và tên *','f-tenKH',dv('tenKH'),isCDTUser?'disabled':kDis,'Nguyễn Văn A');
-  html += fld('CCCD / CMND','f-cccd',dv('cccd'),isCDTUser?'disabled':kDis);
-  html += fld('Số điện thoại','f-sdt',dv('sdt'),isCDTUser?'disabled':kDis);
-  html += fld('Email','f-email',dv('email'),isCDTUser?'disabled':kDis,'vd: nguyenvana@gmail.com');
-  html += fld('Ngày sinh','f-ns',dv('ngaySinh'),isCDTUser?'disabled':kDis,'','date');
-  html += fld('Địa chỉ thường trú','f-dc',dv('diaChi'),isCDTUser?'disabled':kDis,'','','ffull');
-  html += fld('Nghề nghiệp','f-nn',dv('ngheNghiep'),isCDTUser?'disabled':kDis);
-  html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tn',dv('thuNhap'),isCDTUser?'disabled':kDis) + '</div>';
+  html += fld('Họ và tên *','f-tenKH',dv('tenKH'),khDim,'Nguyễn Văn A');
+  html += fld('CCCD / CMND','f-cccd',dv('cccd'),khDim);
+  html += fld('Số điện thoại','f-sdt',dv('sdt'),khDim);
+  html += fld('Email','f-email',dv('email'),khDim,'vd: nguyenvana@gmail.com');
+  html += fld('Ngày sinh','f-ns',dv('ngaySinh'),khDim,'','date');
+  html += fld('Địa chỉ thường trú','f-dc',dv('diaChi'),khDim,'','','ffull');
+  html += fld('Nghề nghiệp','f-nn',dv('ngheNghiep'),khDim);
+  html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tn',dv('thuNhap'),khDim) + '</div>';
   html += '</div></div>';
 
-  // Vợ / chồng toggle
+  // ── Vợ/chồng ──
   var hasVC = h && h.coVoChong;
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">';
-  html += '<div id="vc-track" style="width:38px;height:22px;border-radius:11px;background:'+(hasVC?'var(--blue)':'var(--bdr2)')+';position:relative;cursor:'+(isCDTUser||kLocked?'default':'pointer')+';flex-shrink:0" onclick="'+(isCDTUser||kLocked?'':'toggleVC()')+'">';
+  var canToggle = !isCDTUser && !isQLAdmin && !kLocked && !locked;
+  html += '<div id="vc-track" style="width:38px;height:22px;border-radius:11px;background:'+(hasVC?'var(--blue)':'var(--bdr2)')+';position:relative;'+(canToggle?'cursor:pointer;':'')+'" onclick="'+(canToggle?'toggleVC()':'')+'">';
   html += '<div id="vc-dot" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:'+(hasVC?'19px':'3px')+';transition:.2s"></div></div>';
-  html += '<span style="font-size:13px;font-weight:500'+(isCDTUser?'':';cursor:pointer')+'"'+(isCDTUser?'':' onclick="'+(kLocked?'':'toggleVC()')+'"')+'>Có vợ / chồng đồng vay</span>';
+  html += '<span style="font-size:13px;font-weight:500'+(canToggle?';cursor:pointer':'')+'" onclick="'+(canToggle?'toggleVC()':'')+'" >Có vợ / chồng đồng vay</span>';
   html += '<input type="checkbox" id="f-coVC" '+(hasVC?'checked':'')+' style="display:none">';
   html += '</div>';
   html += '<div id="sec-vc" style="display:'+(hasVC?'block':'none')+'">';
-  if (hasVC || true) {
-    html += '<div class="vc-section">';
-    html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px">THÔNG TIN VỢ / CHỒNG ĐỒNG VAY</div>';
-    html += '<div class="fgrid">';
-    html += fld('Họ và tên','f-tenVC',dv('tenVC'),isCDTUser?'disabled':kDis);
-    html += fld('CCCD / CMND','f-cccdVC',dv('cccdVC'),isCDTUser?'disabled':kDis);
-    html += fld('Số điện thoại','f-sdtVC',dv('sdtVC'),isCDTUser?'disabled':kDis);
-    html += fld('Email','f-emailVC',dv('emailVC'),isCDTUser?'disabled':kDis,'vd: email@gmail.com');
-    html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),isCDTUser?'disabled':kDis,'','date');
-    html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),isCDTUser?'disabled':kDis);
-    html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),isCDTUser?'disabled':kDis) + '</div>';
-    html += '</div></div>';
-  }
-  html += '</div>';
+  html += '<div class="vc-section">';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px">THÔNG TIN VỢ / CHỒNG ĐỒNG VAY</div>';
+  html += '<div class="fgrid">';
+  html += fld('Họ và tên','f-tenVC',dv('tenVC'),khDim);
+  html += fld('CCCD / CMND','f-cccdVC',dv('cccdVC'),khDim);
+  html += fld('Số điện thoại','f-sdtVC',dv('sdtVC'),khDim);
+  html += fld('Email','f-emailVC',dv('emailVC'),khDim,'vd: email@gmail.com');
+  html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),khDim,'','date');
+  html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),khDim);
+  html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),khDim) + '</div>';
+  html += '</div></div></div></div>';
 
-  // ── Căn hộ & Hợp đồng mua bán (CĐT + QL + Admin sửa) ───
-  html += '<div class="fsec">';
+  // ── Căn hộ & HĐMB ──
+  // CĐT / QL / Admin sửa | CB xem (dim)
+  var hdmbDim = (isQLAdmin || isCDTUser) ? (locked?'disabled':'') : 'disabled';
+  var hdmbDimClass = (!isQLAdmin && !isCDTUser) ? 'cdt-section-dim' : '';
+  html += '<div class="fsec ' + hdmbDimClass + '">';
   html += '<div class="fsec-title">Căn hộ & Hợp đồng mua bán</div>';
-  if (!isQL() && !isCDTUser) {
-    html += '<div class="info-banner">ℹ️ Thông tin căn hộ & HĐMB do CB Quản lý / Admin / CĐT quản lý.</div>';
-  }
   html += '<div class="fgrid fgrid3">';
-  html += fld('Mã căn hộ','f-mach',dv('maCanHo'),hDis);
-  html += fld('Đại lý','f-daily',dv('daiLy'),hDis,'VD: An Việt Homes');
-  html += fld('Tầng','f-tang',dv('tang'),hDis);
-  html += fld('Diện tích (m²)','f-dt',dv('dienTich'),hDis);
-  html += '<div class="fg"><label>Giá HĐMB (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hDis) + '</div>';
-  html += fld('Số HĐMB','f-sohdmb',dv('soHDMB'),hDis);
-  // Ngày ký HĐMB: CĐT / QL / Admin nhập
-  var ngayKyDis=(isQL()||isCDTUser)?'':'disabled';
-  html += fld('Ngày ký HĐMB','f-ngayky',dv('ngayKyHDMB'),ngayKyDis,'','date','','onchange="onNgayKyChange()"');
+  html += fld('Mã căn hộ','f-mach',dv('maCanHo'),hdmbDim);
+  html += fld('Đại lý','f-daily',dv('daiLy'),hdmbDim,'VD: An Việt Homes');
+  html += fld('Tầng','f-tang',dv('tang'),hdmbDim);
+  html += fld('Diện tích (m²)','f-dt',dv('dienTich'),hdmbDim);
+  html += '<div class="fg"><label>Giá HĐMB (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hdmbDim) + '</div>';
+  html += fld('Số HĐMB','f-sohdmb',dv('soHDMB'),hdmbDim);
+  html += fld('Ngày ký HĐMB','f-ngayky',dv('ngayKyHDMB'),hdmbDim,'','date','','onchange="onNgayKyChange()"');
   html += '</div></div>';
 
-  // ── Thông tin vay & VTC: CĐT thấy mờ ──────────────────────
-  var vtcDimClass = ''; // CĐT được phép sửa VTC
-  {
-    // VTC — CB đọc, không nhập tay (lấy từ dữ liệu BIM)
-    html += '<div class="fsec ' + vtcDimClass + '">';
-    html += '<div class="fsec-title">Vốn tự có (VTC) & Nhu cầu vay';
-    html += '</div>';
-    html += '<div class="fgrid fgrid3">';
-    html += '<div class="fg"><label>VTC phải nộp (VNĐ)</label>' + numInput('f-vtcphai',dv('vtcPhaiNop'),(isQL()||isCDTUser)?'':'disabled') + '</div>';
-    html += '<div class="fg"><label>VTC đã nộp hiện tại (VNĐ)</label>' + numInput('f-vtcdanop',dv('vtcDaNop'),locked?'disabled':'') + '</div>';
-    html += '<div class="fg"><label>Số tiền vay đề xuất (VNĐ)</label>' + numInput('f-stv',dv('soTienVay'),locked?'disabled':'') + '</div>';
-    // HTLS - hình thức vay
-    html += '<div class="fg"><label>Hình thức vay (thời gian HTLS)</label>';
-    html += '<input id="f-htls" value="'+(dv('hinhThucVay')||'30 tháng HTLS')+'" '+(locked?'disabled':'')+' placeholder="VD: 30 tháng HTLS"></div>';
-    // CSBH
-    html += '<div class="fg"><label>CSBH áp dụng</label>';
-    html += '<input id="f-csbh" value="'+dv('csChinhSach')+'" '+(locked?'disabled':'')+' placeholder="VD: 20260617_Prima_vay"></div>';
-    html += fld('Kỳ hạn vay (tháng)','f-kh',dv('kyHan'),kDis);
-    html += '</div></div>';
+  // ── VTC & Nhu cầu vay ──
+  // CĐT / QL / Admin sửa | CB xem (dim)
+  var vtcDim = (isQLAdmin || isCDTUser) ? (locked?'disabled':'') : 'disabled';
+  var vtcDimClass = (!isQLAdmin && !isCDTUser) ? 'cdt-section-dim' : '';
+  html += '<div class="fsec ' + vtcDimClass + '">';
+  html += '<div class="fsec-title">Vốn tự có (VTC) & Nhu cầu vay</div>';
+  html += '<div class="fgrid fgrid3">';
+  html += '<div class="fg"><label>VTC phải nộp (VNĐ)</label>' + numInput('f-vtcphai',dv('vtcPhaiNop'),vtcDim) + '</div>';
+  html += '<div class="fg"><label>VTC đã nộp hiện tại (VNĐ)</label>' + numInput('f-vtcdanop',dv('vtcDaNop'),vtcDim) + '</div>';
+  html += '<div class="fg"><label>Số tiền vay đề xuất (VNĐ)</label>' + numInput('f-stv',dv('soTienVay'),vtcDim) + '</div>';
+  html += '<div class="fg"><label>Hình thức vay (thời gian HTLS)</label>';
+  html += '<input id="f-htls" value="'+(dv('hinhThucVay')||'30 tháng HTLS')+'" '+(vtcDim||locked?'disabled':'')+' placeholder="VD: 30 tháng HTLS"></div>';
+  html += '<div class="fg"><label>CSBH áp dụng</label>';
+  html += '<input id="f-csbh" value="'+dv('csChinhSach')+'" '+(vtcDim||locked?'disabled':'')+' placeholder="VD: 20260617_Prima_vay"></div>';
+  html += fld('Kỳ hạn vay (tháng)','f-kh',dv('kyHan'),vtcDim);
+  html += '</div></div>';
 
-    // Phê duyệt & Giải ngân — CB được phân công / QL / Admin nhập
-    // Kiểm tra đủ HS (personal_id + income_proof + collateral) trước khi cho nhập GN
-    var ckObjNow = h ? (h.ck || {}) : {};
-    var requiredGroups = ['gt','tn','tsbd']; // id trong CK_GROUPS
-    var ckSufficient = isQL() || requiredGroups.every(function(gid){
-      var grp = CK_GROUPS.find(function(g){ return g.id===gid; });
-      return grp && grp.items.every(function(it){ return ckObjNow[it.id]; });
-    });
-    var gnDis = (!locked && ckSufficient && (isQL() || (h && h.canBoId === currentUser.id))) ? '' : 'disabled';
-    var gnDimClass = isCDTUser ? 'cdt-section-dim' : '';
-    html += '<div class="fsec ' + gnDimClass + '">';
-    html += '<div class="fsec-title">Phê duyệt & Giải ngân';
-    if (!ckSufficient && !isQL()) {
-      html += '<span style="font-size:11px;font-weight:400;color:var(--amber);margin-left:8px">⚠️ Cần đủ Giấy tờ CN + Thu nhập + TSBĐ</span>';
-    }
-    html += '</div>';
-    if (!isCDTUser && !isQL() && h && h.canBoId !== currentUser.id) {
-      html += '<div class="info-banner">ℹ️ Chỉ CB được phân công, Quản lý và Admin được nhập phần này.</div>';
-    }
-    html += '<div class="fgrid fgrid3">';
-    html += '<div class="fg"><label>Phê duyệt hạn mức vay (VNĐ)</label>' + numInput('f-hmduyet',dv('hanMucDuocDuyet'),gnDis) + '</div>';
-    html += fld('Ngày giải ngân','f-ngaygn',dv('ngayGiaiNgan'),gnDis,'','date');
-    html += '<div class="fg"><label>Số tiền giải ngân (VNĐ)</label>' + numInput('f-stgn',dv('soTienGiaiNgan'),gnDis) + '</div>';
-    // Hạn giải ngân tính tự động
-    var hanGNVal = dv('hanGiaiNgan') || calcHanGN(dv('ngayKyHDMB'));
-    var hanGNDis = (isQL() || isCDTUser || (h && h.canBoId===currentUser.id)) ? '' : 'disabled';
-    html += '<div class="fg"><label>Hạn giải ngân (tối đa)</label>';
-    html += '<input type="date" id="f-hangn" value="'+hanGNVal+'" '+hanGNDis+' placeholder="= Ngày ký HĐMB + 45 ngày"></div>';
-    html += '<div class="fg ffull"><div style="font-size:11px;color:var(--txt3);margin-top:2px">Mặc định = Ngày ký HĐMB + 45 ngày. CĐT / Quản lý / Admin có thể điều chỉnh.</div></div>';
-    html += '</div></div>';
+  // ── Phê duyệt & Giải ngân ──
+  // CB phân công sửa | QL/Admin/CĐT xem (dim)
+  // Điều kiện: đủ HS (3 nhóm gt+tn+tsbd)
+  var ckObj = h ? (h.ck || {}) : {};
+  var reqGrps = ['gt','tn','tsbd'];
+  var ckOK = isQLAdmin || reqGrps.every(function(gid){
+    var grp=CK_GROUPS.find(function(g){return g.id===gid;});
+    return grp && grp.items.every(function(it){return ckObj[it.id];});
+  });
+  var gnCanEdit = isCBOwner && !locked && ckOK;
+  var gnDim = gnCanEdit ? '' : 'disabled';
+  var gnDimClass = (!isCBOwner && !isQLAdmin) ? 'cdt-section-dim' : (isCBOwner && !ckOK ? 'cdt-section-dim' : '');
+  html += '<div class="fsec ' + gnDimClass + '">';
+  html += '<div class="fsec-title">Phê duyệt & Giải ngân';
+  if (isCBOwner && !ckOK) {
+    html += '<span style="font-size:11px;font-weight:400;color:var(--amber);margin-left:8px">⚠️ Cần đủ Giấy tờ CN + Thu nhập + TSBĐ</span>';
   }
+  html += '</div>';
+  html += '<div class="fgrid fgrid3">';
+  html += '<div class="fg"><label>Phê duyệt hạn mức vay (VNĐ)</label>' + numInput('f-hmduyet',dv('hanMucDuocDuyet'),gnDim) + '</div>';
+  html += fld('Ngày giải ngân','f-ngaygn',dv('ngayGiaiNgan'),gnDim,'','date');
+  html += '<div class="fg"><label>Số tiền giải ngân (VNĐ)</label>' + numInput('f-stgn',dv('soTienGiaiNgan'),gnDim) + '</div>';
+  var hanGNVal = dv('hanGiaiNgan') || calcHanGN(dv('ngayKyHDMB'));
+  var hanGNDis = (isQLAdmin || isCDTUser || isCBOwner) && !locked ? '' : 'disabled';
+  html += '<div class="fg"><label>Hạn giải ngân (tối đa)</label>';
+  html += '<input type="date" id="f-hangn" value="'+hanGNVal+'" '+hanGNDis+' placeholder="= Ngày ký HĐMB + 45 ngày"></div>';
+  html += '<div class="fg ffull"><div style="font-size:11px;color:var(--txt3);margin-top:2px">Mặc định = Ngày ký HĐMB + 45 ngày. CĐT / Quản lý / Admin có thể điều chỉnh.</div></div>';
+  html += '</div></div>';
 
   // Nút lưu
   if (!locked) {
@@ -1401,79 +1396,88 @@ function buildHSForm(h) {
   }
   html += '</div>'; // t-proj
 
-  // =============================================
+  // ════════════════════════════════════════════
   // TAB 2: HỒ SƠ & TÀI LIỆU
-  // =============================================
-  if (!isCDTUser) {
-    html += '<div id="t-docs" style="display:none">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
-    html += '<span style="font-size:13px;font-weight:500">Tích các giấy tờ đã thu thập & upload file đính kèm:</span>';
-    html += '<span id="ck-pct" style="font-size:13px;font-weight:600;color:var(--blue)"></span></div>';
-    html += '<div id="docs-grid"></div>';
-    if (!locked) {
-      html += '<button class="btn btn-success btn-sm" onclick="saveCK()">💾 Lưu checklist</button>';
-      html += '<span id="ck-saved" style="font-size:12px;color:var(--green);display:none;margin-left:8px">✓ Đã lưu</span>';
-    }
-    html += '</div>';
+  // Tất cả thấy | CB nhập | QL/Admin/CĐT xem (dim)
+  // ════════════════════════════════════════════
+  var docLocked = locked || (!isCBOwner && !isQLAdmin);
+  html += '<div id="t-docs" style="display:none">';
+  if (isCDTUser || (isQLAdmin && locked)) {
+    html += '<div class="info-banner">📋 Chỉ xem — chỉ Cán bộ phụ trách được cập nhật hồ sơ tài liệu.</div>';
+  }
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+  html += '<span style="font-size:13px;font-weight:500">Trạng thái thu thập giấy tờ:</span>';
+  html += '<span id="ck-pct" style="font-size:13px;font-weight:600;color:var(--blue)"></span></div>';
+  html += '<div id="docs-grid"></div>';
+  if (isCBOwner && !locked) {
+    html += '<button class="btn btn-success btn-sm" onclick="saveCK()">💾 Lưu checklist</button>';
+    html += '<span id="ck-saved" style="font-size:12px;color:var(--green);display:none;margin-left:8px">✓ Đã lưu</span>';
+  }
+  html += '</div>';
 
-    // =============================================
-    // TAB 3: CIC
-    // =============================================
-    var cic = h && h.cic ? h.cic : {};
-    html += '<div id="t-cic" style="display:none">';
-    html += '<div class="cic-box">';
-    html += '<div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px">Kết quả tra cứu CIC (nhập thủ công)</div>';
-    html += '<div class="fgrid fgrid3" style="margin-bottom:14px">';
-    html += fld('Tổng dư nợ (VNĐ)','cic-dn',String(cic.tongDuNo||''),'','','number');
-    html += '<div class="fg"><label>Nhóm nợ cao nhất</label>';
-    html += '<select id="cic-nn" onchange="onCICGroupChange()">';
-    html += '<option value="">-- Chọn --</option>';
-    for (var n=1;n<=5;n++){
-      var sel2=(cic.nhomNo==n)?'selected':'';
-      var lbl=n===1?' (✅ Đủ tiêu chuẩn)':' (❌ Sẽ từ chối tự động)';
-      html+='<option value="'+n+'" '+sel2+'>Nhóm '+n+lbl+'</option>';
-    }
-    html+='</select>';
-    html+='<div id="cic-nn-warn" style="display:'+(cic.nhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
-    html+='❌ Điều kiện KHÔNG ĐẠT: Nhóm nợ ≥ 2 sẽ tự động Từ chối và khoá hồ sơ!</div></div>';
-    html += fld('Ngày tra CIC','cic-ngay',cic.ngay||'','','','date');
-    html += '</div>';
-    html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD:</div>';
-    html += '<div id="cic-tctd-list"></div>';
+  // ════════════════════════════════════════════
+  // TAB 3: CIC
+  // Tất cả thấy | CB nhập | QL/Admin/CĐT xem (dim)
+  // ════════════════════════════════════════════
+  var cic = h && h.cic ? h.cic : {};
+  var cicDim = (!isCBOwner || locked) ? 'disabled' : '';
+  var cicDimClass = (!isCBOwner) ? 'cdt-section-dim' : '';
+  html += '<div id="t-cic" style="display:none">';
+  if (isCDTUser || isQLAdmin) {
+    html += '<div class="info-banner">🔍 Chỉ xem — chỉ Cán bộ phụ trách được nhập kết quả CIC.</div>';
+  }
+  html += '<div class="cic-box ' + cicDimClass + '">';
+  html += '<div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px">Kết quả tra cứu CIC</div>';
+  html += '<div class="fgrid fgrid3" style="margin-bottom:14px">';
+  html += fld('Tổng dư nợ (VNĐ)','cic-dn',String(cic.tongDuNo||''),cicDim,'','number');
+  html += '<div class="fg"><label>Nhóm nợ cao nhất</label>';
+  html += '<select id="cic-nn" '+(cicDim?'disabled':'')+' onchange="onCICGroupChange()">';
+  html += '<option value="">-- Chọn --</option>';
+  for (var n=1;n<=5;n++){
+    var sel2=(cic.nhomNo==n)?'selected':'';
+    var lbl=n===1?' (✅ Đủ tiêu chuẩn)':' (❌ Sẽ từ chối tự động)';
+    html+='<option value="'+n+'" '+sel2+'>Nhóm '+n+lbl+'</option>';
+  }
+  html+='</select>';
+  html+='<div id="cic-nn-warn" style="display:'+(cic.nhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
+  html+='❌ Điều kiện KHÔNG ĐẠT: Nhóm nợ ≥ 2 sẽ tự động Từ chối và khoá hồ sơ!</div></div>';
+  html += fld('Ngày tra CIC','cic-ngay',cic.ngay||'',cicDim,'','date');
+  html += '</div>';
+  html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD:</div>';
+  html += '<div id="cic-tctd-list"></div>';
+  if (isCBOwner && !locked) {
     html += '<button class="btn btn-sm" style="margin-top:8px" onclick="addCICRow()">+ Thêm TCTD</button>';
     html += '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveCIC()">💾 Lưu kết quả CIC</button></div>';
-    html += '</div></div>';
-
-    // =============================================
-    // TAB 4: CẬP NHẬT TIẾN ĐỘ
-    // =============================================
-    html += '<div id="t-prog" style="display:none">';
-    if (locked) {
-      html += '<div class="lock-banner">🔒 Hồ sơ đã chốt. Không thể cập nhật tiến độ.</div>';
-    } else {
-      try {
-        html += buildProgTab(h);
-      } catch(err2) {
-        html += '<div class="perm-banner">Lỗi hiển thị: ' + err2.message + '</div>';
-        console.error('buildProgTab error:', err2);
-      }
-    }
-    html += '</div>';
   }
+  html += '</div></div>';
 
-  // =============================================
-  // TAB 5: PHÂN CÔNG (chỉ QL/Admin)
-  // =============================================
-  if (isQL()) {
+  // ════════════════════════════════════════════
+  // TAB 4: CẬP NHẬT TIẾN ĐỘ
+  // CĐT + CB + QL/Admin đều thấy
+  // CB nhập báo cáo | CĐT nhập phản hồi
+  // ════════════════════════════════════════════
+  html += '<div id="t-prog" style="display:none">';
+  if (locked) {
+    html += '<div class="lock-banner">🔒 Hồ sơ đã chốt. Không thể cập nhật tiến độ.</div>';
+  } else {
+    try { html += buildProgTab(h); }
+    catch(err2) {
+      html += '<div class="perm-banner">Lỗi hiển thị: '+err2.message+'</div>';
+      console.error('buildProgTab error:', err2);
+    }
+  }
+  html += '</div>';
+
+  // ════════════════════════════════════════════
+  // TAB 5: PHÂN CÔNG — chỉ QL/Admin
+  // ════════════════════════════════════════════
+  if (isQLAdmin) {
     html += '<div id="t-adm" style="display:none">';
     var cbOpts = '<option value="">-- Chọn cán bộ --</option>';
-    users.filter(function(u){return u.active&&(u.role==='officer'||u.role==='manager'||u.role==='cb'||u.role==='ql');}).forEach(function(u){
-      cbOpts+='<option value="'+u.id+'"'+(h&&h.canBoId===u.id?' selected':'')+'>'+u.name+'</option>';
-    });
-    var stOpts='';
-    Object.keys(SC_VN).forEach(function(k){
-      stOpts+='<option value="'+k+'"'+(h&&h.status===k?' selected':'')+'>'+SC_VN[k]+'</option>';
-    });
+    users.filter(function(u){return u.active&&(u.role==='officer'||u.role==='manager'||u.role==='cb'||u.role==='ql');})
+      .forEach(function(u){
+        cbOpts+='<option value="'+u.id+'"'+(h&&h.canBoId===u.id?' selected':'')+'>'+u.name+'</option>';
+      });
     html += '<div class="fgrid" style="gap:12px">';
     html += '<div class="fg ffull"><label>Cán bộ phụ trách</label><select id="f-cbid">'+cbOpts+'</select></div>';
     html += '<div class="fg ffull"><label>Ghi chú nội bộ</label><textarea id="f-gc">'+dv('ghiChu')+'</textarea></div>';
@@ -1489,13 +1493,10 @@ function buildHSForm(h) {
   }
 
   body.innerHTML = html;
-  if (!isCDTUser) {
-    try { renderDocsGrid(h, locked); } catch(e1){ console.error('renderDocsGrid:', e1); }
-    try { renderCICTCTDs(h&&h.cic?h.cic.tctds||[]:[]); } catch(e2){ console.error('renderCICTCTDs:', e2); }
-  }
+  try { renderDocsGrid(h, docLocked); } catch(e1){ console.error('renderDocsGrid:', e1); }
+  try { renderCICTCTDs(h&&h.cic?h.cic.tctds||[]:[]); } catch(e2){ console.error('renderCICTCTDs:', e2); }
   buildHSFooter(h, locked);
 }
-
 
 function onNgayKyChange() {
   var ngayKy = document.getElementById('f-ngayky');
