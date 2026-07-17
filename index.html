@@ -1173,6 +1173,11 @@ async function dbSaveCIC(h, cic) {
   await sb.from('cic_results').delete().eq('loan_file_id', h.id).catch(function(){});
 
   // Thử full data trước
+  var _cicOfficer = null;
+  if (currentUser) {
+    var _u = users.find(function(u){ return u.login===currentUser.login||u.id===currentUser.id; });
+    if (_u) _cicOfficer = _u.id;
+  }
   var fullData = {
     loan_file_id:  h.id,
     worst_group:   cic.nhomNo ? 'group' + cic.nhomNo : null,
@@ -1190,6 +1195,7 @@ async function dbSaveCIC(h, cic) {
     vc_ngay:       cic.vcNgay     || null
   };
 
+  console.log('[CIC] Inserting:', JSON.stringify({loan_file_id: fullData.loan_file_id, worst_group: fullData.worst_group}));
   var r = await sb.from('cic_results').insert(fullData);
   if (!r.error) {
     console.log('[DB] CIC saved OK');
@@ -1218,17 +1224,26 @@ async function dbSaveCIC(h, cic) {
 // Lưu checklist lên DB
 async function dbSaveCK(h, ck) {
   if (!h || !h.id) return;
-  // Upsert từng item
-  var updates = [];
-  Object.keys(ck).forEach(function(code) {
-    updates.push(
-      sb.from('checklist_items')
-        .update({ is_collected: ck[code], collected_at: ck[code] ? new Date().toISOString() : null })
-        .eq('loan_file_id', h.id)
-        .eq('item_code', code)
-    );
-  });
-  await Promise.all(updates).catch(function(e){ console.error('dbSaveCK:', e); });
+  var now = new Date().toISOString();
+  var codes = Object.keys(ck);
+  console.log('[CK] Saving', codes.length, 'items for', h.id);
+  // Serialize thay vì parallel để tránh throttle
+  var errors = 0;
+  for (var i = 0; i < codes.length; i++) {
+    var code = codes[i];
+    var r = await sb.from('checklist_items')
+      .update({
+        is_collected: ck[code],
+        collected_at: ck[code] ? now : null
+      })
+      .eq('loan_file_id', h.id)
+      .eq('item_code', code);
+    if (r.error) {
+      console.error('[CK] Error on', code, r.error.message);
+      errors++;
+    }
+  }
+  console.log('[CK] Done:', codes.length - errors, '/', codes.length, 'saved');
 }
 
 // Lưu phân công CB lên DB
