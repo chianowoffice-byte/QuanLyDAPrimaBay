@@ -1849,7 +1849,7 @@ function renderHSTable(){
   var src = (isQL()||isCDT()||isViewer()) ? hsList : hsList.filter(function(h){ return h.canBoId===currentUser.id; });
   var f   = src.filter(function(h){
     var matchQ  = !q || (h.tenKH||'').toLowerCase().indexOf(q)>=0 || (h.sdt||'').indexOf(q)>=0 || (h.maCanHo||'').toLowerCase().indexOf(q)>=0;
-    var matchSt = !st || h.status===st;
+    var matchSt = !st || deriveHSStatus(h)===st;
     var matchCb = !cb || h.canBoId===cb;
     return matchQ && matchSt && matchCb;
   });
