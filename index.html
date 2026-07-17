@@ -1035,7 +1035,7 @@ async function dbSaveWeeklyReport(h, entry) {
   var statusMap = {
     'chua_lh':         'no_answer',
     'dang_can_nhac':   'contacted',
-    'dong_y_cung_cap': 'docs_complete',  // KH đồng ý + cung cấp HS
+    'dong_y_cung_cap': 'waiting_docs',   // KH đồng ý - đang cung cấp
     'kh_tu_choi':      'rejected_kh',
     'nh_tu_choi':      'rejected_income',
     'von_tu_co':       'other',
@@ -1114,24 +1114,36 @@ async function dbSaveCIC(h, cic) {
   if (!h || !h.id) return;
   // Xoá CIC cũ rồi insert mới
   await sb.from('cic_results').delete().eq('loan_file_id', h.id);
-  var data = {
+  // Chỉ gửi cột core (luôn có trong schema)
+  var coreData = {
     loan_file_id: h.id,
-    ma_so_cic:    cic.maSoCIC   || null,
-    total_debt:   parseInt(cic.tongDuNo) || null,
-    du_no_the:    parseInt(cic.duNoThe)  || null,
     worst_group:  cic.nhomNo ? 'group' + cic.nhomNo : null,
     is_qualified: (cic.nhomNo || 0) <= 1,
-    check_date:   cic.ngay     || null,
-    vc_ma_so_cic: cic.vcMaSoCIC   || null,
-    vc_tong_du_no:parseInt(cic.vcTongDuNo) || null,
-    vc_du_no_the: parseInt(cic.vcDuNoThe)  || null,
-    vc_nhom_no:   cic.vcNhomNo   || null,
-    vc_ngay:      cic.vcNgay     || null,
+    check_date:   cic.ngay || null,
     created_at:   new Date().toISOString()
   };
-  var r = await sb.from('cic_results').insert(data);
-  if (r.error) console.error('dbSaveCIC:', r.error);
-  return !r.error;
+  // Thêm cột mở rộng nếu có giá trị
+  if (cic.tongDuNo)   coreData.total_debt    = parseInt(cic.tongDuNo) || null;
+  if (cic.maSoCIC)    coreData.ma_so_cic     = cic.maSoCIC;
+  if (cic.duNoThe)    coreData.du_no_the     = parseInt(cic.duNoThe) || null;
+  if (cic.vcNhomNo)   coreData.vc_nhom_no    = cic.vcNhomNo;
+  if (cic.vcNgay)     coreData.vc_ngay       = cic.vcNgay;
+  if (cic.vcMaSoCIC)  coreData.vc_ma_so_cic  = cic.vcMaSoCIC;
+  if (cic.vcTongDuNo) coreData.vc_tong_du_no = parseInt(cic.vcTongDuNo) || null;
+  if (cic.vcDuNoThe)  coreData.vc_du_no_the  = parseInt(cic.vcDuNoThe)  || null;
+
+  var r = await sb.from('cic_results').insert(coreData);
+  if (r.error) {
+    console.error('dbSaveCIC error:', r.error.message);
+    // Retry với data tối thiểu
+    var minData = { loan_file_id: h.id, worst_group: coreData.worst_group,
+                    is_qualified: coreData.is_qualified, check_date: coreData.check_date,
+                    created_at: coreData.created_at };
+    var r2 = await sb.from('cic_results').insert(minData);
+    if (r2.error) { console.error('dbSaveCIC retry failed:', r2.error.message); return false; }
+    console.log('dbSaveCIC saved (minimal)');
+  }
+  return true;
 }
 
 // Lưu checklist lên DB
@@ -3534,10 +3546,10 @@ function onCICGroupChange(){
 var DB_STATUS_LABELS = {
   'contacted':       'Đã liên hệ - KH đang cân nhắc',
   'appointment':     'Đã hẹn gặp trực tiếp',
-  'waiting_docs':    'Chưa liên hệ được với KH',
+  'waiting_docs':    'KH đồng ý vay - Đang cung cấp hồ sơ',
   'no_answer':       'KH không nghe máy / không liên lạc được',
   'on_hold':         'KH bảo lưu - chưa muốn tiếp tục',
-  'docs_complete':   'KH đồng ý vay - Đang cung cấp / Đã nộp đủ hồ sơ',
+  'docs_complete':   'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
   'approved_loan':   'Đã phê duyệt / Đã ký / Đã giải ngân',
   'rejected_income': 'Từ chối - Không đủ thu nhập',
   'rejected_cic':    'Từ chối - Nợ xấu / CIC nhóm 2+',
