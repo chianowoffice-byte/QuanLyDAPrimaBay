@@ -1786,12 +1786,17 @@ function mapDbHS(lf) {
       return lf.created_at || '';
     })(),
     weeklyReports: (lf.weekly_reports || []).map(function(wr){
+      var _d = wr.detail || '';
+      var _kqIdx = _d.indexOf('[KQ:');
+      var _kqEnd = _d.indexOf(']', _kqIdx);
+      var _appKey = (_kqIdx===0 && _kqEnd>0) ? _d.slice(4, _kqEnd) : wr.contact_status;
+      var _chiTiet = (_kqIdx===0 && _kqEnd>0) ? _d.slice(_kqEnd+1).replace(/^ /,'').trim() : _d;
       return {
         time:    wr.created_at || wr.report_date || '',
-        ketQua:  wr.contact_status || '',
-        chiTiet: wr.detail || '',
+        ketQua:  _appKey || '',
+        chiTiet: _chiTiet,
         deXuat:  wr.support_request || '',
-        who:     wr.officer_id || '',  // UUID — getWhoName() sẽ resolve tên
+        who:     wr.officer_id || '',
         weekNum: wr.week_number || 0
       };
     }),
