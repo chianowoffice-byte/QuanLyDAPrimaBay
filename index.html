@@ -1222,25 +1222,37 @@ async function dbSaveCIC(h, cic) {
 }
 
 // Lưu checklist lên DB
+
+// CK_DOC_GROUP built after CK_GROUPS below
+
 async function dbSaveCK(h, ck) {
   if (!h || !h.id) return;
   var now = new Date().toISOString();
   var codes = Object.keys(ck);
   console.log('[CK] Saving', codes.length, 'items for', h.id);
-  // Serialize thay vì parallel để tránh throttle
   var errors = 0;
   for (var i = 0; i < codes.length; i++) {
     var code = codes[i];
+    // Thử update trước
     var r = await sb.from('checklist_items')
-      .update({
-        is_collected: ck[code],
-        collected_at: ck[code] ? now : null
-      })
+      .update({ is_collected: ck[code], collected_at: ck[code] ? now : null })
       .eq('loan_file_id', h.id)
       .eq('item_code', code);
     if (r.error) {
-      console.error('[CK] Error on', code, r.error.message);
-      errors++;
+      // Nếu update lỗi → thử upsert (insert nếu chưa có row)
+      var r2 = await sb.from('checklist_items').upsert({
+        loan_file_id: h.id,
+        doc_group:    CK_DOC_GROUP[code] || 'gt',
+        item_code:    code,
+        is_collected: ck[code],
+        collected_at: ck[code] ? now : null
+      }, { onConflict: 'loan_file_id,item_code' });
+      if (r2.error) {
+        console.error('[CK] upsert failed on', code, r2.error.message);
+        errors++;
+      } else {
+        console.log('[CK] upserted new row for', code);
+      }
     }
   }
   console.log('[CK] Done:', codes.length - errors, '/', codes.length, 'saved');
@@ -1599,6 +1611,20 @@ var CK_GROUPS = [
     {id:'saokeno',label:'Sao kê dư nợ tại ngân hàng khác (nếu có)'}
   ]}
 ];
+
+// Map item_code → DB doc_group enum (phải đặt SAU khi CK_GROUPS đã khai báo)
+var CK_GROUP_DB_MAP = {
+  'gt':   'personal_id',
+  'tn':   'income_proof',
+  'tsbd': 'collateral',
+  'kv':   'existing_loan'
+};
+var CK_DOC_GROUP = {};
+CK_GROUPS.forEach(function(g) {
+  g.items.forEach(function(it) {
+    CK_DOC_GROUP[it.id] = CK_GROUP_DB_MAP[g.id] || 'personal_id';
+  });
+});
 
 var CT_STATUS_LABELS_FULL = {
   chua_lh:         'Chưa liên hệ được với KH',
