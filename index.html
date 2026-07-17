@@ -137,9 +137,9 @@ tr:hover td{background:#EDF6F4}
 .dl-new{background:#EEE9FA;color:#4A2E8A;border:1px solid #C9BEEE}
 
 /* MODAL */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:center;padding:20px 10px;overflow-y:auto}
 .overlay.open{display:flex}
-.modal{background:var(--surf);border-radius:var(--rl);width:100%;max-width:900px;min-width:600px;box-shadow:0 10px 40px rgba(0,0,0,.2);margin:auto;display:flex;flex-direction:column;max-height:90vh}
+.modal{background:var(--surf);border-radius:var(--rl);width:min(96vw,960px);box-shadow:0 10px 40px rgba(0,0,0,.2);margin:auto;display:flex;flex-direction:column;max-height:94vh}
 .modal.sm{max-width:460px}.modal.md{max-width:640px}
 .mh{padding:18px 24px 14px;border-bottom:2px solid #006B5E;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .mh h2{font-size:16px;font-weight:600;color:#006B5E}
@@ -175,7 +175,7 @@ tr:hover td{background:#EDF6F4}
 /* CHECKLIST */
 .ck-grid{display:grid;grid-template-columns:repeat(2,minmax(200px,1fr));gap:10px;margin-bottom:14px}
 .ck-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
-.ck-hd{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:#E0F5F1;color:#006B5E;display:flex;align-items:center;justify-content:space-between}
+.ck-hd{padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:#E0F5F1;color:#006B5E;display:flex;align-items:center;justify-content:space-between}
 .ck-hd.done{background:#006B5E;color:#fff}
 .ck-body{padding:4px 10px}
 .ck-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr)}
@@ -564,6 +564,7 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 
 
 <script>
+
 
 // v20260716_232320_113025
 window.onerror = function(msg,src,line,col,err){
@@ -2512,7 +2513,7 @@ function renderDocsGrid(h, locked) {
   var el = document.getElementById('docs-grid'); if (!el) return;
   var ck = h ? (h.ck || {}) : {};
   var files = h ? (h.files || {}) : {};
-  var html = '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px">';
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;width:100%">';
   CK_GROUPS.forEach(function(g) {
     var done = g.items.every(function(it) { return ck[it.id]; });
     html += '<div class="ck-card">';
