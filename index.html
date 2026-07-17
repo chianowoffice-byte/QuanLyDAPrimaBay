@@ -898,61 +898,61 @@ var confFn = null;
 
 // Map app HS object → loan_files columns
 function mapHSToLF(h) {
-  return {
-    status: (function(){
-      var appToDb = {
-        'moi':'new', 'dang':'processing', 'cho':'pending',
-        'choky':'approved', 'xong':'disbursed', 'tuchoi':'rejected'
-      };
-      return appToDb[h.status] || 'new';
-    })(),
-    officer_id:             h.canBoId     || null,
-    sale_price:             parseInt(h.giaHDMB)            || null,
-    vtc_required:           parseInt(h.vtcPhaiNop)         || null,
-    vtc_paid:               parseInt(h.vtcDaNop)           || null,
-    loan_amount_requested:  parseInt(h.soTienVay)          || null,
-    loan_amount_approved:   parseInt(h.hanMucDuocDuyet)    || null,
-    loan_form:              h.hinhThucVay  || null,
-    loan_policy_ref:        h.csChinhSach  || null,
-    loan_term_months:       parseInt(h.kyHan) || null,
-    hdmb_code:              h.soHDMB       || null,
-    hdmb_date:              h.ngayKyHDMB   || null,
-    max_disbursement_date:  h.hanGiaiNgan  || null,
-    disbursement_date:      h.ngayGiaiNgan || null,
-    disbursement_amount:    parseInt(h.soTienGiaiNgan) || null,
-    is_locked:              h.locked       || false,
-    is_kh_locked:           h.kLocked      || false,
-    locked_by:              h.lockedBy     || null,
-    outcome:                h.outcome      || null,
-    outcome_note:           h.outcomeNote  || null,
-    notes:                  h.ghiChu       || null,
-    updated_at:             new Date().toISOString()
+  var appToDb = {
+    'moi':'new', 'dang':'processing', 'cho':'pending',
+    'choky':'approved', 'xong':'disbursed', 'tuchoi':'rejected'
   };
+  var data = {
+    status:                appToDb[h.status] || 'new',
+    officer_id:            h.canBoId     || null,
+    sale_price:            parseInt(h.giaHDMB)         || null,
+    vtc_required:          parseInt(h.vtcPhaiNop)      || null,
+    vtc_paid:              parseInt(h.vtcDaNop)        || null,
+    loan_amount_requested: parseInt(h.soTienVay)       || null,
+    loan_amount_approved:  parseInt(h.hanMucDuocDuyet) || null,
+    loan_form:             h.hinhThucVay  || null,
+    loan_policy_ref:       h.csChinhSach  || null,
+    hdmb_code:             h.soHDMB       || null,
+    hdmb_date:             h.ngayKyHDMB   || null,
+    max_disbursement_date: h.hanGiaiNgan  || null,
+    disbursement_date:     h.ngayGiaiNgan || null,
+    disbursement_amount:   parseInt(h.soTienGiaiNgan) || null,
+    is_locked:             h.locked    || false,
+    is_kh_locked:          h.kLocked   || false,
+    locked_by:             h.lockedBy  || null,
+    updated_at:            new Date().toISOString()
+  };
+  // Thêm cột mở rộng nếu có (không lỗi nếu DB chưa có)
+  if (h.kyHan)     data.loan_term_months = parseInt(h.kyHan) || null;
+  if (h.ghiChu)    data.notes            = h.ghiChu;
+  if (h.drive_folder_url) data.drive_folder_url = h.drive_folder_url;
+  return data;
 }
 
 // Map app KH object → customers columns
 function mapHSToCust(h) {
-  return {
-    full_name:          h.tenKH         || null,
-    id_number:          h.cccd          || null,
-    phone:              h.sdt           || null,
-    email:              h.email         || null,
-    cif:                h.cif           || null,
-    address:            h.diaChi        || null,
-    region:             h.vung          || null,
-    agent:              h.daiLy         || null,
-    occupation:         h.ngheNghiep    || null,
-    monthly_income:     parseFloat(h.thuNhap) || null,
-    has_co_borrower:    h.coVoChong     || false,
-    co_name:            h.tenVC         || null,
-    co_id_number:       h.cccdVC        || null,
-    co_phone:           h.sdtVC         || null,
-    co_email:           h.emailVC       || null,
-    cif_co_borrower:    h.cifVC         || null,
-    co_occupation:      h.ngheNghiepVC  || null,
-    co_monthly_income:  parseFloat(h.thuNhapVC) || null,
-    updated_at:         new Date().toISOString()
+  var data = {
+    full_name:         h.tenKH      || null,
+    id_number:         h.cccd       || null,
+    phone:             h.sdt        || null,
+    email:             h.email      || null,
+    address:           h.diaChi     || null,
+    occupation:        h.ngheNghiep || null,
+    monthly_income:    parseFloat(h.thuNhap) || null,
+    has_co_borrower:   h.coVoChong  || false,
+    co_name:           h.tenVC      || null,
+    co_id_number:      h.cccdVC     || null,
+    co_phone:          h.sdtVC      || null,
+    co_email:          h.emailVC    || null,
+    co_occupation:     h.ngheNghiepVC || null,
+    co_monthly_income: parseFloat(h.thuNhapVC) || null,
+    updated_at:        new Date().toISOString()
   };
+  // Cột mở rộng (thêm vào schema_update.sql nếu chưa có)
+  if (h.cif)    data.cif             = h.cif;
+  if (h.cifVC)  data.cif_co_borrower = h.cifVC;
+  if (h.daiLy)  data.agent           = h.daiLy;
+  return data;
 }
 
 // Lưu loan_file + customer lên DB
@@ -963,21 +963,43 @@ async function dbSaveLoanFile(h) {
   var errors   = [];
 
   // Update loan_files
-  console.log('[DB] Saving loan_file', h.id, lfData);
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id);
   if (r1.error) {
-    console.error('[DB] loan_files ERROR:', r1.error);
-    errors.push('loan_files: ' + r1.error.message);
-  } else {
-    console.log('[DB] loan_files saved OK');
+    console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.details);
+    // Thử lại với data tối thiểu nếu lỗi column
+    if (r1.error.message && r1.error.message.includes('column')) {
+      var minData = {
+        status: lfData.status, officer_id: lfData.officer_id,
+        is_locked: lfData.is_locked, is_kh_locked: lfData.is_kh_locked,
+        updated_at: lfData.updated_at
+      };
+      var r1b = await sb.from('loan_files').update(minData).eq('id', h.id);
+      if (r1b.error) errors.push('loan_files: ' + r1b.error.message);
+      else console.log('[DB] loan_files saved (minimal)');
+    } else {
+      errors.push('loan_files: ' + r1.error.message);
+    }
   }
 
   // Update customers (nếu có customer_id)
   if (h.customerId) {
-    console.log('[DB] Saving customer', h.customerId, custData);
     var r2 = await sb.from('customers').update(custData).eq('id', h.customerId);
-    if (r2.error) { console.error('[DB] customers ERROR:', r2.error); errors.push('customers: ' + r2.error.message); }
-    else { console.log('[DB] customers saved OK'); }
+    if (r2.error) {
+      console.error('[DB] customers ERROR:', r2.error.message);
+      if (r2.error.message && r2.error.message.includes('column')) {
+        // Thử với data tối thiểu
+        var minCust = {
+          full_name: custData.full_name, phone: custData.phone,
+          email: custData.email, address: custData.address,
+          has_co_borrower: custData.has_co_borrower,
+          updated_at: custData.updated_at
+        };
+        var r2b = await sb.from('customers').update(minCust).eq('id', h.customerId);
+        if (r2b.error) errors.push('customers: ' + r2b.error.message);
+      } else {
+        errors.push('customers: ' + r2.error.message);
+      }
+    }
   } else {
     // Thử tìm customer_id từ loan_file trong DB
     var lfCheck = await sb.from('loan_files').select('customer_id,apartment_id').eq('id', h.id).single();
