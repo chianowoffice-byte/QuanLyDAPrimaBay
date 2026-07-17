@@ -1182,17 +1182,16 @@ async function dbSaveCIC(h, cic) {
     loan_file_id:  h.id,
     worst_group:   cic.nhomNo ? 'group' + cic.nhomNo : null,
     is_qualified:  (parseInt(cic.nhomNo)||0) <= 1,
-    check_date:    cic.ngay || null,
-    created_at:    new Date().toISOString(),
-    // Cột mở rộng
+    queried_at:    cic.ngay ? new Date(cic.ngay).toISOString() : new Date().toISOString(),
+    queried_by:    _cicOfficer || null,
     ma_so_cic:     cic.maSoCIC    || null,
-    total_debt:    parseInt(cic.tongDuNo)    || null,
-    du_no_the:     parseInt(cic.duNoThe)     || null,
+    total_debt:    parseInt(cic.tongDuNo)   || null,
+    du_no_the:     parseInt(cic.duNoThe)    || null,
     vc_ma_so_cic:  cic.vcMaSoCIC  || null,
-    vc_tong_du_no: parseInt(cic.vcTongDuNo)  || null,
-    vc_du_no_the:  parseInt(cic.vcDuNoThe)   || null,
-    vc_nhom_no:    parseInt(cic.vcNhomNo)    || null,
-    vc_ngay:       cic.vcNgay     || null
+    vc_tong_du_no: parseInt(cic.vcTongDuNo) || null,
+    vc_du_no_the:  parseInt(cic.vcDuNoThe)  || null,
+    vc_nhom_no:    parseInt(cic.vcNhomNo)   || null,
+    vc_ngay:       cic.vcNgay || null
   };
 
   console.log('[CIC] Inserting:', JSON.stringify({loan_file_id: fullData.loan_file_id, worst_group: fullData.worst_group}));
@@ -1209,8 +1208,7 @@ async function dbSaveCIC(h, cic) {
     loan_file_id: h.id,
     worst_group:  fullData.worst_group,
     is_qualified: fullData.is_qualified,
-    check_date:   fullData.check_date,
-    created_at:   fullData.created_at
+    queried_at:   fullData.queried_at
   };
   var r2 = await sb.from('cic_results').insert(minData);
   if (r2.error) {
@@ -1863,7 +1861,7 @@ function mapDbHS(lf) {
         tongDuNo:   cr.total_debt  || '',
         duNoThe:    cr.du_no_the   || '',
         nhomNo:     cr.worst_group ? parseInt((cr.worst_group||'').replace('group',''))||0 : 0,
-        ngay:       cr.check_date  || '',
+        ngay:       (cr.queried_at||'').slice(0,10),
         tctds:      [],
         vcMaSoCIC:  cr.vc_ma_so_cic  || '',
         vcTongDuNo: cr.vc_tong_du_no || '',
