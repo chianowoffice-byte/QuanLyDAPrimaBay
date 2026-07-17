@@ -978,55 +978,57 @@ var confFn = null;
 
 // Map app HS object → loan_files columns
 function mapHSToLF(h) {
+  var appToDb={
+    'moi':'new','dang':'processing','cho':'pending',
+    'choky':'approved','chogn':'approved','xong':'disbursed','tuchoi':'rejected'
+  };
   return {
-    status: (function(){
-      var appToDb = {
-        'moi':'new', 'dang':'processing', 'cho':'pending',
-        'choky':'approved', 'xong':'disbursed', 'tuchoi':'rejected'
-      };
-      return appToDb[h.status] || 'new';
-    })(),
-    officer_id:             h.canBoId     || null,
-    sale_price:             parseInt(h.giaHDMB)            || null,
-    vtc_required:           parseInt(h.vtcPhaiNop)         || null,
-    vtc_paid:               parseInt(h.vtcDaNop)           || null,
-    loan_amount_requested:  parseInt(h.soTienVay)          || null,
-    loan_amount_approved:   parseInt(h.hanMucDuocDuyet)    || null,
-    loan_form:              h.hinhThucVay  || null,
-    loan_policy_ref:        h.csChinhSach  || null,
-    loan_term_months:       parseInt(h.kyHan) || null,
-    hdmb_code:              h.soHDMB       || null,
-    hdmb_date:              h.ngayKyHDMB   || null,
-    max_disbursement_date:  h.hanGiaiNgan  || null,
-    disbursement_date:      h.ngayGiaiNgan || null,
-    disbursement_amount:    parseInt(h.soTienGiaiNgan) || null,
-    is_locked:              h.locked       || false,
-    is_kh_locked:           h.kLocked      || false,
-    locked_by:              h.lockedBy     || null,
-    outcome:                h.outcome      || null,
-    outcome_note:           h.outcomeNote  || null,
-    notes:                  h.ghiChu       || null,
-    updated_at:             new Date().toISOString()
+    status:                appToDb[h.status] || 'new',
+    officer_id:            h.canBoId              || null,
+    sale_price:            parseInt(h.giaHDMB)    || null,
+    vtc_required:          parseInt(h.vtcPhaiNop) || null,
+    vtc_paid:              parseInt(h.vtcDaNop)   || null,
+    loan_amount_requested: parseInt(h.soTienVay)  || null,
+    loan_term_months:      parseInt(h.kyHan)       || null,
+    loan_amount_approved:  parseInt(h.hanMucDuocDuyet) || null,
+    loan_form:             h.hinhThucVay  || null,
+    loan_policy_ref:       h.csChinhSach  || null,
+    hdmb_code:             h.soHDMB       || null,
+    hdmb_date:             h.ngayKyHDMB   || null,
+    max_disbursement_date: h.hanGiaiNgan  || null,
+    disbursement_date:     h.ngayGiaiNgan || null,
+    disbursement_amount:   parseInt(h.soTienGiaiNgan) || null,
+    is_locked:             h.locked    || false,
+    is_kh_locked:          h.kLocked   || false,
+    locked_by:             h.lockedBy  || null,
+    notes:                 h.ghiChu    || null,
+    drive_folder_url:      h.drive_folder_url || null,
+    updated_at:            new Date().toISOString()
   };
 }
 
 // Map app KH object → customers columns
 function mapHSToCust(h) {
   return {
-    full_name:         h.tenKH      || null,
-    id_number:         h.cccd       || null,
-    phone:             h.sdt        || null,
-    email:             h.email      || null,
-    address:           h.diaChi     || null,
-    occupation:        h.ngheNghiep || null,
+    full_name:         h.tenKH        || null,
+    id_number:         h.cccd         || null,
+    phone:             h.sdt          || null,
+    email:             h.email        || null,
+    address:           h.diaChi       || null,
+    dob:               h.ngaySinh     || null,
+    occupation:        h.ngheNghiep   || null,
     monthly_income:    parseFloat(h.thuNhap) || null,
-    has_co_borrower:   h.coVoChong  || false,
-    co_name:           h.tenVC      || null,
-    co_id_number:      h.cccdVC     || null,
-    co_phone:          h.sdtVC      || null,
-    co_email:          h.emailVC    || null,
+    cif:               h.cif          || null,
+    agent:             h.daiLy        || null,
+    has_co_borrower:   h.coVoChong    || false,
+    co_name:           h.tenVC        || null,
+    co_id_number:      h.cccdVC       || null,
+    co_phone:          h.sdtVC        || null,
+    co_dob:            h.ngaySinhVC   || null,
     co_occupation:     h.ngheNghiepVC || null,
     co_monthly_income: parseFloat(h.thuNhapVC) || null,
+    email_co_borrower: h.emailVC      || null,
+    cif_co_borrower:   h.cifVC        || null,
     updated_at:        new Date().toISOString()
   };
 }
