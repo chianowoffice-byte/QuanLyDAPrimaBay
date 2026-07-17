@@ -1042,6 +1042,7 @@ async function dbSaveLoanFile(h) {
 
   // Update loan_files
   console.log('[DB] Saving loan_file', h.id, lfData);
+  console.log('[DB] loan_files update:', h.id, Object.keys(lfData));
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id);
   if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error);
@@ -1069,13 +1070,15 @@ async function dbSaveLoanFile(h) {
     }
   }
 
-  // Ghi activity log
-  await sb.from('activity_log').insert({
-    loan_file_id: h.id,
-    action: 'update',
-    description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
-    created_at: new Date().toISOString()
-  });
+  // Ghi activity log (bỏ qua nếu lỗi)
+  try {
+    await sb.from('activity_log').insert({
+      loan_file_id: h.id,
+      action: 'update',
+      description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
+      created_at: new Date().toISOString()
+    });
+  } catch(e) { console.warn('activity_log skip:', e.message); }
 
   if (errors.length) {
     console.warn('dbSaveLoanFile warnings:', errors);
