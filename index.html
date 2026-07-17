@@ -801,7 +801,8 @@ async function sbLoadHS() {
       apartments(*),
       users!loan_files_officer_id_fkey(id, full_name, email, pgd),
       weekly_reports(*),
-      checklist_items(*)
+      checklist_items(*),
+      cic_results(*)
     `)
     .order('bim_seq', { ascending: true });
   if (error) { console.error('sbLoadHS:', error); return []; }
@@ -876,7 +877,8 @@ async function sbLoadHS() {
       apartments(*),
       users!loan_files_officer_id_fkey(id, full_name, email, pgd),
       weekly_reports(*),
-      checklist_items(*)
+      checklist_items(*),
+      cic_results(*)
     `)
     .order('bim_seq', { ascending: true });
   if (error) { console.error('sbLoadHS:', error); return []; }
@@ -1810,7 +1812,25 @@ function mapDbHS(lf) {
     files: {},
     contacts: [],
     createdAt: lf.created_at || '',
-    updatedAt: lf.updated_at || ''
+    updatedAt: lf.updated_at || '',
+    // CIC từ DB
+    cic: (function(){
+      var cr = lf.cic_results && lf.cic_results[0];
+      if (!cr) return {};
+      return {
+        maSoCIC:    cr.ma_so_cic   || '',
+        tongDuNo:   cr.total_debt  || '',
+        duNoThe:    cr.du_no_the   || '',
+        nhomNo:     cr.worst_group ? parseInt((cr.worst_group||'').replace('group',''))||0 : 0,
+        ngay:       cr.check_date  || '',
+        tctds:      [],
+        vcMaSoCIC:  cr.vc_ma_so_cic  || '',
+        vcTongDuNo: cr.vc_tong_du_no || '',
+        vcDuNoThe:  cr.vc_du_no_the  || '',
+        vcNhomNo:   cr.vc_nhom_no    || 0,
+        vcNgay:     cr.vc_ngay       || ''
+      };
+    })()
   };
 }
 function doLogout(){
@@ -2060,12 +2080,7 @@ function toggleCK(id){
   var item=cb.closest('.ck-item'); if(item) item.classList.toggle('checked',cb.checked);
   updateCKPct();
 }
-function toggleCKGroup(gid){
-  var g=CK_GROUPS.find(function(x){return x.id===gid;}); if(!g) return;
-  var allDone=g.items.every(function(it){ var cb=document.getElementById('ck-'+it.id); return cb&&cb.checked; });
-  g.items.forEach(function(it){ var cb=document.getElementById('ck-'+it.id); if(cb){ cb.checked=!allDone; var item=cb.closest('.ck-item'); if(item) item.classList.toggle('checked',!allDone); } });
-  updateCKPct();
-}
+
 function collectCK(){
   var ck={};
   CK_GROUPS.forEach(function(g){ g.items.forEach(function(it){ var cb=document.getElementById('ck-'+it.id); ck[it.id]=!!(cb&&cb.checked); }); });
@@ -2487,11 +2502,6 @@ function renderDocsGrid(h, locked) {
       html += '</div>';
     });
     html += '</div></div>';
-    // Tick all
-    html += '<div class="ck-all" data-gid="' + g.id + '" onclick="' + (locked ? '' : 'toggleCKGroup(this.dataset.gid)') + '">';
-    html += '<input type="checkbox" ' + (done ? 'checked' : '') + (locked ? ' disabled' : '') + ' onclick="event.stopPropagation()">';
-    html += '<span>' + (done ? '&#10003; Du nhom nay' : 'Tich tat ca nhom nay') + '</span></div>';
-    html += '</div>';
   });
   html += '</div>';
   el.innerHTML = html;
