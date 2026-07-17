@@ -143,7 +143,7 @@ tr:hover td{background:#EDF6F4}
 .modal.sm{max-width:460px}.modal.md{max-width:640px}
 .mh{padding:18px 24px 14px;border-bottom:2px solid #006B5E;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .mh h2{font-size:16px;font-weight:600;color:#006B5E}
-.mb{padding:20px 24px;flex:1;overflow-y:auto;min-height:0;min-width:0}
+.mb{padding:16px 18px;flex:1;overflow-y:auto;min-height:0;min-width:0}
 .mf{padding:14px 24px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .mhd{padding:16px 20px;font-weight:600;font-size:15px;border-bottom:1px solid var(--bdr);color:#006B5E}
 .mbody{padding:16px 20px;font-size:14px}
@@ -173,15 +173,15 @@ tr:hover td{background:#EDF6F4}
 .page.active{display:flex}
 
 /* CHECKLIST */
-.ck-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.ck-grid{display:grid;grid-template-columns:repeat(2,minmax(200px,1fr));gap:10px;margin-bottom:14px}
 .ck-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
 .ck-hd{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:#E0F5F1;color:#006B5E;display:flex;align-items:center;justify-content:space-between}
 .ck-hd.done{background:#006B5E;color:#fff}
-.ck-body{padding:8px 14px}
-.ck-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)}
+.ck-body{padding:4px 10px}
+.ck-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr)}
 .ck-item:last-child{border-bottom:none}
 .ck-item input[type=checkbox]{width:16px;height:16px;accent-color:#006B5E;cursor:pointer;flex-shrink:0;margin-top:2px}
-.ck-lbl{font-size:13px;line-height:1.4}
+.ck-lbl{font-size:12px;line-height:1.3}
 .ck-item.checked{background:#EDF6F4;border-radius:4px;padding-left:4px}
 .ck-item.checked .ck-lbl{color:#006B5E;font-weight:500}
 input[type=checkbox]:checked{accent-color:#006B5E}
@@ -241,8 +241,8 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 #btn-reload-data:hover{color:#F5D87A;border-color:#F5A623;background:rgba(245,166,35,.15)}
 
 /* STICKY */
-#mhs-body .tabs{position:sticky;top:-20px;z-index:10;margin:-20px -24px 16px -24px;padding:0 24px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.save-bar{position:sticky;bottom:-20px;margin:16px -24px -20px -24px;padding:12px 24px;background:var(--surf);border-top:1px solid var(--bdr);box-shadow:0 -2px 8px rgba(0,0,0,.06);display:flex;gap:8px;z-index:10}
+#mhs-body .tabs{position:sticky;top:-16px;z-index:10;margin:-16px -18px 14px -18px;padding:0 18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.save-bar{position:sticky;bottom:-16px;margin:14px -18px -16px -18px;padding:10px 18px;background:var(--surf);border-top:1px solid var(--bdr);box-shadow:0 -2px 8px rgba(0,0,0,.06);display:flex;gap:8px;z-index:10}
 .sb-footer-branch{margin-bottom:8px}
 .sb-footer-divider{height:1px;background:rgba(255,255,255,.2);margin-bottom:10px}
 
@@ -2512,7 +2512,7 @@ function renderDocsGrid(h, locked) {
   var el = document.getElementById('docs-grid'); if (!el) return;
   var ck = h ? (h.ck || {}) : {};
   var files = h ? (h.files || {}) : {};
-  var html = '<div class="ck-grid">';
+  var html = '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px">';
   CK_GROUPS.forEach(function(g) {
     var done = g.items.every(function(it) { return ck[it.id]; });
     html += '<div class="ck-card">';
