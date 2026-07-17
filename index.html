@@ -1584,17 +1584,17 @@ var CK_GROUPS = [
 
 var CT_STATUS_LABELS_FULL = {
   chua_lh:         'Chưa liên hệ được với KH',
-  dang_can_nhac:'KH đang cân nhắc phương án vay',
-  dong_y_cung_cap:'KH đồng ý vay - Đang cung cấp hồ sơ',
-  kh_tu_choi:  'KH từ chối vay',
-  nh_tu_choi:  'NH từ chối cho vay',
-  von_tu_co:   'Chuyển sang thanh toán bằng vốn tự có',
-  nop_du:      'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
-  da_phe_duyet:'Đã phê duyệt cho vay',
-  soan_hs:     'Đã soạn hồ sơ và check file mềm',
-  cho_gn:      'Đã ký hồ sơ - Chờ giải ngân',
-  da_gn:       'Đã giải ngân',
-  khac:        'Khác'
+  dang_can_nhac:   'KH đang cân nhắc phương án vay',
+  dong_y_cung_cap: 'KH đồng ý vay - Đang cung cấp hồ sơ',
+  kh_tu_choi:      'KH từ chối vay',
+  nh_tu_choi:      'NH từ chối cho vay',
+  von_tu_co:       'Chuyển sang thanh toán bằng vốn tự có',
+  nop_du:          'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
+  da_phe_duyet:    'Đã phê duyệt cho vay',
+  soan_hs:         'Đã soạn hồ sơ và check file mềm',
+  cho_gn:          'Đã ký hồ sơ - Chờ giải ngân',
+  da_gn:           'Đã giải ngân',
+  khac:            'Khác'
 };
 function ckProgress(h){
   var total=0, done=0;
@@ -3768,7 +3768,7 @@ function buildWeeklyReportForm(h) {
         html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#E8F4FD;color:#000">';
         html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
         html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
-        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.chiTiet || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + ((r2.chiTiet||'').replace(/^\[KQ:[^\]]+\]\s*/,'')) + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.deXuat || '') + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
         html2 += '</tr>';
