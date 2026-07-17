@@ -1085,17 +1085,18 @@ async function dbSaveWeeklyReport(h, entry) {
 
   // Map app status mới → enum contact_status trong DB
   var statusMap = {
+    // App key → DB contact_status enum (dùng giá trị có sẵn trong DB)
     'chua_lh':         'no_answer',
     'dang_can_nhac':   'contacted',
-    'dong_y_cung_cap': 'waiting_docs',   // KH đồng ý - đang cung cấp
+    'dong_y_cung_cap': 'waiting_docs',
     'kh_tu_choi':      'rejected_kh',
     'nh_tu_choi':      'rejected_income',
     'von_tu_co':       'other',
     'nop_du':          'docs_complete',
     'da_phe_duyet':    'approved_loan',
-    'soan_hs':         'approved_loan',
-    'cho_gn':          'approved_loan',
-    'da_gn':           'approved_loan',  // Đã GN - dùng approved_loan vì enum không có disbursed
+    'soan_hs':         'other',       // Dùng other, [KQ:soan_hs] lưu trong detail
+    'cho_gn':          'other',       // Dùng other, [KQ:cho_gn] lưu trong detail
+    'da_gn':           'other',       // Dùng other, [KQ:da_gn] lưu trong detail
     'khac':            'other',
     // Legacy
     'da_lh':           'contacted',
@@ -3690,7 +3691,9 @@ function deriveHSStatus(h) {
 
 function getStatusLabel(val) {
   if (!val) return '—';
-  return CT_STATUS_LABELS_FULL[val] || DB_STATUS_LABELS[val] || val;
+  // Strip [KQ:xxx] → lấy app key
+  var clean = val.replace(/^\[KQ:([^\]]+)\].*$/, '$1').trim();
+  return CT_STATUS_LABELS_FULL[clean] || DB_STATUS_LABELS[clean] || clean;
 }
 
 function getWhoName(whoVal) {
@@ -3760,7 +3763,7 @@ function buildWeeklyReportForm(h) {
       if (r2.type === 'cdt_feedback') {
         html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#FFF;color:#B8860B">';
         html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
-        html2 += '<td style="padding:6px 10px;font-weight:600;color:#B8860B" colspan="3">💬 CĐT: ' + (r2.chiTiet || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;font-weight:600;color:#B8860B" colspan="3">💬 CĐT: ' + ((r2.chiTiet||'').replace(/^\[KQ:[^\]]+\]\s*/,'')) + '</td>';
         html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
         html2 += '</tr>';
       } else {
@@ -3829,7 +3832,7 @@ function saveWeeklyReport() {
   var entry = {
     time:    nowStr(),
     ketQua:  kq.value,
-    chiTiet: ct ? ct.value : '',
+    chiTiet: ct ? ct.value.trim() : '',
     deXuat:  dx ? dx.value : '',
     who:     currentUser.name,
     weekNum: getWeekNum()
