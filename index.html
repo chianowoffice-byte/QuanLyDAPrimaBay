@@ -1186,7 +1186,6 @@ async function dbSaveCIC(h, cic) {
   var fullData = {
     loan_file_id:  h.id,
     worst_group:   cic.nhomNo ? 'group' + cic.nhomNo : null,
-    is_qualified:  (parseInt(cic.nhomNo)||0) <= 1,
     queried_at:    cic.ngay ? new Date(cic.ngay).toISOString() : new Date().toISOString(),
     queried_by:    _cicOfficer || null,
     ma_so_cic:     cic.maSoCIC    || null,
@@ -1212,7 +1211,6 @@ async function dbSaveCIC(h, cic) {
   var minData = {
     loan_file_id: h.id,
     worst_group:  fullData.worst_group,
-    is_qualified: fullData.is_qualified,
     queried_at:   fullData.queried_at
   };
   var r2 = await sb.from('cic_results').insert(minData);
