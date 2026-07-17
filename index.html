@@ -1073,7 +1073,7 @@ async function dbSaveLoanFile(h) {
     action: 'update',
     description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
     created_at: new Date().toISOString()
-  }).catch(function(){});
+  });
 
   if (errors.length) {
     console.warn('dbSaveLoanFile warnings:', errors);
@@ -1170,7 +1170,7 @@ async function dbSaveWeeklyReport(h, entry) {
 async function dbSaveCIC(h, cic) {
   if (!h || !h.id) return;
   // Xoá CIC cũ
-  await sb.from('cic_results').delete().eq('loan_file_id', h.id).catch(function(){});
+  try { await sb.from('cic_results').delete().eq('loan_file_id', h.id); } catch(e) {}
 
   // Thử full data trước
   var _cicOfficer = null;
