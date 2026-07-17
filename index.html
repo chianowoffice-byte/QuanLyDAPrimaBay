@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+
+
 :root{
   --bg:#F4F9F8; --surf:#FFF; --surf2:#EDF6F4;
   --bdr:#C8E0DC; --bdr2:#9ECBC5;
@@ -241,8 +243,11 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 .save-bar{position:sticky;bottom:-20px;margin:16px -24px -20px -24px;padding:12px 24px;background:var(--surf);border-top:1px solid var(--bdr);box-shadow:0 -2px 8px rgba(0,0,0,.06);display:flex;gap:8px;z-index:10}
 .sb-footer-branch{margin-bottom:8px}
 .sb-footer-divider{height:1px;background:rgba(255,255,255,.2);margin-bottom:10px}
+
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -271,7 +276,7 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 <div id="app-wrap">
   <aside class="sidebar">
     <div class="sb-logo">
-      <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:26px;object-fit:contain;margin-bottom:6px;display:block">
+      <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:24px;object-fit:contain;margin-bottom:6px;display:block">
       <div class="bn">PrimaBay Credit</div>
       <div class="bs">Chi nhánh Tràng Tiền – Hà Nội</div>
     </div>
@@ -564,6 +569,213 @@ window.onerror = function(msg,src,line,col,err){
   document.body && document.body.appendChild(d);
   return false;
 };
+
+// ══════════════════════════════════════════════════════════════
+// GOOGLE DRIVE — OAuth trực tiếp từ browser (GAPI + GIS)
+// CB đăng nhập Google 1 lần, token tự gia hạn
+// ══════════════════════════════════════════════════════════════
+var DRIVE_CLIENT_ID     = '512388342621-u9hdd3829hgsqq9tq85lut0hn9m1a25k.apps.googleusercontent.com';
+var DRIVE_ROOT_ID       = '1VUgZQMffWrTrL7RtoqYb-dOUp447uBud';
+var DRIVE_SCOPES        = 'https://www.googleapis.com/auth/drive.file';
+var _gapiReady          = false;
+var _driveAccessToken   = null;
+var _driveTokenExpiry   = 0;
+
+// Khởi tạo sau khi GAPI load
+function onGapiLoad() {
+  gapi.load('client', function(){
+    gapi.client.init({}).then(function(){
+      _gapiReady = true;
+      // Nếu có token cũ trong session, khôi phục
+      var saved = sessionStorage.getItem('drive_token');
+      if (saved) {
+        var t = JSON.parse(saved);
+        if (t.expiry > Date.now()) {
+          _driveAccessToken = t.token;
+          _driveTokenExpiry = t.expiry;
+          updateDriveStatus(true);
+        }
+      }
+    });
+  });
+}
+
+// Hiển thị trạng thái Drive trong UI
+function updateDriveStatus(connected) {
+  var el = document.getElementById('drive-status-bar');
+  if (!el) return;
+  if (connected) {
+    el.innerHTML = '<span style="color:#006B5E;font-weight:600">✅ Đã kết nối Google Drive</span>'
+      + (currentHS() && currentHS().drive_folder_url
+        ? ' <a href="'+currentHS().drive_folder_url+'" target="_blank" style="font-size:11px;color:var(--blue);margin-left:8px">📂 Xem thư mục</a>'
+        : '');
+  } else {
+    el.innerHTML = '<span style="font-size:12px;color:var(--txt2)">Chưa kết nối Google Drive</span>'
+      + '<button class="btn btn-sm btn-primary" style="margin-left:10px" onclick="connectDrive()">🔗 Kết nối Drive</button>';
+  }
+}
+
+function currentHS() {
+  return hsList.find(function(x){ return x.id===currentHSId; });
+}
+
+// Kết nối Drive — hiện popup Google OAuth
+function connectDrive() {
+  if (!DRIVE_CLIENT_ID) {
+    showNotif('⚠️ Chưa cấu hình Client ID. Liên hệ Admin.');
+    return;
+  }
+  var client = google.accounts.oauth2.initTokenClient({
+    client_id: DRIVE_CLIENT_ID,
+    scope:     DRIVE_SCOPES,
+    callback:  function(resp) {
+      if (resp.error) { showNotif('❌ Lỗi kết nối Drive: ' + resp.error); return; }
+      _driveAccessToken = resp.access_token;
+      _driveTokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
+      sessionStorage.setItem('drive_token', JSON.stringify({
+        token: _driveAccessToken, expiry: _driveTokenExpiry
+      }));
+      showNotif('✅ Đã kết nối Google Drive!');
+      updateDriveStatus(true);
+    }
+  });
+  client.requestAccessToken();
+}
+
+function requestDriveAuth() { connectDrive(); }
+function initGoogleDrive() {
+  // Khởi tạo khi vào app
+  setTimeout(function(){
+    var saved = sessionStorage.getItem('drive_token');
+    if (saved) {
+      var t = JSON.parse(saved);
+      if (t.expiry > Date.now()) {
+        _driveAccessToken = t.token;
+        _driveTokenExpiry = t.expiry;
+        updateDriveStatus(true);
+      } else {
+        updateDriveStatus(false);
+      }
+    } else {
+      updateDriveStatus(false);
+    }
+  }, 500);
+}
+
+// Gọi Drive API
+async function driveAPI(method, path, body, isUpload) {
+  if (!_driveAccessToken) throw new Error('Chưa kết nối Drive');
+  var base = isUpload
+    ? 'https://www.googleapis.com/upload/drive/v3'
+    : 'https://www.googleapis.com/drive/v3';
+  var res = await fetch(base + path, {
+    method: method,
+    headers: { 'Authorization': 'Bearer ' + _driveAccessToken,
+               'Content-Type': body instanceof FormData ? undefined : 'application/json' },
+    body: body ? (body instanceof FormData ? body : JSON.stringify(body)) : undefined
+  });
+  if (res.status === 401) {
+    _driveAccessToken = null;
+    sessionStorage.removeItem('drive_token');
+    updateDriveStatus(false);
+    throw new Error('Token hết hạn. Vui lòng kết nối lại Drive.');
+  }
+  return await res.json();
+}
+
+// Tìm hoặc tạo folder
+async function driveGetOrCreateFolder(parentId, name) {
+  var safe = name.replace(/'/g, "\\'");
+  var q = "name='" + safe + "' and '" + parentId + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false";
+  var found = await driveAPI('GET', '/files?q=' + encodeURIComponent(q) + '&fields=files(id,webViewLink,name)');
+  if (found.files && found.files.length > 0) return found.files[0];
+  return await driveAPI('POST', '/files?fields=id,webViewLink,name', {
+    name: name,
+    mimeType: 'application/vnd.google-apps.folder',
+    parents: [parentId]
+  });
+}
+
+// Upload file
+async function driveUploadFile(folderId, file) {
+  var meta = { name: file.name, parents: [folderId] };
+  var boundary = 'dr' + Date.now();
+  var bytes = await file.arrayBuffer();
+  var enc = new TextEncoder();
+  var p1 = enc.encode('--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(meta)+'\r\n');
+  var p2 = enc.encode('--'+boundary+'\r\nContent-Type: '+(file.type||'application/octet-stream')+'\r\n\r\n');
+  var p3 = new Uint8Array(bytes);
+  var p4 = enc.encode('\r\n--'+boundary+'--');
+  var body = new Uint8Array(p1.length+p2.length+p3.length+p4.length);
+  var off=0; [p1,p2,p3,p4].forEach(function(p){body.set(p,off);off+=p.length;});
+
+  var res = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer '+_driveAccessToken,
+      'Content-Type': 'multipart/related; boundary='+boundary
+    },
+    body: body
+  });
+  if (res.status===401){
+    _driveAccessToken=null; sessionStorage.removeItem('drive_token');
+    updateDriveStatus(false);
+    throw new Error('Token hết hạn. Vui lòng kết nối lại.');
+  }
+  return await res.json();
+}
+
+// Hàm chính: upload nhiều file
+async function handleDriveUpload(gid, files) {
+  if (!files||!files.length) return;
+  if (!_driveAccessToken) {
+    showNotif('⚠️ Vui lòng kết nối Google Drive trước khi upload');
+    connectDrive();
+    return;
+  }
+  if (!DRIVE_ROOT_ID) { showNotif('⚠️ Chưa cấu hình Folder ID. Liên hệ Admin.'); return; }
+
+  var h = hsList.find(function(x){return x.id===currentHSId;});
+  if (!h) return;
+  var folderName = ((h.maCanHo||'CHUA_CO_MA')+' - '+(h.tenKH||'CHUA_CO_TEN')).replace(/[/\\?%*:|"<>]/g,'-');
+
+  try {
+    showNotif('⏳ Đang tạo thư mục Drive...');
+    var folder = await driveGetOrCreateFolder(DRIVE_ROOT_ID, folderName);
+    if (!folder||!folder.id) throw new Error('Không tạo được folder');
+
+    var uploaded = [];
+    for (var i=0; i<files.length; i++) {
+      showNotif('⏳ Upload ('+(i+1)+'/'+files.length+'): '+files[i].name);
+      var result = await driveUploadFile(folder.id, files[i]);
+      if (result&&result.id) uploaded.push({
+        name: result.name, driveLink: result.webViewLink, driveId: result.id
+      });
+    }
+
+    // Lưu vào hsList
+    var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
+    if (!hsList[idx].files) hsList[idx].files={};
+    if (!hsList[idx].files[gid]) hsList[idx].files[gid]=[];
+    uploaded.forEach(function(up){
+      if (!hsList[idx].files[gid].find(function(x){return x.driveId===up.driveId;}))
+        hsList[idx].files[gid].push(up);
+    });
+    if (!hsList[idx].driveFolders) hsList[idx].driveFolders={};
+    hsList[idx].driveFolders[gid]={link:folder.webViewLink,name:folderName,id:folder.id};
+    hsList[idx].drive_folder_url = folder.webViewLink;
+    hsList[idx].updatedAt=nowStr();
+    persist();
+    showNotif('✅ Đã upload '+uploaded.length+' file lên Drive!');
+    updateDriveStatus(true);
+    renderDocsGrid(hsList[idx],hsList[idx].locked);
+  } catch(e) {
+    console.error('Drive error:',e);
+    showNotif('❌ '+e.message);
+  }
+}
+
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════
 var SUPABASE_URL = 'https://oodeswfnxnqabjbmecmi.supabase.co';
@@ -3686,29 +3898,27 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (!restoreSession()) return; // Không có session hoặc đã hết hạn → ở lại màn hình login
 
   // Có session hợp lệ → load dữ liệu và vào app
-  // Luôn vào app ngay với data localStorage, sau đó load DB ngầm
-  function enterApp() {
-    document.getElementById('login-wrap').style.display = 'none';
-    document.getElementById('app-wrap').classList.add('show');
-    try { applyPerms(); } catch(e){ console.error('applyPerms:', e); }
-    try { showPage(isCDT() ? 'cdt-view' : 'db'); } catch(e){ console.error('showPage:', e); }
-    try { initIdleWatcher(); } catch(e){ console.error('initIdleWatcher:', e); }
-  }
-
-  // Vào app ngay với data cũ
-  enterApp();
-
-  // Load DB ngầm để cập nhật mới nhất
   try {
+    var btn = document.getElementById('login-btn');
+    if (btn) { btn.textContent = '⏳ Đang khôi phục...'; btn.disabled = true; }
+
     var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
     if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
     if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
     persist();
-    try { renderDB(); renderHSTable(); } catch(e){}
-    showNotif('✅ Dữ liệu đã được cập nhật');
+
+    // Hiển thị app
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('app-wrap').classList.add('show');
+    applyPerms();
+    showPage(isCDT() ? 'cdt-view' : 'db');
+    initIdleWatcher();
+    showNotif('✅ Đã khôi phục phiên đăng nhập');
   } catch(e) {
-    console.warn('Load DB failed, using cached data:', e.message);
-    showNotif('⚠️ Dùng dữ liệu cache (không có mạng?)');
+    console.error('Restore session failed:', e);
+    // Nếu load DB thất bại → ở lại login
+    currentUser = null;
+    localStorage.removeItem('pb5_session');
   }
 });
 
@@ -3729,5 +3939,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 })();
 
 </script>
+<div id="toast-notif"></div>
 </body>
 </html>
