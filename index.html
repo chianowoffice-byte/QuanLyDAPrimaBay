@@ -249,6 +249,47 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 
 
 .b-chogn{background:#E8F4FD;color:#1A5276;font-weight:700}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+  #app-wrap.show { flex-direction: column; }
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    min-height: unset !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+  .sb-logo { display: none; }
+  .sb-nav { display: flex; flex-direction: row; padding: 4px 8px; }
+  .nav-sec { display: none; }
+  .nav-it { padding: 6px 10px; font-size: 11px; white-space: nowrap; border-left: none !important; border-bottom: 3px solid transparent; }
+  .nav-it.active { border-bottom-color: #F5A623 !important; border-left: none !important; }
+  .sb-user { padding: 4px 8px; border-top: none; border-left: 1px solid rgba(255,255,255,.2); }
+  .sb-footer { display: none; }
+  .main { min-width: 0; }
+  .content { padding: 12px; }
+}
+
+/* ── Table horizontal scroll ── */
+.twrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.twrap table { min-width: 700px; }
+
+/* ── Modal full screen on mobile ── */
+@media (max-width: 768px) {
+  .overlay { padding: 0 !important; align-items: flex-end !important; }
+  .modal { width: 100% !important; max-width: 100% !important; min-width: unset !important;
+           border-radius: 12px 12px 0 0 !important; max-height: 95vh !important; }
+  .tabs { overflow-x: auto !important; }
+  .tab { font-size: 12px !important; padding: 7px 10px !important; white-space: nowrap; }
+  .ck-grid, [style*="grid-template-columns:1fr 1fr"] { 
+    grid-template-columns: 1fr !important; 
+  }
+  .fgrid { grid-template-columns: 1fr !important; }
+  .fgrid3 { grid-template-columns: 1fr !important; }
+  .stats-row { grid-template-columns: repeat(2,1fr) !important; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -2172,7 +2213,9 @@ function buildHSForm(h) {
   var isCDTUser  = isCDT();
   var isCDTAdmin = currentUser && (currentUser.db_role === 'cdt_admin' || currentUser.role === 'cdt_admin');
   var isQLAdmin  = isQL();
-  var isCBOwner  = !isQLAdmin && !isCDTUser && h && h.canBoId === currentUser.id;
+  // QL được edit hồ sơ phân cho mình (giống CB)
+  var isQLOwner  = isQL() && !isAdmin() && h && h.canBoId === currentUser.id;
+  var isCBOwner  = (!isQLAdmin && !isCDTUser && h && h.canBoId === currentUser.id) || isQLOwner;
   var isCBOther  = !isQLAdmin && !isCDTUser && !(h && h.canBoId === currentUser.id);
 
   // Viewer: xem tất cả nhưng không sửa
