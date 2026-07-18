@@ -2213,9 +2213,10 @@ function buildHSForm(h) {
   var isCDTUser  = isCDT();
   var isCDTAdmin = currentUser && (currentUser.db_role === 'cdt_admin' || currentUser.role === 'cdt_admin');
   var isQLAdmin  = isQL();
-  // QL được edit hồ sơ phân cho mình (giống CB)
-  var isQLOwner  = isQL() && !isAdmin() && h && h.canBoId === currentUser.id;
-  var isCBOwner  = (!isQLAdmin && !isCDTUser && h && h.canBoId === currentUser.id) || isQLOwner;
+  // QL sở hữu HỒ SƠ CỦA MÌNH → được edit như CB (nhưng vẫn giữ quyền QL khác)
+  var isQLOwner  = !isAdmin() && isQL() && h && h.canBoId === currentUser.id;
+  // isCBOwner: CB sở hữu OR QL sở hữu → được nhập thông tin KH, checklist, CIC, tiến độ
+  var isCBOwner  = (!isCDTUser && !isViewerUser && h && h.canBoId === currentUser.id);
   var isCBOther  = !isQLAdmin && !isCDTUser && !(h && h.canBoId === currentUser.id);
 
   // Viewer: xem tất cả nhưng không sửa
