@@ -2213,11 +2213,12 @@ function buildHSForm(h) {
   var isCDTUser  = isCDT();
   var isCDTAdmin = currentUser && (currentUser.db_role === 'cdt_admin' || currentUser.role === 'cdt_admin');
   var isQLAdmin  = isQL();
-  // QL sở hữu HỒ SƠ CỦA MÌNH → được edit như CB (nhưng vẫn giữ quyền QL khác)
-  var isQLOwner  = !isAdmin() && isQL() && h && h.canBoId === currentUser.id;
-  // isCBOwner: CB sở hữu OR QL sở hữu → được nhập thông tin KH, checklist, CIC, tiến độ
-  var isCBOwner  = (!isCDTUser && !isViewerUser && h && h.canBoId === currentUser.id);
-  var isCBOther  = !isQLAdmin && !isCDTUser && !(h && h.canBoId === currentUser.id);
+  // QL sở hữu hồ sơ của mình → edit như CB
+  var isQLOwner  = isQL() && !isAdmin() && h && h.canBoId === currentUser.id;
+  // isCBOwner: người được phân hồ sơ (CB hoặc QL) → có quyền nhập liệu
+  var isCBOwner  = !isCDTUser && !isViewerUser && h && h.canBoId === currentUser.id;
+  // isCBOther: CB không được phân → không xem được
+  var isCBOther  = !isQLAdmin && !isCDTUser && !isViewerUser && !(h && h.canBoId === currentUser.id);
 
   // Viewer: xem tất cả nhưng không sửa
   var isViewerUser = isViewer();
@@ -2266,8 +2267,8 @@ function buildHSForm(h) {
 
   // ── Thông tin KH chính ──
   // Tất cả thấy rõ | CB sửa được | QL/Admin/CĐT xem (dim)
-  var khDim = (isCDTUser || isQLAdmin || isViewerUser) ? 'disabled' : (kLocked ? 'disabled' : '');
-  var khDimClass = (isCDTUser || isQLAdmin || isViewerUser) ? 'cdt-section-dim' : '';
+  var khDim = (isCDTUser || (isQLAdmin && !isCBOwner) || isViewerUser) ? 'disabled' : (kLocked ? 'disabled' : '');
+  var khDimClass = (isCDTUser || (isQLAdmin && !isCBOwner) || isViewerUser) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div class="fsec-title" style="display:flex;align-items:center;justify-content:space-between">';
   html += '<span>Thông tin khách hàng chính</span>';
@@ -2356,7 +2357,7 @@ function buildHSForm(h) {
   });
   var gnCanEdit = isCBOwner && !locked && ckOK && !isViewerUser;
   var gnDim = gnCanEdit ? '' : 'disabled';
-  var gnDimClass = (!isCBOwner && !isQLAdmin) ? 'cdt-section-dim' : (isCBOwner && !ckOK ? 'cdt-section-dim' : '');
+  var gnDimClass = (!isCBOwner && !(isQLAdmin && !isCBOwner)) ? 'cdt-section-dim' : (isCBOwner && !ckOK ? 'cdt-section-dim' : '');
   html += '<div class="fsec ' + gnDimClass + '">';
   html += '<div class="fsec-title">Phê duyệt & Giải ngân';
   if (isCBOwner && !ckOK) {
