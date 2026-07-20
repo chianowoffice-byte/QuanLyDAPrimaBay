@@ -2636,7 +2636,7 @@ function renderDocsGrid(h, locked) {
 
       // Upload zone
       html += '<div style="padding:6px 10px;border-top:1px solid var(--bdr);background:var(--surf2)">';
-      if (!locked) {
+      if (!locked && !isCDT()) {
         html += '<div class="upload-zone" data-upid="' + g.id + '" onclick="triggerUpload(this.dataset.upid)" '
           + 'style="padding:6px;font-size:11px">📎 Upload PDF / Ảnh</div>';
         html += '<input type="file" id="upl-' + g.id + '" style="display:none" multiple '
