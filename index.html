@@ -3654,34 +3654,114 @@ async function exportCDTExcel() {
     wsData.push(row);
   });
 
-  // ── 6. Tạo worksheet và download ─────────────────────
+  // ── 6. Tạo worksheet với formatting ─────────────────
   var ws = XLSX.utils.aoa_to_sheet(wsData);
 
   // Merge cells
   var merges = [
-    {s:{r:0,c:0},e:{r:0,c:0}},   // A1 (STT placeholder)
     {s:{r:1,c:0},e:{r:3,c:0}},   // A2:A4 STT
     {s:{r:1,c:1},e:{r:2,c:17}},  // B2:R3 Thông tin SP
     {s:{r:1,c:18},e:{r:1,c:25}}, // S2:Z2 Ngân hàng
     {s:{r:2,c:20},e:{r:2,c:22}}, // U3:W3 CBBH
     {s:{r:2,c:23},e:{r:2,c:25}}, // X3:Z3 CB QL
   ];
-  // Merge tuần header row1 + group rows
   weeks.forEach(function(w, i) {
     var sc = FIXED_COLS + i*WEEK_COLS;
-    merges.push({s:{r:0,c:sc},e:{r:0,c:sc+6}});  // Row 1: tuần
-    merges.push({s:{r:1,c:sc},e:{r:2,c:sc+4}});  // Row 2: Tình trạng (5 cột)
-    merges.push({s:{r:1,c:sc+5},e:{r:2,c:sc+6}}); // Row 2: Giải ngân (2 cột)
+    merges.push({s:{r:0,c:sc},e:{r:0,c:sc+6}});
+    merges.push({s:{r:1,c:sc},e:{r:2,c:sc+4}});
+    merges.push({s:{r:1,c:sc+5},e:{r:2,c:sc+6}});
   });
   ws['!merges'] = merges;
 
   // Col widths
-  var cols = [];
-  for (var ci=0; ci<FIXED_COLS+weeks.length*WEEK_COLS; ci++) cols.push({wch:16});
+  var cols = [{wch:5}]; // A: STT
+  for (var ci=1; ci<18; ci++) cols.push({wch:14}); // B-R
+  for (var ci=18; ci<26; ci++) cols.push({wch:15}); // S-Z
+  for (var ci=26; ci<FIXED_COLS+weeks.length*WEEK_COLS; ci++) cols.push({wch:18}); // Tuần
   ws['!cols'] = cols;
 
   // Row heights
-  ws['!rows'] = [{hpt:30},{hpt:25},{hpt:25},{hpt:40}];
+  ws['!rows'] = [{hpt:28},{hpt:32},{hpt:28},{hpt:52}];
+
+  // Cell styles
+  var COLORS = {
+    blue:   '1F4E79', teal:   '0070C0',
+    orange: 'ED7D31', purple: '7030A0',
+    yellow: 'FFFF00', white:  'FFFFFF', black: '000000'
+  };
+
+  function mkStyle(fillColor, fontColor, bold, halign, wrap) {
+    return {
+      fill: { patternType: 'solid', fgColor: { rgb: fillColor } },
+      font: { name: 'Arial', sz: 9, bold: !!bold, color: { rgb: fontColor||'FFFFFF' } },
+      alignment: { horizontal: halign||'center', vertical: 'center', wrapText: !!wrap },
+      border: {
+        top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
+        left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}
+      }
+    };
+  }
+
+  var S = {
+    hBlue:   mkStyle(COLORS.blue,   COLORS.white, true,  'center', true),
+    hTeal:   mkStyle(COLORS.teal,   COLORS.white, true,  'center', true),
+    hOrange: mkStyle(COLORS.orange, COLORS.white, true,  'center', true),
+    hPurple: mkStyle(COLORS.purple, COLORS.white, true,  'center', true),
+    hYellow: mkStyle(COLORS.yellow, COLORS.black, true,  'center', false),
+    data:    { font:{name:'Arial',sz:9}, alignment:{horizontal:'left',vertical:'center',wrapText:true},
+               border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
+                       left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
+    dataR:   { font:{name:'Arial',sz:9}, alignment:{horizontal:'right',vertical:'center'},
+               numFmt:'#,##0',
+               border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
+                       left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
+  };
+
+  function enc(r,c){ return XLSX.utils.encode_cell({r:r,c:c}); }
+
+  // Apply header styles row 1 (tuần)
+  weeks.forEach(function(w,i){
+    ws[enc(0,FIXED_COLS+i*WEEK_COLS)] = Object.assign({}, ws[enc(0,FIXED_COLS+i*WEEK_COLS)]||{}, {s:S.hYellow});
+  });
+
+  // Row 2 styles
+  ws[enc(1,0)] = Object.assign({}, ws[enc(1,0)]||{}, {s:S.hBlue});
+  ws[enc(1,1)] = Object.assign({}, ws[enc(1,1)]||{}, {s:S.hBlue});
+  ws[enc(1,18)] = Object.assign({}, ws[enc(1,18)]||{}, {s:S.hTeal});
+  weeks.forEach(function(w,i){
+    var sc=FIXED_COLS+i*WEEK_COLS;
+    ws[enc(1,sc)]   = Object.assign({}, ws[enc(1,sc)]||{},   {s:S.hOrange});
+    ws[enc(1,sc+5)] = Object.assign({}, ws[enc(1,sc+5)]||{}, {s:S.hPurple});
+  });
+
+  // Row 3 styles
+  ws[enc(2,20)] = Object.assign({}, ws[enc(2,20)]||{}, {s:S.hTeal});
+  ws[enc(2,23)] = Object.assign({}, ws[enc(2,23)]||{}, {s:S.hTeal});
+
+  // Row 4 styles
+  for (var ci=0; ci<18; ci++) {
+    ws[enc(3,ci)] = Object.assign({}, ws[enc(3,ci)]||{}, {s:S.hBlue});
+  }
+  for (var ci=18; ci<26; ci++) {
+    ws[enc(3,ci)] = Object.assign({}, ws[enc(3,ci)]||{}, {s:S.hTeal});
+  }
+  weeks.forEach(function(w,i){
+    for (var j=0; j<WEEK_COLS; j++){
+      var sc=FIXED_COLS+i*WEEK_COLS+j;
+      ws[enc(3,sc)] = Object.assign({}, ws[enc(3,sc)]||{}, {s: j>=5 ? S.hPurple : S.hOrange});
+    }
+  });
+
+  // Data rows styles
+  for (var ri=4; ri<wsData.length; ri++) {
+    for (var ci=0; ci<wsData[ri].length; ci++) {
+      var isNum = typeof wsData[ri][ci] === 'number' && ci > 0;
+      ws[enc(ri,ci)] = Object.assign({}, ws[enc(ri,ci)]||{}, {s: isNum ? S.dataR : S.data});
+    }
+  }
+
+  // Freeze panes
+  ws['!freeze'] = {xSplit:1, ySplit:4};
 
   XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo');
 
