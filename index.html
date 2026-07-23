@@ -1840,10 +1840,10 @@ function mapDbHS(lf) {
     sdtVC:         cust.co_phone        || '',
     emailVC:       cust.email_co_borrower || '',
     cifVC:         cust.cif_co_borrower   || '',
-    ngaySinh:      cust.dob               || '',
+    ngaySinh:      toISODate(cust.dob)               || '',
     ngheNghiep:    cust.occupation        || '',
     thuNhap:       cust.monthly_income    || '',
-    ngaySinhVC:    cust.co_dob            || '',
+    ngaySinhVC:    toISODate(cust.co_dob)            || '',
     ngheNghiepVC:  cust.co_occupation     || '',
     thuNhapVC:     cust.co_monthly_income || '',
     maCanHo:       apt.code       || '',
@@ -1851,8 +1851,8 @@ function mapDbHS(lf) {
     dienTich:      apt.area_m2    || '',
     giaHDMB:       lf.sale_price  || 0,
     soHDMB:        lf.hdmb_code   || '',
-    ngayKyHDMB:    lf.hdmb_date   || '',
-    hanGiaiNgan:   lf.max_disbursement_date || '',
+    ngayKyHDMB:    toISODate(lf.hdmb_date)   || '',
+    hanGiaiNgan:   toISODate(lf.max_disbursement_date) || '',
     vtcPhaiNop:    lf.vtc_required || apt.vtc_required || 0,
     vtcDaNop:      lf.vtc_paid    || 0,
     soTienVay:     lf.loan_amount_requested || 0,
@@ -1860,7 +1860,7 @@ function mapDbHS(lf) {
     hinhThucVay:   lf.loan_form   || '30 tháng HTLS',
     csChinhSach:   lf.loan_policy_ref || '',
     hanMucDuocDuyet: lf.loan_amount_approved || 0,
-    ngayGiaiNgan:  lf.disbursement_date || '',
+    ngayGiaiNgan:  toISODate(lf.disbursement_date) || '',
     soTienGiaiNgan:lf.disbursement_amount || 0,
     canBoId:       lf.officer_id  || '',
     cbBIMName:     off.full_name  || '',
@@ -2182,6 +2182,45 @@ function collectCK(){
 // ================================================
 // BUILD HS FORM - 5 TAB REDESIGN
 // ================================================
+
+// ── Date utilities ────────────────────────────────────────
+// Chuyển bất kỳ format → YYYY-MM-DD (dùng cho input[type=date] value)
+function toISODate(v) {
+  if (!v) return '';
+  v = String(v).trim();
+  if (!v) return '';
+  // Đã là YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0,10);
+  // DD/MM/YYYY
+  var m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  // DD-MM-YYYY
+  m = v.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  // Excel serial number (số nguyên)
+  var n = parseInt(v);
+  if (!isNaN(n) && n > 40000 && n < 60000) {
+    var d = new Date(Date.UTC(1899,11,30) + n*86400000);
+    return d.toISOString().slice(0,10);
+  }
+  return '';
+}
+
+// Đọc value từ input[type=date] → luôn là YYYY-MM-DD hoặc ''
+function getDateVal(id) {
+  var el = document.getElementById(id);
+  if (!el) return '';
+  return el.value || ''; // input[type=date] luôn trả YYYY-MM-DD
+}
+
+// Hiển thị ngày dạng DD/MM/YYYY (cho text display, không phải input)
+function fmtDateVN(v) {
+  var iso = toISODate(v);
+  if (!iso) return '';
+  var p = iso.split('-');
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
+
 function fmt(val) {
   if (val === '' || val === null || val === undefined) return '';
   var n = Number(String(val).replace(/,/g,''));
@@ -2206,10 +2245,12 @@ function numInput(id, val, dis, extra) {
 function fld(label, id, val, dis, placeholder, type, full, extra) {
   var cls = full ? 'fg ffull' : 'fg';
   var t = type || 'text';
+  // Date input: luôn dùng YYYY-MM-DD
+  var safeVal = (t === 'date') ? toISODate(val) : (val || '');
   var p = placeholder ? ' placeholder="' + placeholder + '"' : '';
   var d = dis ? ' ' + dis : '';
   var x = extra ? ' ' + extra : '';
-  return '<div class="' + cls + '"><label>' + label + '</label><input type="' + t + '" id="' + id + '" value="' + (val || '') + '"' + p + d + x + '></div>';
+  return '<div class="' + cls + '"><label>' + label + '</label><input type="' + t + '" id="' + id + '" value="' + safeVal + '"' + p + d + x + '></div>';
 }
 
 function buildHSForm(h) {
