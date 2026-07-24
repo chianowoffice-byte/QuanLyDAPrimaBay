@@ -2,15 +2,21 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PrimaBay Credit — BIDV Tràng Tiền</title>
+<!-- BUILD: 20260716_232320 -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PrimaBay Credit — BIDV Tràng Tiền v20260716</title>
 <style>
-
-
-
+/* ═══════════════════════════════════════════════
+   PRIMABAY CREDIT — BIDV Theme v2
+   Colors: Teal #006B5E + Gold #F5A623
+   ═══════════════════════════════════════════════ */
 :root{
   --bg:#F4F9F8; --surf:#FFF; --surf2:#EDF6F4;
   --bdr:#C8E0DC; --bdr2:#9ECBC5;
@@ -24,87 +30,98 @@
   --purple:#5B4CC8; --purple-l:#EEE9FA;
   --r:8px; --rl:12px;
 }
+
+/* ── Reset ── */
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif;font-size:14px;color:var(--txt);min-height:100vh}
 
-/* LOGIN */
+/* ── Login ── */
 #login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#006B5E 0%,#004A3E 60%,#003530 100%)}
-.lcard{background:#fff;border-radius:16px;padding:44px 40px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25);border-top:4px solid #F5A623}
+.lcard{background:#fff;border-radius:16px;padding:44px 40px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25);border-top:4px solid var(--gold)}
 .logo-top{text-align:center;margin-bottom:28px}
-.logo-top .bn{font-size:22px;font-weight:800;color:#006B5E}
+.logo-top .bn{font-size:22px;font-weight:800;color:var(--blue)}
 .logo-top .bs{font-size:12px;color:var(--txt3);margin-top:3px}
 .lerr{background:var(--red-l);color:var(--red);border:1px solid #F5BEBE;border-radius:var(--r);padding:9px 13px;font-size:13px;margin-bottom:12px;display:none}
 .lfield{margin-bottom:14px}
 .lfield label{display:block;font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .lfield input{width:100%;padding:10px 13px;border:1px solid var(--bdr);border-radius:var(--r);font-size:14px;font-family:inherit;outline:none}
-.lfield input:focus{border-color:#006B5E;box-shadow:0 0 0 3px rgba(0,107,94,.1)}
-.lbtn{width:100%;padding:12px;background:#006B5E;color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
-.lbtn:hover{background:#008F7A}
-.lhint{margin-top:14px;font-size:12px;color:var(--txt3);text-align:center;line-height:1.8}
+.lfield input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,107,94,.1)}
+.lbtn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.lbtn:hover{background:var(--blue-m)}
 
-/* APP LAYOUT */
+/* ── App Layout ── */
 #app-wrap{display:none;height:100vh;overflow:hidden}
-#app-wrap.show{display:flex}
+#app-wrap.show{display:flex;align-items:stretch}
 
-/* SIDEBAR */
-.sidebar{width:224px;min-width:224px;height:100vh;background:linear-gradient(180deg,#006B5E 0%,#004A3E 60%,#003530 100%);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden}
-.sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.15);flex-shrink:0}
+/* ── Sidebar ── */
+.sidebar{
+  width:224px;
+  min-width:224px;
+  background:linear-gradient(180deg,#006B5E 0%,#004A3E 60%,#003530 100%);
+  display:flex;
+  flex-direction:column;
+  flex-shrink:0;
+  height:100vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  position:relative;
+}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.15)}
 .sb-logo .bn{font-size:15px;font-weight:700;color:#fff;line-height:1.2}
 .sb-logo .bs{font-size:10px;color:rgba(255,255,255,.65);margin-top:3px}
-.sb-nav{padding:8px 0;flex:1}
+.sb-nav{padding:8px 0;flex:1;overflow-y:auto}
 .nav-sec{padding:12px 16px 4px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.45)}
-.nav-it{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.85);font-size:13px;border-left:3px solid transparent;transition:.15s;user-select:none}
+.nav-it{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.85);font-size:13px;border-left:3px solid transparent;transition:.15s}
 .nav-it:hover{background:rgba(255,255,255,.1);color:#fff}
 .nav-it.active{background:rgba(245,166,35,.22);border-left-color:#F5A623;color:#fff;font-weight:600}
 .nav-it.hide{display:none}
-.sb-user{padding:12px 16px;border-top:1px solid rgba(255,255,255,.15);flex-shrink:0}
+.sb-user{padding:12px 16px;border-top:1px solid rgba(255,255,255,.15)}
 .sb-urow{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 .sb-av{width:34px;height:34px;border-radius:50%;background:#F5A623;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#003530;flex-shrink:0}
-.sb-av.teal{background:#006B5E}.sb-av.amber{background:#CC8A00}
 .sb-un{font-size:12px;font-weight:600;color:#fff}
 .sb-ur{font-size:11px;color:rgba(255,255,255,.6)}
 .sb-acts{display:flex;gap:8px}
 .sb-link{font-size:11px;color:rgba(255,255,255,.6);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:inherit}
 .sb-link:hover{color:#F5D87A}
-.sb-footer{padding:12px 16px 14px;background:rgba(0,0,0,.18);flex-shrink:0;border-top:1px solid rgba(255,255,255,.12)}
+.sb-footer{padding:12px 16px 14px;background:rgba(0,0,0,.15);flex-shrink:0;border-top:1px solid rgba(255,255,255,.12)}
 .sb-footer-name{font-size:11px;font-weight:600;color:#fff;margin-bottom:5px}
 .sb-footer-addr,.sb-footer-phone{font-size:10px;color:rgba(255,255,255,.6);line-height:1.7}
 .sb-footer-credit{font-size:9px;color:rgba(255,255,255,.4);font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.1)}
 
-/* MAIN */
-.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+/* ── Main area ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 .topbar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .topbar-title{font-size:15px;font-weight:600}
 .topbar-acts{display:flex;gap:8px;align-items:center}
 
-/* BUTTONS */
+/* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:13px;font-weight:500;border:1px solid var(--bdr);background:var(--surf);cursor:pointer;font-family:inherit;transition:.15s;color:var(--txt)}
 .btn:hover{background:var(--surf2)}
-.btn-primary{background:#006B5E;color:#fff;border-color:#006B5E}
-.btn-primary:hover{background:#008F7A}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:var(--blue-m)}
 .btn-sm{padding:5px 10px;font-size:12px}
 .btn-danger{background:var(--red-l);color:var(--red);border-color:#F5BEBE}
-.btn-success{background:var(--blue-l);color:#006B5E;border-color:var(--bdr2)}
+.btn-success{background:var(--blue-l);color:var(--blue);border-color:var(--bdr2)}
 .btn-amber{background:var(--gold-l);color:#996600;border-color:#F5C842}
 
-/* CONTENT */
+/* ── Content ── */
 .content{padding:20px 24px;flex:1}
 .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
 .stat-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:14px 16px}
-.stat-card.bl{border-left:3px solid #006B5E}.stat-card.gr{border-left:3px solid #006B5E}
-.stat-card.am{border-left:3px solid #F5A623}.stat-card.rd{border-left:3px solid var(--red)}
+.stat-card.bl{border-left:3px solid var(--blue)}.stat-card.gr{border-left:3px solid var(--green)}
+.stat-card.am{border-left:3px solid var(--gold)}.stat-card.rd{border-left:3px solid var(--red)}
 .stat-card.pu{border-left:3px solid var(--purple)}
 .stat-lbl{font-size:11px;color:var(--txt3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .stat-val{font-size:26px;font-weight:700;line-height:1}
 .stat-sub{font-size:11px;color:var(--txt3);margin-top:4px}
 
-/* FILTER */
+/* ── Filter bar ── */
 .fbar{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
 .fbar input,.fbar select{padding:7px 12px;border:1px solid var(--bdr);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--surf);color:var(--txt);outline:none}
-.fbar input:focus,.fbar select:focus{border-color:#006B5E;box-shadow:0 0 0 3px rgba(0,107,94,.1)}
+.fbar input:focus,.fbar select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,107,94,.1)}
 .fbar input{width:240px}
 
-/* TABLE */
+/* ── Table ── */
 .twrap{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
 table{width:100%;border-collapse:collapse}
 thead{background:var(--surf2)}
@@ -113,13 +130,12 @@ td{padding:10px 14px;border-bottom:1px solid var(--bdr);font-size:13px;vertical-
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#EDF6F4}
 
-/* BADGES */
+/* ── Badges ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .b-moi{background:#EDF6F4;color:#4A6B67}
 .b-dang{background:#FFF4DC;color:#CC8A00}
 .b-cho{background:#E0F5F1;color:#006B5E}
 .b-choky{background:#FFF8E7;color:#996600;font-weight:700}
-.b-chogn{background:#E8F4FD;color:#1A5276;font-weight:700}
 .b-xong{background:#006B5E;color:#fff;font-weight:700}
 .b-tuchoi{background:var(--red-l);color:var(--red)}
 .rb{padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
@@ -129,88 +145,93 @@ tr:hover td{background:#EDF6F4}
 .rb-cdt{background:#FFF8E7;color:#996600;border:1px solid #F5C842}
 .rb-viewer{background:#F5F5F5;color:#666}
 
-/* DEADLINE */
+/* ── Deadline badges ── */
 .dl-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .dl-over{background:#FDEAEA;color:#8A1F1F;border:1px solid #F5BEBE}
 .dl-warn{background:#FFF4DC;color:#CC8A00;border:1px solid #F5C842}
 .dl-ok{background:#E0F5F1;color:#006B5E;border:1px solid #9ECBC5}
 .dl-new{background:#EEE9FA;color:#4A2E8A;border:1px solid #C9BEEE}
 
-/* MODAL */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:center;padding:20px 10px;overflow-y:auto}
+/* ── Modal ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
 .overlay.open{display:flex}
-.modal{background:var(--surf);border-radius:var(--rl);width:min(96vw,960px);box-shadow:0 10px 40px rgba(0,0,0,.2);margin:auto;display:flex;flex-direction:column;max-height:94vh}
+.modal{background:var(--surf);border-radius:var(--rl);width:100%;max-width:860px;box-shadow:0 10px 40px rgba(0,0,0,.2);margin:auto;display:flex;flex-direction:column;max-height:90vh}
 .modal.sm{max-width:460px}.modal.md{max-width:640px}
-.mh{padding:18px 24px 14px;border-bottom:2px solid #006B5E;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.mh h2{font-size:16px;font-weight:600;color:#006B5E}
-.mb{padding:16px 18px;flex:1;overflow-y:auto;min-height:0;min-width:0}
+.mh{padding:18px 24px 14px;border-bottom:2px solid var(--blue);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mh h2{font-size:16px;font-weight:600;color:var(--blue)}
+.mb{padding:20px 24px;flex:1;overflow-y:auto;min-height:0}
 .mf{padding:14px 24px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.mhd{padding:16px 20px;font-weight:600;font-size:15px;border-bottom:1px solid var(--bdr);color:#006B5E}
-.mbody{padding:16px 20px;font-size:14px}
-.mft{display:flex;gap:8px;padding:12px 20px;justify-content:flex-end;border-top:1px solid var(--bdr)}
 
-/* FORM */
+/* ── Form fields ── */
 .fsec{margin-bottom:20px}
-.fsec-title{font-size:12px;font-weight:700;color:#006B5E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #E0F5F1}
+.fsec-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--blue-l)}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.3px}
 .fg input,.fg select,.fg textarea{padding:8px 11px;border:1px solid var(--bdr);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none;color:var(--txt)}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#006B5E;box-shadow:0 0 0 3px rgba(0,107,94,.1)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,107,94,.1)}
 .fg input:disabled,.fg select:disabled,.fg textarea:disabled{background:var(--surf2);color:var(--txt3);opacity:.7}
 .fg textarea{resize:vertical;min-height:60px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fgrid3{grid-template-columns:1fr 1fr 1fr}
 .ffull{grid-column:1/-1}
 
-/* TABS */
+/* ── Tabs ── */
 .tabs{display:flex;border-bottom:1px solid var(--bdr);margin-bottom:16px;overflow-x:auto;flex-shrink:0;background:var(--surf)}
 .tab{padding:9px 15px;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:.15s}
-.tab:hover{color:#006B5E}
-.tab.active{color:#006B5E;border-bottom-color:#006B5E;font-weight:600}
+.tab:hover{color:var(--blue)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
 
-/* PAGES */
+/* ── Pages ── */
 .page{display:none;flex-direction:column}
 .page.active{display:flex}
 
-/* CHECKLIST */
-.ck-grid{display:grid;grid-template-columns:repeat(2,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+/* ── Checklist ── */
+.ck-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .ck-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
-.ck-hd{padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:#E0F5F1;color:#006B5E;display:flex;align-items:center;justify-content:space-between}
-.ck-hd.done{background:#006B5E;color:#fff}
-.ck-body{padding:4px 10px}
-.ck-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr)}
+.ck-hd{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:space-between}
+.ck-hd.done{background:var(--blue);color:#fff}
+.ck-body{padding:8px 14px}
+.ck-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)}
 .ck-item:last-child{border-bottom:none}
-.ck-item input[type=checkbox]{width:16px;height:16px;accent-color:#006B5E;cursor:pointer;flex-shrink:0;margin-top:2px}
-.ck-lbl{font-size:12px;line-height:1.3}
+.ck-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer;flex-shrink:0;margin-top:2px}
+.ck-lbl{font-size:13px;line-height:1.4}
 .ck-item.checked{background:#EDF6F4;border-radius:4px;padding-left:4px}
-.ck-item.checked .ck-lbl{color:#006B5E;font-weight:500}
-input[type=checkbox]:checked{accent-color:#006B5E}
+.ck-item.checked .ck-lbl{color:var(--blue);font-weight:500}
+input[type=checkbox]:checked{accent-color:var(--blue)}
 
-/* BANNERS */
+/* ── Banners ── */
 .lock-banner{background:#FFF8E6;border:1px solid #F5D87A;border-radius:var(--r);padding:10px 14px;font-size:13px;margin-bottom:12px;color:#6B4C00}
 .perm-banner{background:var(--red-l);border:1px solid #F5BEBE;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--red)}
-.info-banner{background:#E0F5F1;border:1px solid var(--bdr2);border-radius:var(--r);padding:10px 14px;font-size:13px;color:#006B5E}
+.info-banner{background:var(--blue-l);border:1px solid var(--bdr2);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--blue)}
 
-/* UPLOAD */
+/* ── Upload ── */
 .upload-zone{border:1.5px dashed var(--bdr2);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;color:var(--txt3);font-size:13px;transition:.15s}
-.upload-zone:hover{border-color:#006B5E;background:#E0F5F1;color:#006B5E}
+.upload-zone:hover{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
 .file-item{display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surf2);border-radius:4px}
-.fi-name{flex:1;color:#006B5E;cursor:pointer;word-break:break-all;font-size:12px}
+.fi-name{flex:1;color:var(--blue);cursor:pointer;word-break:break-all;font-size:12px}
 
-/* CIC / PROGRESS / MISC */
-.cic-box{background:var(--surf2);border:1px solid var(--bdr);border-left:3px solid #006B5E;border-radius:var(--rl);padding:14px;margin-bottom:16px}
+/* ── CIC ── */
+.cic-box{background:var(--surf2);border:1px solid var(--bdr);border-left:3px solid var(--blue);border-radius:var(--rl);padding:14px;margin-bottom:16px}
 .cic-row{display:flex;gap:8px;margin-bottom:6px;align-items:center}
+
+/* ── Progress ── */
 .prog-wrap{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}
-.prog-bar{height:6px;background:linear-gradient(90deg,#006B5E,#F5A623);border-radius:4px;transition:.3s}
+.prog-bar{height:6px;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:4px;transition:.3s}
+
+/* ── Days circle ── */
 .days-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
 .dc-over{background:#FDEAEA;color:#8A1F1F}
 .dc-warn{background:#FFF3E0;color:#8A4F00}
 .dc-ok{background:#E0F5F1;color:#006B5E}
 .dc-new{background:#EEE9FA;color:#4A2E8A}
+
+/* ── Timeline ── */
 .tl-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:12px}
-.tl-dot{width:8px;height:8px;border-radius:50%;background:#006B5E;margin-top:3px;flex-shrink:0}
-.tl-dot.green{background:#006B5E}.tl-dot.amber{background:#F5A623}.tl-dot.red{background:var(--red)}
+.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:3px;flex-shrink:0}
+.tl-dot.green{background:var(--green)}.tl-dot.amber{background:var(--gold)}.tl-dot.red{background:var(--red)}
 .tl-time{color:var(--txt3);min-width:82px;flex-shrink:0}
+
+/* ── Panel ── */
 .panel{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 18px;margin-bottom:16px}
 .panel-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);margin-bottom:12px}
 .alert-panel{background:#fff;border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;margin-bottom:12px}
@@ -219,87 +240,55 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 .alert-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--bdr);cursor:pointer}
 .alert-row:last-child{border-bottom:none}
 .alert-row:hover{background:var(--surf2)}
-.contact-form-box{background:#E0F5F1;border:1px solid var(--bdr2);border-radius:var(--rl);padding:14px;margin-bottom:12px}
+
+/* ── Contact form ── */
+.contact-form-box{background:var(--blue-l);border:1px solid var(--bdr2);border-radius:var(--rl);padding:14px;margin-bottom:12px}
 .vc-section{background:var(--gold-l);border:1px solid #F5D87A;border-radius:var(--rl);padding:12px}
+
+/* ── Misc ── */
 .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;background:var(--surf2);color:var(--txt2);font-family:monospace}
 .ml-auto{margin-left:auto}
 .text-sm{font-size:12px;color:var(--txt2)}
 .empty-st{text-align:center;padding:40px 24px;color:var(--txt3)}
 .divider{height:1px;background:var(--bdr);margin:14px 0}
 .imp-zone{border:2px dashed var(--bdr2);border-radius:var(--rl);padding:36px;text-align:center;cursor:pointer;color:var(--txt3)}
-.imp-zone:hover{border-color:#006B5E;background:#E0F5F1;color:#006B5E}
+.imp-zone:hover{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
 .cdt-section-dim{opacity:.42;pointer-events:none}
 .cdt-section-dim .fsec-title{color:var(--txt3)}
+
+/* ── Toast & Reload ── */
+#toast-notif{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--blue);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);display:none;transition:opacity .4s}
+#btn-reload-data{display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);cursor:pointer;font-size:11px;color:rgba(255,255,255,.65);font-family:inherit}
+#btn-reload-data:hover{color:#F5D87A;border-color:#F5A623;background:rgba(245,166,35,.15)}
+
+/* ── Sticky tabs & save bar ── */
+#mhs-body .tabs{position:sticky;top:-20px;z-index:10;margin:-20px -24px 16px -24px;padding:0 24px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.save-bar{position:sticky;bottom:-20px;margin:16px -24px -20px -24px;padding:12px 24px;background:var(--surf);border-top:1px solid var(--bdr);box-shadow:0 -2px 8px rgba(0,0,0,.06);display:flex;gap:8px;z-index:10}
+
+/* ── Missing classes ── */
+.mbody{padding:16px 20px;font-size:14px}
+.mft{display:flex;gap:8px;padding:12px 20px;justify-content:flex-end;border-top:1px solid var(--bdr)}
+.mhd{padding:16px 20px;font-weight:600;font-size:15px;border-bottom:1px solid var(--bdr);color:var(--blue)}
+.sb-footer-branch{margin-bottom:8px}
+.sb-footer-divider{height:1px;background:rgba(255,255,255,.2);margin-bottom:10px}
+/* ── Numeric input ── */
+.num-input{text-align:right;font-variant-numeric:tabular-nums}
+/* ── HS table ── */
+.hs-tbl{width:100%}
+.kh-bold{font-weight:600}
+/* ── Update log ── */
 .update-log{background:var(--surf2);border-radius:var(--r);padding:12px 14px}
 .update-log-hd{font-size:12px;font-weight:700;color:var(--txt2);margin-bottom:8px}
 .update-entry{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px}
 .update-entry:last-child{border-bottom:none}
-
-/* TOAST / RELOAD */
-#toast-notif{position:fixed;bottom:20px;right:20px;z-index:9999;background:#006B5E;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);display:none;transition:opacity .4s}
-#btn-reload-data{display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);cursor:pointer;font-size:11px;color:rgba(255,255,255,.65);font-family:inherit}
-#btn-reload-data:hover{color:#F5D87A;border-color:#F5A623;background:rgba(245,166,35,.15)}
-
-/* STICKY */
-#mhs-body .tabs{position:sticky;top:-16px;z-index:10;margin:-16px -18px 14px -18px;padding:0 18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.save-bar{position:sticky;bottom:-16px;margin:14px -18px -16px -18px;padding:10px 18px;background:var(--surf);border-top:1px solid var(--bdr);box-shadow:0 -2px 8px rgba(0,0,0,.06);display:flex;gap:8px;z-index:10}
-.sb-footer-branch{margin-bottom:8px}
-.sb-footer-divider{height:1px;background:rgba(255,255,255,.2);margin-bottom:10px}
-
-
-
 .b-chogn{background:#E8F4FD;color:#1A5276;font-weight:700}
-
-/* ── Mobile responsive ── */
-@media (max-width: 768px) {
-  #app-wrap.show { flex-direction: column; }
-  .sidebar {
-    width: 100% !important;
-    height: auto !important;
-    min-height: unset !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-  }
-  .sb-logo { display: none; }
-  .sb-nav { display: flex; flex-direction: row; padding: 4px 8px; }
-  .nav-sec { display: none; }
-  .nav-it { padding: 6px 10px; font-size: 11px; white-space: nowrap; border-left: none !important; border-bottom: 3px solid transparent; }
-  .nav-it.active { border-bottom-color: #F5A623 !important; border-left: none !important; }
-  .sb-user { padding: 4px 8px; border-top: none; border-left: 1px solid rgba(255,255,255,.2); }
-  .sb-footer { display: none; }
-  .main { min-width: 0; }
-  .content { padding: 12px; }
-}
-
-/* ── Table horizontal scroll ── */
-.twrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.twrap table { min-width: 700px; }
-
-/* ── Modal full screen on mobile ── */
-@media (max-width: 768px) {
-  .overlay { padding: 0 !important; align-items: flex-end !important; }
-  .modal { width: 100% !important; max-width: 100% !important; min-width: unset !important;
-           border-radius: 12px 12px 0 0 !important; max-height: 95vh !important; }
-  .tabs { overflow-x: auto !important; }
-  .tab { font-size: 12px !important; padding: 7px 10px !important; white-space: nowrap; }
-  .ck-grid, [style*="grid-template-columns:1fr 1fr"] { 
-    grid-template-columns: 1fr !important; 
-  }
-  .fgrid { grid-template-columns: 1fr !important; }
-  .fgrid3 { grid-template-columns: 1fr !important; }
-  .stats-row { grid-template-columns: repeat(2,1fr) !important; }
-}
 .b-deadline{padding:2px 8px;border-radius:10px;font-size:11px;white-space:nowrap}
-.b-over{background:#FDECEA;color:#C0392B}
-.b-warn{background:#FEF9E7;color:#9A7D0A}
-.b-ok{background:#EAFAF1;color:#1E8449}
+.b-over{background:#FDECEA;color:#C0392B}.b-warn{background:#FEF9E7;color:#9A7D0A}.b-ok{background:#EAFAF1;color:#1E8449}
+@media(max-width:768px){.overlay{padding:0!important;align-items:flex-end!important}.modal{width:100%!important;max-width:100%!important;border-radius:12px 12px 0 0!important;max-height:95vh!important}.tabs{overflow-x:auto!important}.tab{font-size:12px!important;padding:7px 10px!important;white-space:nowrap}.fgrid,.fgrid3{grid-template-columns:1fr!important}.stats-row{grid-template-columns:repeat(2,1fr)!important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-
 
 <!-- LOGIN -->
 <div id="login-wrap">
@@ -325,10 +314,15 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 <div id="app-wrap">
   <aside class="sidebar">
     <div class="sb-logo">
-      <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:24px;object-fit:contain;margin-bottom:6px;display:block">
-      <div class="bn">PrimaBay Credit</div>
-      <div class="bs">Chi nhánh Tràng Tiền – Hà Nội</div>
-    </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+    <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:26px;object-fit:contain">
+  </div>
+  <div class="bn">PrimaBay Credit</div>
+  <div class="bs">Chi nhánh Tràng Tiền – Hà Nội</div>
+</div>
+  <div class="bn" style="font-size:13px;color:#fff">PrimaBay Credit</div>
+  <div class="bs" style="font-size:10px;color:rgba(255,255,255,.7)">Chi nhánh Tràng Tiền – HN</div>
+</div>
     <nav class="sb-nav">
       <div class="nav-sec">Tổng quan</div>
       <div class="nav-it active" id="ni-db" onclick="showPage('db')">📊 Dashboard</div>
@@ -599,8 +593,45 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 <div class="overlay" id="modal-conf">
   <div class="modal sm">
     <div class="mhd" id="conf-title">Xác nhận</div>
-    <div class="mbody" id="conf-msg" style="padding:16px 20px;font-s
+    <div class="mbody" id="conf-msg" style="padding:16px 20px;font-size:14px"></div>
+    <div class="mft">
+      <button class="btn" onclick="closeConf()">Huỷ</button>
+      <button class="btn btn-primary" id="conf-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
 
+
+<script>
+
+function toISODate(v) {
+  if (!v) return '';
+  v = String(v).trim(); if (!v) return '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0,10);
+  var m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  m = v.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  var n=parseInt(v);
+  if (!isNaN(n) && n>40000 && n<60000) {
+    var d=new Date(Date.UTC(1899,11,30)+n*86400000); return d.toISOString().slice(0,10);
+  }
+  return '';
+}
+function fmtDateVN(v) {
+  if (!v) return ''; var iso=toISODate(v); if (!iso) return '';
+  var p=iso.split('-'); if(p.length<3) return v; return p[2]+'/'+p[1]+'/'+p[0];
+}
+function fmtDateFull(iso) {
+  if(!iso) return '—';
+  try {
+    var d=new Date(iso); if(isNaN(d)) return fmtDateVN(iso)||iso;
+    var dd=String(d.getDate()).padStart(2,'0'), mm=String(d.getMonth()+1).padStart(2,'0'), yy=d.getFullYear();
+    var hh=String(d.getHours()).padStart(2,'0'), min=String(d.getMinutes()).padStart(2,'0');
+    if(hh!=='00'||min!=='00') return dd+'/'+mm+' '+hh+':'+min;
+    return dd+'/'+mm+'/'+yy;
+  } catch(e){ return iso; }
+}
 
 // v20260716_232320_113025
 window.onerror = function(msg,src,line,col,err){
@@ -610,288 +641,6 @@ window.onerror = function(msg,src,line,col,err){
   document.body && document.body.appendChild(d);
   return false;
 };
-// ══════════════════════════════════════════════════════════════
-// GOOGLE DRIVE — OAuth trực tiếp từ browser (GAPI + GIS)
-// CB đăng nhập Google 1 lần, token tự gia hạn
-// ══════════════════════════════════════════════════════════════
-var DRIVE_CLIENT_ID     = '512388342621-u9hdd3829hgsqq9tq85lut0hn9m1a25k.apps.googleusercontent.com';
-var DRIVE_ROOT_ID       = '1VUgZQMffWrTrL7RtoqYb-dOUp447uBud';
-var DRIVE_SCOPES        = 'https://www.googleapis.com/auth/drive.file';
-var _gapiReady          = false;
-var _driveAccessToken   = null;
-var _driveTokenExpiry   = 0;
-
-// Khởi tạo sau khi GAPI load
-function onGapiLoad() {
-  gapi.load('client', function(){
-    gapi.client.init({}).then(function(){
-      _gapiReady = true;
-      // Nếu có token cũ trong session, khôi phục
-      var saved = sessionStorage.getItem('drive_token');
-      if (saved) {
-        var t = JSON.parse(saved);
-        if (t.expiry > Date.now()) {
-          _driveAccessToken = t.token;
-          _driveTokenExpiry = t.expiry;
-          updateDriveStatus(true);
-        }
-      }
-    });
-  });
-}
-
-// Hiển thị trạng thái Drive trong UI
-function updateDriveStatus(connected) {
-  var el = document.getElementById('drive-status-bar');
-  if (!el) return;
-  if (connected) {
-    el.innerHTML = '<span style="color:#006B5E;font-weight:600">✅ Đã kết nối Google Drive</span>'
-      + (currentHS() && currentHS().drive_folder_url
-        ? ' <a href="'+currentHS().drive_folder_url+'" target="_blank" style="font-size:11px;color:var(--blue);margin-left:8px">📂 Xem thư mục</a>'
-        : '');
-  } else {
-    el.innerHTML = '<span style="font-size:12px;color:var(--txt2)">Chưa kết nối Google Drive</span>'
-      + '<button class="btn btn-sm btn-primary" style="margin-left:10px" onclick="connectDrive()">🔗 Kết nối Drive</button>';
-  }
-}
-
-function currentHS() {
-  return hsList.find(function(x){ return x.id===currentHSId; });
-}
-
-// Kết nối Drive — hiện popup Google OAuth
-function connectDrive() {
-  if (!DRIVE_CLIENT_ID) {
-    showNotif('⚠️ Chưa cấu hình Client ID. Liên hệ Admin.');
-    return;
-  }
-  var client = google.accounts.oauth2.initTokenClient({
-    client_id: DRIVE_CLIENT_ID,
-    scope:     DRIVE_SCOPES,
-    callback:  function(resp) {
-      if (resp.error) { showNotif('❌ Lỗi kết nối Drive: ' + resp.error); return; }
-      _driveAccessToken = resp.access_token;
-      _driveTokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
-      sessionStorage.setItem('drive_token', JSON.stringify({
-        token: _driveAccessToken, expiry: _driveTokenExpiry
-      }));
-      showNotif('✅ Đã kết nối Google Drive!');
-      updateDriveStatus(true);
-    }
-  });
-  client.requestAccessToken();
-}
-
-function requestDriveAuth() { connectDrive(); }
-function initGoogleDrive() {
-  // Khởi tạo khi vào app
-  setTimeout(function(){
-    var saved = sessionStorage.getItem('drive_token');
-    if (saved) {
-      var t = JSON.parse(saved);
-      if (t.expiry > Date.now()) {
-        _driveAccessToken = t.token;
-        _driveTokenExpiry = t.expiry;
-        updateDriveStatus(true);
-      } else {
-        updateDriveStatus(false);
-      }
-    } else {
-      updateDriveStatus(false);
-    }
-  }, 500);
-}
-
-// Gọi Drive API
-async function driveAPI(method, path, body, isUpload) {
-  if (!_driveAccessToken) throw new Error('Chưa kết nối Drive');
-  var base = isUpload
-    ? 'https://www.googleapis.com/upload/drive/v3'
-    : 'https://www.googleapis.com/drive/v3';
-  var res = await fetch(base + path, {
-    method: method,
-    headers: { 'Authorization': 'Bearer ' + _driveAccessToken,
-               'Content-Type': body instanceof FormData ? undefined : 'application/json' },
-    body: body ? (body instanceof FormData ? body : JSON.stringify(body)) : undefined
-  });
-  if (res.status === 401) {
-    _driveAccessToken = null;
-    sessionStorage.removeItem('drive_token');
-    updateDriveStatus(false);
-    throw new Error('Token hết hạn. Vui lòng kết nối lại Drive.');
-  }
-  return await res.json();
-}
-
-// Tìm hoặc tạo folder
-async function driveGetOrCreateFolder(parentId, name) {
-  var safe = name.replace(/'/g, "\\'");
-  var q = "name='" + safe + "' and '" + parentId + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false";
-  var found = await driveAPI('GET', '/files?q=' + encodeURIComponent(q) + '&fields=files(id,webViewLink,name)');
-  if (found.files && found.files.length > 0) return found.files[0];
-  return await driveAPI('POST', '/files?fields=id,webViewLink,name', {
-    name: name,
-    mimeType: 'application/vnd.google-apps.folder',
-    parents: [parentId]
-  });
-}
-
-// Upload file
-async function driveUploadFile(folderId, file) {
-  var meta = { name: file.name, parents: [folderId] };
-  var boundary = 'dr' + Date.now();
-  var bytes = await file.arrayBuffer();
-  var enc = new TextEncoder();
-  var p1 = enc.encode('--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(meta)+'\r\n');
-  var p2 = enc.encode('--'+boundary+'\r\nContent-Type: '+(file.type||'application/octet-stream')+'\r\n\r\n');
-  var p3 = new Uint8Array(bytes);
-  var p4 = enc.encode('\r\n--'+boundary+'--');
-  var body = new Uint8Array(p1.length+p2.length+p3.length+p4.length);
-  var off=0; [p1,p2,p3,p4].forEach(function(p){body.set(p,off);off+=p.length;});
-
-  var res = await fetch(
-    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer '+_driveAccessToken,
-      'Content-Type': 'multipart/related; boundary='+boundary
-    },
-    body: body
-  });
-  if (res.status===401){
-    _driveAccessToken=null; sessionStorage.removeItem('drive_token');
-    updateDriveStatus(false);
-    throw new Error('Token hết hạn. Vui lòng kết nối lại.');
-  }
-  return await res.json();
-}
-
-// Hàm chính: upload nhiều file
-async function handleDriveUpload(gid, files) {
-  if (!files||!files.length) return;
-  if (!_driveAccessToken) {
-    showNotif('⚠️ Vui lòng kết nối Google Drive trước khi upload');
-    connectDrive();
-    return;
-  }
-  if (!DRIVE_ROOT_ID) { showNotif('⚠️ Chưa cấu hình Folder ID. Liên hệ Admin.'); return; }
-
-  var h = hsList.find(function(x){return x.id===currentHSId;});
-  if (!h) return;
-  var folderName = ((h.maCanHo||'CHUA_CO_MA')+' - '+(h.tenKH||'CHUA_CO_TEN')).replace(/[/\\?%*:|"<>]/g,'-');
-
-  try {
-    showNotif('⏳ Đang tạo thư mục Drive...');
-    var folder = await driveGetOrCreateFolder(DRIVE_ROOT_ID, folderName);
-    if (!folder||!folder.id) throw new Error('Không tạo được folder');
-
-    var uploaded = [];
-    for (var i=0; i<files.length; i++) {
-      showNotif('⏳ Upload ('+(i+1)+'/'+files.length+'): '+files[i].name);
-      var result = await driveUploadFile(folder.id, files[i]);
-      if (result&&result.id) uploaded.push({
-        name: result.name, driveLink: result.webViewLink, driveId: result.id
-      });
-    }
-
-    // Lưu vào hsList
-    var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-    if (!hsList[idx].files) hsList[idx].files={};
-    if (!hsList[idx].files[gid]) hsList[idx].files[gid]=[];
-    uploaded.forEach(function(up){
-      if (!hsList[idx].files[gid].find(function(x){return x.driveId===up.driveId;}))
-        hsList[idx].files[gid].push(up);
-    });
-    if (!hsList[idx].driveFolders) hsList[idx].driveFolders={};
-    hsList[idx].driveFolders[gid]={link:folder.webViewLink,name:folderName,id:folder.id};
-    hsList[idx].drive_folder_url = folder.webViewLink;
-    hsList[idx].updatedAt=nowStr();
-    persist();
-    showNotif('✅ Đã upload '+uploaded.length+' file lên Drive!');
-    updateDriveStatus(true);
-    renderDocsGrid(hsList[idx],hsList[idx].locked);
-  } catch(e) {
-    console.error('Drive error:',e);
-    showNotif('❌ '+e.message);
-  }
-}
-
-// SUPABASE CONFIG
-// ══════════════════════════════════════════════════
-var SUPABASE_URL = 'https://oodeswfnxnqabjbmecmi.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZGVzd2ZueG5xYWJqYm1lY21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzOTc1MTIsImV4cCI6MjA5Nzk3MzUxMn0.FY8ld0DW0ccnAmpfZ8cUwE2jnt8LI8teZXLBFQJNfos';
-var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ══════════════════════════════════════════════════
-// SUPABASE AUTH + DATA HELPERS
-// ══════════════════════════════════════════════════
-
-// sbLogin: không dùng Supabase Auth (phương án 2)
-
-// Lấy danh sách hồ sơ từ DB
-async function sbLoadHS() {
-  var { data, error } = await sb
-    .from('loan_files')
-    .select(`
-      *,
-      customers(*),
-      apartments(*),
-      users!loan_files_officer_id_fkey(id, full_name, email, pgd),
-      weekly_reports(*),
-      checklist_items(*),
-      cic_results(*)
-    `)
-    .order('bim_seq', { ascending: true });
-  if (error) { console.error('sbLoadHS:', error); return []; }
-  return data || [];
-}
-
-// Lấy danh sách users từ DB
-async function sbLoadUsers() {
-  var { data, error } = await sb.from('users').select('*').order('full_name');
-  if (error) { console.error('sbLoadUsers:', error); return []; }
-  return data || [];
-}
-
-// Lưu weekly report
-async function sbSaveWeeklyReport(entry) {
-  var { error } = await sb.from('weekly_reports').insert(entry);
-  if (error) console.error('sbSaveWeeklyReport:', error);
-  return !error;
-}
-
-// Cập nhật loan_file
-async function sbUpdateLF(id, data) {
-  var { error } = await sb.from('loan_files').update(data).eq('id', id);
-  if (error) console.error('sbUpdateLF:', error);
-  return !error;
-}
-
-// Cập nhật customer
-async function sbUpdateCustomer(id, data) {
-  var { error } = await sb.from('customers').update(data).eq('id', id);
-  if (error) console.error('sbUpdateCustomer:', error);
-  return !error;
-}
-
-// Log hoạt động
-async function sbLog(action, desc, lf_id) {
-  await sb.from('activity_log').insert({
-    user_id: currentUser ? currentUser.db_id : null,
-    loan_file_id: lf_id || null,
-    action: action,
-    description: desc
-  });
-}
-
-var useSupabase = true; // flag: true = dùng DB thật, false = localStorage
-
-
-var users = JSON.parse(localStorage.getItem('pb5_users') || 'null'); if(!users){ users = [{"id": "u_admin", "name": "Nguyễn Việt Anh", "login": "vietanh", "pw": "admin2025", "role": "admin", "active": true, "pgd": "Tổ NHSODV", "cv": "Tổ trưởng"}, {"id": "u_ql", "name": "Nguyễn Thị Phương", "login": "phuongnt27@bidv.com.vn", "pw": "157332", "role": "ql", "active": true, "pgd": "Phòng KHCN", "cv": "Phó Trưởng phòng KHCN", "maCB": "157332"}, {"id": "u_bim1", "name": "BIM - Quản lý dự án", "login": "bim1", "pw": "bim2025", "role": "cdt", "active": true, "cdtLevel": "standard"}, {"id": "u_bim2", "name": "BIM - Giám đốc", "login": "bim2", "pw": "bim2025", "role": "cdt", "active": true, "cdtLevel": "admin", "canSetGiaiNgan": true}, {"id": "u_145318", "name": "Tạ Thị Vân", "login": "vantt71@bidv.com.vn", "pw": "145318", "role": "cb", "active": true, "pgd": "PGD Hào Nam", "cv": "Chuyên viên KHƯT cấp 4", "maCB": "145318"}, {"id": "u_145344", "name": "Bùi Phương Anh", "login": "anhbp1@bidv.com.vn", "pw": "145344", "role": "cb", "active": true, "pgd": "PGD West Lake", "cv": "Phó GĐ PGD phụ trách KD", "maCB": "145344"}, {"id": "u_149031", "name": "Trần Văn Long", "login": "longtv@bidv.com.vn", "pw": "149031", "role": "cb", "active": true, "pgd": "PGD Hào Nam", "cv": "Phó GĐ PGD phụ trách KD", "maCB": "149031"}, {"id": "u_151417", "name": "Nguyễn Thị Thanh Nga", "login": "ngantt25@bidv.com.vn", "pw": "151417", "role": "cb", "active": true, "pgd": "PGD Nam Cao", "cv": "Phó GĐ PGD phụ trách KD", "maCB": "151417"}, {"id": "u_153545", "name": "Nguyễn Thị Ngọc Diệp", "login": "diepntn3@bidv.com.vn", "pw": "153545", "role": "cb", "active": true, "pgd": "PGD Nam Cao", "cv": "Phó GĐ PGD phụ trách KD", "maCB": "153545"}, {"id": "u_157252", "name": "Vũ Hoài Phương", "login": "phuongvh3@bidv.com.vn", "pw": "157252", "role": "cb", "active": true, "pgd": "PGD Lương Định Của", "cv": "Chuyên viên KHƯT cấp 3", "maCB": "157252"}, {"id": "u_157333", "name": "Dương Kiều Huyền", "login": "huyendk@bidv.com.vn", "pw": "157333", "role": "cb", "active": true, "pgd": "Phòng KHCN", "cv": "Phó Trưởng phòng KHCN", "maCB": "157333"}, {"id": "u_157345", "name": "Nguyễn Công Thành", "login": "thanhnc6@bidv.com.vn", "pw": "157345", "role": "cb", "active": true, "pgd": "Phòng KHCN", "cv": "Phó Trưởng phòng KHCN", "maCB": "157345"}, {"id": "u_158495", "name": "Nguyễn Trung Hiếu", "login": "hieunt35@bidv.com.vn", "pw": "158495", "role": "cb", "active": true, "pgd": "PGD Nam Cao", "cv": "Chuyên viên KHƯT cấp 2", "maCB": "158495"}, {"id": "u_164065", "name": "Dương Thanh Tùng", "login": "tungdt4@bidv.com.vn", "pw": "164065", "role": "cb", "active": true, "pgd": "PGD West Lake", "cv": "Phó GĐ PGD phụ trách KD", "maCB": "164065"}, {"id": "u_165182", "name": "Nguyễn Thanh Hải", "login": "haint17@bidv.com.vn", "pw": "165182", "role": "cb", "active": true, "pgd": "PGD Hào Nam", "cv": "CV KHCN C1", "maCB": "165182"}, {"id": "u_165874", "name": "Ninh Thu Hương", "login": "huongnt74@bidv.com.vn", "pw": "165874", "role": "cb", "active": true, "pgd": "Phòng KHCN", "cv": "Chuyên viên KHƯT cấp 3", "maCB": "165874"}, {"id": "u_171081", "name": "Trịnh Tuấn Anh", "login": "anhtt26@bidv.com.vn", "pw": "171081", "role": "cb", "active": true, "pgd": "PGD Nam Cao", "cv": "Chuyên viên KHCN cấp 1", "maCB": "171081"}, {"id": "u_171086", "name": "Trần Thị Thủy", "login": "thuytt42@bidv.com.vn", "pw": "171086", "role": "cb", "active": true, "pgd": "Phòng KHCN", "cv": "Chuyên viên KHƯT cấp 2", "maCB": "171086"}, {"id": "u_173057", "name": "Nguyễn Thị Thảo", "login": "thaont63@bidv.com.vn", "pw": "173057", "role": "cb", "active": true, "pgd": "Phòng KHCN", "cv": "Chuyên viên KHCN cấp 2", "maCB": "173057"}, {"id": "u_173264", "name": "Lê Thùy Linh", "login": "linhlt14@bidv.com.vn", "pw": "173264", "role": "cb", "active": true, "pgd": "Phòng KHCN", "cv": "Chuyên viên KHCN cấp 2", "maCB": "173264"}, {"id": "u_173789", "name": "Bùi Nhật Tân", "login": "tanbn@bidv.com.vn", "pw": "173789", "role": "cb", "active": true, "pgd": "PGD West Lake", "cv": "Chuyên viên KHCN cấp 1", "maCB": "173789"}, {"id": "u_178446", "name": "Phan Đức Trung", "login": "trungpd1@bidv.com.vn", "pw": "178446", "role": "cb", "active": true, "pgd": "PGD Lương Định Của", "cv": "Chuyên viên KHCN cấp 2", "maCB": "178446"}, {"id": "u_182410", "name": "Nguyễn Văn Thắng", "login": "thangnv18@bidv.com.vn", "pw": "182410", "role": "cb", "active": true, "pgd": "PGD West Lake", "cv": "Chuyên viên KHHH cấp 1", "maCB": "182410"}, {"id": "u_36691", "name": "Phạm Thị Tuyết Mai", "login": "maiptt2@bidv.com.vn", "pw": "36691", "role": "cb", "active": true, "pgd": "PGD Lương Định Của", "cv": "Phó GĐ PGD phụ trách KD", "maCB": "36691"}]; }
-
-var hsList = JSON.parse(localStorage.getItem('pb5_hs') || 'null'); if(!hsList){ hsList = [{"id": "HSP11006", "maBIM": "BIM-001", "sttBIM": 1, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "TRẦN THÀNH CÔNG", "cccd": "031095005713", "sdt": "0326606369", "diaChi": "CHCC 2403 tòa nhà N01A TTTM DV nhà ở Golden Land 275 Nguyễn Trãi, Phường Khương Đình, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "CÔNG TY TNHH PHÁT TRIỂN BẤT ĐỘNG SẢN TRUST LAND", "maCanHo": "P1-10-06", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1939101876, "tyLeVay": 0.7, "hanMucDeXuat": 581730563, "vtcPhaiNop": 195995447, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_157345", "cbBIMName": "NGUYEN CONGTHANH", "cbBIMSdt": "0949496666", "cbBIMEmail": "thanhnc6@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11105", "maBIM": "BIM-002", "sttBIM": 2, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGUYỄN NGỌC NAM", "cccd": "001076020833", "sdt": "0336047809", "diaChi": "Thôn Yên Quán, xã Hưng Đạo, TP Hà Nội", "vung": "Hà Nội", "daiLy": "MAI VIỆT", "maCanHo": "P1-11-05", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1964526989, "tyLeVay": 0.7, "hanMucDeXuat": 589358097, "vtcPhaiNop": 196452699, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_157345", "cbBIMName": "NGUYEN CONGTHANH", "cbBIMSdt": "0949496666", "cbBIMEmail": "thanhnc6@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11206", "maBIM": "BIM-003", "sttBIM": 3, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGUYỄN THỊ MAI", "cccd": "033173001328", "sdt": "0914354237", "diaChi": "P602-50c, Ngõ 203 Trường Chinh, Phường Phương Liệt, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-12-06", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1958484444, "tyLeVay": 0.7, "hanMucDeXuat": 587545333, "vtcPhaiNop": 197960000, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_157345", "cbBIMName": "NGUYEN CONGTHANH", "cbBIMSdt": "0949496666", "cbBIMEmail": "thanhnc6@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11217", "maBIM": "BIM-004", "sttBIM": 4, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "PHẠM THU HIỀN", "cccd": "022199002657", "sdt": "0865140086", "diaChi": "Căn hộ 3017 Tòa S3.02, Tổ dân phố số 11, Phường Tây Mỗ, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-12-17", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1783590125, "tyLeVay": 0.7, "hanMucDeXuat": 535077038, "vtcPhaiNop": 179022880, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_145344", "cbBIMName": "BUI PHUONG ANH", "cbBIMSdt": "0986312379", "cbBIMEmail": "anhbp1@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11520", "maBIM": "BIM-005", "sttBIM": 5, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "VŨ ĐẠI DƯƠNG", "cccd": "001087021886", "sdt": "0912491919", "diaChi": "216 Bạch Mai, Phường Bạch Mai, TP Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-15-20", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1766385268, "tyLeVay": 0.7, "hanMucDeXuat": 529915580, "vtcPhaiNop": 177353217, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_145344", "cbBIMName": "BUI PHUONG ANH", "cbBIMSdt": "0986312379", "cbBIMEmail": "anhbp1@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11521", "maBIM": "BIM-006", "sttBIM": 6, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Vũ Tuấn Đạt", "cccd": "001083047711", "sdt": "0987888510", "diaChi": "Thôn Phú Mỹ, Xã Phú Xuyên, Tp Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-15-21", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1765275761, "tyLeVay": 0.7, "hanMucDeXuat": 529582728, "vtcPhaiNop": 176527576, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_145344", "cbBIMName": "BUI PHUONG ANH", "cbBIMSdt": "0986312379", "cbBIMEmail": "anhbp1@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11522", "maBIM": "BIM-007", "sttBIM": 7, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Vũ Thị Cúc Hoa", "cccd": "001184008374", "sdt": "0987888510", "diaChi": "216 Bạch Mai, Phường Bạch Mai, TP Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-15-22", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1758615956, "tyLeVay": 0.7, "hanMucDeXuat": 527584787, "vtcPhaiNop": 175861596, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_158495", "cbBIMName": "NGUYEN TRUNG HIEU", "cbBIMSdt": "0967890866", "cbBIMEmail": "hieunt35@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11526", "maBIM": "BIM-008", "sttBIM": 8, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "LÊ THỊ THU THỦY", "cccd": "001177020986", "sdt": "0915988088", "diaChi": "31B Nguyễn Khuyến, Phường Văn Miếu - Quốc Tử Giám, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-15-26", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1774847126, "tyLeVay": 0.7, "hanMucDeXuat": 532454138, "vtcPhaiNop": 177485000, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_158495", "cbBIMName": "NGUYEN TRUNG HIEU", "cbBIMSdt": "0967890866", "cbBIMEmail": "hieunt35@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11610", "maBIM": "BIM-009", "sttBIM": 9, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "PHÙNG VĂN TƯỚC", "cccd": "020094000149", "sdt": "0982457571", "diaChi": "168 Nguyễn Phi Khanh, Phường Tam Thanh, Tỉnh Lạng Sơn", "vung": "Lạng Sơn", "daiLy": "SRT ĐÔNG BẮC", "maCanHo": "P1-16-10", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2031640845, "tyLeVay": 0.7, "hanMucDeXuat": 609492254, "vtcPhaiNop": 203164084, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_158495", "cbBIMName": "NGUYEN TRUNG HIEU", "cbBIMSdt": "0967890866", "cbBIMEmail": "hieunt35@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11622", "maBIM": "BIM-010", "sttBIM": 10, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "HOÀNG THU HƯƠNG", "cccd": "022183007578", "sdt": "0858916888", "diaChi": "Thôn Khòn Khuyên, Phường Đông Kinh, Tỉnh Lạng Sơn", "vung": "Lạng Sơn", "daiLy": "SRT ĐÔNG BẮC", "maCanHo": "P1-16-22", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1762276084, "tyLeVay": 0.7, "hanMucDeXuat": 528682825, "vtcPhaiNop": 176227608, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_36691", "cbBIMName": "PHAM THI TUYET MAI", "cbBIMSdt": "0904377370", "cbBIMEmail": "maiptt2@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11626", "maBIM": "BIM-011", "sttBIM": 11, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "HOÀNG THỊ NỤ", "cccd": "020173001765", "sdt": "0817515658", "diaChi": "Tổ 2, Khối 14, Phường Kỳ Lừa, Tỉnh Lạng Sơn", "vung": "Lạng Sơn", "daiLy": "SRT ĐÔNG BẮC", "maCanHo": "P1-16-26", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1834939494, "tyLeVay": 0.7, "hanMucDeXuat": 550481848, "vtcPhaiNop": 183493949, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_36691", "cbBIMName": "PHAM THI TUYET MAI", "cbBIMSdt": "0904377370", "cbBIMEmail": "maiptt2@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP11920", "maBIM": "BIM-012", "sttBIM": 12, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "TRẦN THỊ ÁNH NGUYỆT", "cccd": "026188002770", "sdt": "0966826139", "diaChi": "Khê Ngoại 3, xã Mê Linh, thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "REDLAND", "maCanHo": "P1-19-20", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1801134810, "tyLeVay": 0.7, "hanMucDeXuat": 540340443, "vtcPhaiNop": 180113481, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_36691", "cbBIMName": "PHAM THI TUYET MAI", "cbBIMSdt": "0904377370", "cbBIMEmail": "maiptt2@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP12001", "maBIM": "BIM-013", "sttBIM": 13, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGUYỄN VĂN PHÚC", "cccd": "035088001403", "sdt": "0977815591", "diaChi": "Thôn 4 Thượng Vỹ, Xã Vĩnh Trụ, Tỉnh Ninh Bình", "vung": "Ninh Bình", "daiLy": "An Việt Homes", "maCanHo": "P1-20-01", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1929211457, "tyLeVay": 0.7, "hanMucDeXuat": 578763437, "vtcPhaiNop": 192921146, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_151417", "cbBIMName": "NGUYEN THI THANH NGA", "cbBIMSdt": "0986848363", "cbBIMEmail": "ngantt25@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP12012A", "maBIM": "BIM-014", "sttBIM": 14, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Vũ Thị Phượng", "cccd": "036197010855", "sdt": "0354395823", "diaChi": "Căn hộ 1126 - HH4B, phường Hoàng Liệt, thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "Thành Phát Global", "maCanHo": "P1-20-12A", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2053461213, "tyLeVay": 0.7, "hanMucDeXuat": 616038364, "vtcPhaiNop": 205346121, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_151417", "cbBIMName": "NGUYEN THI THANH NGA", "cbBIMSdt": "0986848363", "cbBIMEmail": "ngantt25@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP12210", "maBIM": "BIM-015", "sttBIM": 15, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Nguyễn Văn Tuấn", "cccd": "040098009016", "sdt": "0357646222", "diaChi": "Số 29 ngõ 282 Kim Giang, Định Công, Hà Nội", "vung": "Hà Nội", "daiLy": "DOHALAND", "maCanHo": "P1-22-10", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2091378947, "tyLeVay": 0.7, "hanMucDeXuat": 627413684, "vtcPhaiNop": 209137895, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_153545", "cbBIMName": "NGUYEN THI NGOC DIEP", "cbBIMSdt": "0986180686", "cbBIMEmail": "diepntn3@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP12220", "maBIM": "BIM-016", "sttBIM": 16, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "LẦU MAI TRANG", "cccd": "001191054042", "sdt": "0943030991", "diaChi": "Phòng 214 N5 Bán Đảo Linh Đàm, Phường Hoàng Liệt, TP Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-22-20", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1860428083, "tyLeVay": 0.7, "hanMucDeXuat": 558128425, "vtcPhaiNop": 186080000, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_153545", "cbBIMName": "NGUYEN THI NGOC DIEP", "cbBIMSdt": "0986180686", "cbBIMEmail": "diepntn3@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP12412A", "maBIM": "BIM-017", "sttBIM": 17, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Trần Phương Anh", "cccd": "020197007472", "sdt": "0946416897", "diaChi": "Toà N02T2, Khu Chung Cư Ngoại Giao Đoàn, Phường Xuân Đỉnh, Thành Phố Hà Nội", "vung": "Hà Nội", "daiLy": "An Việt Homes", "maCanHo": "P1-24-12A", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2072812608, "tyLeVay": 0.7, "hanMucDeXuat": 621843782, "vtcPhaiNop": 207282000, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_153545", "cbBIMName": "NGUYEN THI NGOC DIEP", "cbBIMSdt": "0986180686", "cbBIMEmail": "diepntn3@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP12617", "maBIM": "BIM-018", "sttBIM": 18, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "ĐINH THẢO ANH", "cccd": "019301008357", "sdt": "0945438976", "diaChi": "Ngách 68/53 Đường Cầu Giấy, thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "REDLAND", "maCanHo": "P1-26-17", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1964964432, "tyLeVay": 0.7, "hanMucDeXuat": 589489330, "vtcPhaiNop": 196496443, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_165874", "cbBIMName": "NINH THU HUONG", "cbBIMSdt": "0975466565", "cbBIMEmail": "huongnt74@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP20626", "maBIM": "BIM-019", "sttBIM": 19, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Lại Thế Vũ", "cccd": "035081015487", "sdt": "0969872012", "diaChi": "Thôn Thượng Cầu Vọng, Xã Thanh Bình, Tỉnh Ninh Bình", "vung": "Ninh Bình", "daiLy": "SRT ĐÔNG BẮC", "maCanHo": "P2-06-26", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1625681371, "tyLeVay": 0.7, "hanMucDeXuat": 487704411, "vtcPhaiNop": 162568137, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_165874", "cbBIMName": "NINH THU HUONG", "cbBIMSdt": "0975466565", "cbBIMEmail": "huongnt74@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP20805", "maBIM": "BIM-020", "sttBIM": 20, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Nguyễn Xuân Bốn", "cccd": "034082002973", "sdt": "0963591337", "diaChi": "Thọ Am, xã Nam Phù, thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "CÔNG TY CỔ PHẦN BẤT ĐỘNG SẢN EVG", "maCanHo": "P2-08-05", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1810923984, "tyLeVay": 0.7, "hanMucDeXuat": 543277195, "vtcPhaiNop": 181092398, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_165874", "cbBIMName": "NINH THU HUONG", "cbBIMSdt": "0975466565", "cbBIMEmail": "huongnt74@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP20912A", "maBIM": "BIM-021", "sttBIM": 21, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "PHAN THỊ HUYỀN", "cccd": "040196019172", "sdt": "0962196556", "diaChi": "Số 35B Đường Phan Bội Châu, Phường Vinh Hưng, Tỉnh Nghệ An", "vung": "Nghệ An", "daiLy": "CÔNG TY CỔ PHẦN TRUNG THỰC LAND", "maCanHo": "P2-09-12A", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1726503884, "tyLeVay": 0.7, "hanMucDeXuat": 517951165, "vtcPhaiNop": 172650388, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_149031", "cbBIMName": "TRAN VAN LONG", "cbBIMSdt": "0912760607", "cbBIMEmail": "longtv@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21007", "maBIM": "BIM-022", "sttBIM": 22, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "LÀNH THỊ LIÊN", "cccd": "020189000623", "sdt": "0915589875", "diaChi": "Phố Đức Tâm, Xã Văn Quan, Tỉnh Lạng Sơn", "vung": "Lạng Sơn", "daiLy": "Duyên Hải (ĐXMB)", "maCanHo": "P2-10-07", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1905494249, "tyLeVay": 0.7, "hanMucDeXuat": 571648275, "vtcPhaiNop": 190549425, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_149031", "cbBIMName": "TRAN VAN LONG", "cbBIMSdt": "0912760607", "cbBIMEmail": "longtv@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21008", "maBIM": "BIM-023", "sttBIM": 23, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Nguyễn Ngọc Đức", "cccd": "001086036309", "sdt": "0934586898", "diaChi": "64B ngõ 26 phố Tư Đình, Tổ 28, Phường Long Biên, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "Nhật Minh Land", "maCanHo": "P2-10-08", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1826362936, "tyLeVay": 0.7, "hanMucDeXuat": 547908881, "vtcPhaiNop": 182636294, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_149031", "cbBIMName": "TRAN VAN LONG", "cbBIMSdt": "0912760607", "cbBIMEmail": "longtv@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21103", "maBIM": "BIM-024", "sttBIM": 24, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "TRẦN VĂN ĐÔ", "cccd": "030091001337", "sdt": "0988799128", "diaChi": "170 Trần Vỹ - Phú Diễn - Hà Nội", "vung": "Hà Nội", "daiLy": "Anexper", "maCanHo": "P2-11-03", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1891202183, "tyLeVay": 0.7, "hanMucDeXuat": 567360655, "vtcPhaiNop": 189120218, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_157252", "cbBIMName": "VU HOAI PHUONG", "cbBIMSdt": "0928252688", "cbBIMEmail": "phuongvh3@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21110", "maBIM": "BIM-025", "sttBIM": 25, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGUYỄN THẾ BÌNH", "cccd": "001083052833", "sdt": "0943889869", "diaChi": "Số 27 Ngõ 93 Phố Nghĩa Dũng, Phường Hồng Hà, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "Superland", "maCanHo": "P2-11-10", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2351465050, "tyLeVay": 0.7, "hanMucDeXuat": 705439515, "vtcPhaiNop": 235146505, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_157252", "cbBIMName": "VU HOAI PHUONG", "cbBIMSdt": "0928252688", "cbBIMEmail": "phuongvh3@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21403A", "maBIM": "BIM-026", "sttBIM": 26, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "PHÍ VĂN ĐƯỜNG", "cccd": "001083013351", "sdt": "0981762468", "diaChi": "Số 111 thôn Thái Hoà, xã Tây Phương, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "REDLAND", "maCanHo": "P2-14-03A", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1856770311, "tyLeVay": 0.7, "hanMucDeXuat": 557031093, "vtcPhaiNop": 191000000, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_ql", "cbBIMName": "NGUYEN THI PHUONG", "cbBIMSdt": "0902022526", "cbBIMEmail": "phuongnt27@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21412", "maBIM": "BIM-027", "sttBIM": 27, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGUYỄN ĐỨC HUỲNH", "cccd": "033092004016", "sdt": "0359239348", "diaChi": "CH 612-CT1 Tổ hợp The Pride, Khu đô thị An Hưng, Phường Hà Đông, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "Fourhomes", "maCanHo": "P2-14-12", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1830763419, "tyLeVay": 0.7, "hanMucDeXuat": 549229026, "vtcPhaiNop": 185971689, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_ql", "cbBIMName": "NGUYEN THI PHUONG", "cbBIMSdt": "0902022526", "cbBIMEmail": "phuongnt27@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21515", "maBIM": "BIM-028", "sttBIM": 28, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "PHẠM NGỌC ĐỨC", "cccd": "025098009202", "sdt": "0378424878", "diaChi": "Căn 610Hh2 chung cư Thụy Vân, Phường Nông Trang, Tỉnh Phú Thọ", "vung": "Phú Thọ", "daiLy": "T-Land", "maCanHo": "P2-15-15", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1702007618, "tyLeVay": 0.7, "hanMucDeXuat": 510602285, "vtcPhaiNop": 170200762, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_151417", "cbBIMName": "NGUYEN THI THANH NGA", "cbBIMSdt": "0986848363", "cbBIMEmail": "ngantt25@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21606", "maBIM": "BIM-029", "sttBIM": 29, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "BÙI CHÍ ĐẠT", "cccd": "001096023562", "sdt": "0332303050", "diaChi": "Số nhà 17, ngõ 20 đường số 2, thôn Hưng Giáo, xã Tam Hưng, thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "SRT ĐÔNG BẮC", "maCanHo": "P2-16-06", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1951451970, "tyLeVay": 0.7, "hanMucDeXuat": 585435591, "vtcPhaiNop": 195145197, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_171081", "cbBIMName": "TRINH TUAN ANH", "cbBIMSdt": "0916133163", "cbBIMEmail": "anhtt26@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21607", "maBIM": "BIM-030", "sttBIM": 30, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "BÙI THÀNH LUÂN", "cccd": "001090023463", "sdt": "0986095045", "diaChi": "Số 4 Ngách 638/44 Ngô Gia Tự, Phường Việt Hưng, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "Bhomes", "maCanHo": "P2-16-07", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1962440897, "tyLeVay": 0.7, "hanMucDeXuat": 588732269, "vtcPhaiNop": 196244090, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_171081", "cbBIMName": "TRINH TUAN ANH", "cbBIMSdt": "0916133163", "cbBIMEmail": "anhtt26@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21615", "maBIM": "BIM-031", "sttBIM": 31, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "LÔ THUỲ LINH", "cccd": "020188000629", "sdt": "0383495595", "diaChi": "Số 36A ngõ 19 Thác Trà, Khối Trần Quang Khải 1, Phường Lương Văn Tri, Tỉnh Lạng Sơn", "vung": "Lạng Sơn", "daiLy": "SRT ĐÔNG BẮC", "maCanHo": "P2-16-15", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1756162386, "tyLeVay": 0.7, "hanMucDeXuat": 526848716, "vtcPhaiNop": 175616293, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_178446", "cbBIMName": "PHAN DUC TRUNG", "cbBIMSdt": "0986154065", "cbBIMEmail": "trungpd1@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21616", "maBIM": "BIM-032", "sttBIM": 32, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "LÔ THUỲ LINH", "cccd": "020188000629", "sdt": "0383495595", "diaChi": "Số 36A ngõ 19 Thác Trà, Khối Trần Quang Khải 1, Phường Lương Văn Tri, Tỉnh Lạng Sơn", "vung": "Lạng Sơn", "daiLy": "SRT ĐÔNG BẮC", "maCanHo": "P2-16-16", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1687205242, "tyLeVay": 0.7, "hanMucDeXuat": 506161573, "vtcPhaiNop": 168720524, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_178446", "cbBIMName": "PHAN DUC TRUNG", "cbBIMSdt": "0986154065", "cbBIMEmail": "trungpd1@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21712", "maBIM": "BIM-033", "sttBIM": 33, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Lương Tuấn Phương", "cccd": "020087009895", "sdt": "0974989678", "diaChi": "TDP số 2 Miêu Nha, Phường Xuân Phương, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "Nhật Minh Land", "maCanHo": "P2-17-12", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1807253263, "tyLeVay": 0.7, "hanMucDeXuat": 542175979, "vtcPhaiNop": 182668800, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_171086", "cbBIMName": "TRAN THI THUY", "cbBIMSdt": "0984104830", "cbBIMEmail": "thuytt42@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21712A", "maBIM": "BIM-034", "sttBIM": 34, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Nguyễn Việt Hưng", "cccd": "030085002266", "sdt": "0972178133", "diaChi": "Căn hộ 1601 Tòa CT2A khu nhà ở quận Hoàng Mai, Phường Hoàng Mai, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "CÔNG TY CỔ PHẦN TRUNG THỰC LAND", "maCanHo": "P2-17-12A", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1778483656, "tyLeVay": 0.7, "hanMucDeXuat": 533545097, "vtcPhaiNop": 177848366, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_171086", "cbBIMName": "TRAN THI THUY", "cbBIMSdt": "0984104830", "cbBIMEmail": "thuytt42@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP21915", "maBIM": "BIM-035", "sttBIM": 35, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Nguyễn Thị Hằng", "cccd": "022175004310", "sdt": "0983859119", "diaChi": "Tổ 2, xã Mèo Vạc, tỉnh Tuyên Quang", "vung": "Tuyên Quang", "daiLy": "REDLAND", "maCanHo": "P2-19-15", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1735472307, "tyLeVay": 0.7, "hanMucDeXuat": 520641692, "vtcPhaiNop": 173547231, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_165182", "cbBIMName": "NGUYEN THANH HAI", "cbBIMSdt": "0916949799", "cbBIMEmail": "haint17@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22012A", "maBIM": "BIM-036", "sttBIM": 36, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGUYỄN VĂN TRUNG", "cccd": "035083004543", "sdt": "0983697355", "diaChi": "Thôn 6 Thượng Vỹ, Xã Vĩnh Trụ, Tỉnh Ninh Bình", "vung": "Ninh Bình", "daiLy": "An Việt Homes", "maCanHo": "P2-20-12A", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1872260216, "tyLeVay": 0.7, "hanMucDeXuat": 561678065, "vtcPhaiNop": 188050287, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_165182", "cbBIMName": "NGUYEN THANH HAI", "cbBIMSdt": "0916949799", "cbBIMEmail": "haint17@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22107", "maBIM": "BIM-037", "sttBIM": 37, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "MAI XUÂN TRƯỜNG", "cccd": "001089005654", "sdt": "0987609084", "diaChi": "Tổ 40 cụm 6, Phường Phú Thượng, Thành Phố Hà Nội", "vung": "Hà Nội", "daiLy": "Nhật Minh Land", "maCanHo": "P2-21-07", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1938778479, "tyLeVay": 0.7, "hanMucDeXuat": 581633544, "vtcPhaiNop": 193877848, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_173264", "cbBIMName": "LE THUY LINH", "cbBIMSdt": "0384106068", "cbBIMEmail": "linhlt14@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22206", "maBIM": "BIM-038", "sttBIM": 38, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "MẠC THỊ THÙY", "cccd": "024190001445", "sdt": "0967929883", "diaChi": "P711 Ct3, KĐT Đặng Xá, Xã Gia Lâm, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "CÔNG TY TNHH PHÁT TRIỂN BẤT ĐỘNG SẢN TRUST LAND", "maCanHo": "P2-22-06", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2008801586, "tyLeVay": 0.7, "hanMucDeXuat": 602640476, "vtcPhaiNop": 200880159, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_173264", "cbBIMName": "LE THUY LINH", "cbBIMSdt": "0384106068", "cbBIMEmail": "linhlt14@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22208", "maBIM": "BIM-039", "sttBIM": 39, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "TRẦN VĂN HOAN", "cccd": "036087015766", "sdt": "0985211575", "diaChi": "Căn hộ 3826, Tòa 39.1 (GS1) Vinhomes Park, Phường Tây Mỗ, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "DOHALAND", "maCanHo": "P2-22-08", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1936392008, "tyLeVay": 0.7, "hanMucDeXuat": 580917602, "vtcPhaiNop": 193639201, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_145318", "cbBIMName": "TA THI VAN", "cbBIMSdt": "0986848363", "cbBIMEmail": "vantt71@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22230", "maBIM": "BIM-040", "sttBIM": 40, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Nguyễn Thu Trang", "cccd": "001187052332", "sdt": "0904736226", "diaChi": "Số 11 ngách 2/103 Nguyễn Văn Cừ, Tổ 11, Phường Bồ Đề, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "BHS", "maCanHo": "P2-22-30", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 1752537599, "tyLeVay": 0.7, "hanMucDeXuat": 525761280, "vtcPhaiNop": 175253760, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_145318", "cbBIMName": "TA THI VAN", "cbBIMSdt": "0986848363", "cbBIMEmail": "vantt71@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22310", "maBIM": "BIM-041", "sttBIM": 41, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGUYỄN VĂN HIẾU", "cccd": "014088001526", "sdt": "0816555959", "diaChi": "Tổ Dân phố Trung Nguyên, Phường Thảo Nguyên, Tỉnh Sơn La", "vung": "Sơn La", "daiLy": "CÔNG TY TNHH BẤT ĐỘNG SẢN THT Land", "maCanHo": "P2-23-10", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2468259351, "tyLeVay": 0.7, "hanMucDeXuat": 740477805, "vtcPhaiNop": 246825935, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_182410", "cbBIMName": "NGUYEN VAN THANG", "cbBIMSdt": "0982505275", "cbBIMEmail": "thangnv18@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22406", "maBIM": "BIM-042", "sttBIM": 42, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "Vũ Anh Tùng", "cccd": "022082006660", "sdt": "0946966558", "diaChi": "Phòng 1104 Nhà 17T9 KĐT Trung Hòa Nhân Chính, Phường Yên Hòa, Thành phố Hà Nội", "vung": "Hà Nội", "daiLy": "CÔNG TY CỔ PHẦN TRUNG THỰC LAND", "maCanHo": "P2-24-06", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2027918124, "tyLeVay": 0.7, "hanMucDeXuat": 608375437, "vtcPhaiNop": 202791812, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_182410", "cbBIMName": "NGUYEN VAN THANG", "cbBIMSdt": "0982505275", "cbBIMEmail": "thangnv18@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22903", "maBIM": "BIM-043", "sttBIM": 43, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "NGÔ THỊ HÀ TRANG", "cccd": "040192023059", "sdt": "0971291599", "diaChi": "276/11/27 số nhà 20A Đại Từ, Hoàng Mai, Hà Nội", "vung": "Hà Nội", "daiLy": "CÔNG TY TNHH PHÁT TRIỂN BẤT ĐỘNG SẢN TRUST LAND", "maCanHo": "P2-29-03", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2013427011, "tyLeVay": 0.7, "hanMucDeXuat": 604028103, "vtcPhaiNop": 201342701, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_164065", "cbBIMName": "DUONG THANH TUNG", "cbBIMSdt": "0969667388", "cbBIMEmail": "tungdt4@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}, {"id": "HSP22910", "maBIM": "BIM-044", "sttBIM": 44, "createdAt": "17/06 00:00", "updatedAt": "17/06 00:00", "status": "moi", "locked": false, "kLocked": false, "source": "bim", "tenKH": "DƯƠNG HOÀNG ANH", "cccd": "001097017683", "sdt": "0826141997", "diaChi": "137 Dương Văn Bé, Phường Vĩnh Hưng, Hà Nội", "vung": "Hà Nội", "daiLy": "CÔNG TY TNHH ĐẦU TƯ VÀ PHÁT TRIỂN BẤT ĐỘNG SẢN GLOBAL PROPERTY", "maCanHo": "P2-29-10", "duAn": "Prima Bay - Hạ Long", "giaHDMB": 2503297640, "tyLeVay": 0.7, "hanMucDeXuat": 750989292, "vtcPhaiNop": 250329764, "vtcDaNop": 0, "csChinhSach": "20260617_Prima_vay", "hinhThucVay": "30 tháng", "hanGiaiNgan": "ngay ky HDMB + 45 ngay", "ngayGuiBIM": "46217", "canBoId": "u_164065", "cbBIMName": "DUONG THANH TUNG", "cbBIMSdt": "0969667388", "cbBIMEmail": "tungdt4@bidv.com.vn", "ck": {}, "files": {}, "contacts": [], "weeklyReports": [], "ketQuaKhaiThac": "", "chiTiet": "", "deXuatHoTro": "", "hanMucDuocDuyet": 0, "ngayGiaiNgan": "", "soTienGiaiNgan": 0}]; }
-if(!hsList) { hsList = DEMO_HS; }
-var actLog = JSON.parse(localStorage.getItem('pb5_log') || '[]');
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════
 var SUPABASE_URL = 'https://oodeswfnxnqabjbmecmi.supabase.co';
@@ -1015,58 +764,34 @@ var confFn = null;
 
 // Map app HS object → loan_files columns
 function mapHSToLF(h) {
-  var appToDb={
-    'moi':'new','dang':'processing','cho':'pending',
-    'choky':'approved','chogn':'approved','xong':'disbursed','tuchoi':'rejected'
-  };
+  var appToDb={'moi':'new','dang':'processing','cho':'pending','choky':'approved','chogn':'approved','xong':'disbursed','tuchoi':'rejected'};
   return {
-    status:                appToDb[h.status] || 'new',
-    officer_id:            h.canBoId              || null,
-    sale_price:            parseInt(h.giaHDMB)    || null,
-    vtc_required:          parseInt(h.vtcPhaiNop) || null,
-    vtc_paid:              parseInt(h.vtcDaNop)   || null,
-    loan_amount_requested: parseInt(h.soTienVay)  || null,
-    loan_term_months:      parseInt(h.kyHan)       || null,
-    loan_amount_approved:  parseInt(h.hanMucDuocDuyet) || null,
-    loan_form:             h.hinhThucVay  || null,
-    loan_policy_ref:       h.csChinhSach  || null,
-    hdmb_code:             h.soHDMB       || null,
-    hdmb_date:             h.ngayKyHDMB   || null,
-    max_disbursement_date: h.hanGiaiNgan  || null,
-    disbursement_date:     h.ngayGiaiNgan || null,
-    disbursement_amount:   parseInt(h.soTienGiaiNgan) || null,
-    is_locked:             h.locked    || false,
-    is_kh_locked:          h.kLocked   || false,
-    locked_by:             h.lockedBy  || null,
-    notes:                 h.ghiChu    || null,
-    drive_folder_url:      h.drive_folder_url || null,
-    updated_at:            new Date().toISOString()
+    status: appToDb[h.status]||'new', officer_id:h.canBoId||null,
+    sale_price:parseInt(h.giaHDMB)||null, vtc_required:parseInt(h.vtcPhaiNop)||null,
+    vtc_paid:parseInt(h.vtcDaNop)||null, loan_amount_requested:parseInt(h.soTienVay)||null,
+    loan_term_months:parseInt(h.kyHan)||null, loan_amount_approved:parseInt(h.hanMucDuocDuyet)||null,
+    loan_form:h.hinhThucVay||null, loan_policy_ref:h.csChinhSach||null,
+    hdmb_code:h.soHDMB||null, hdmb_date:h.ngayKyHDMB||null,
+    max_disbursement_date:h.hanGiaiNgan||null, disbursement_date:h.ngayGiaiNgan||null,
+    disbursement_amount:parseInt(h.soTienGiaiNgan)||null,
+    is_locked:h.locked||false, is_kh_locked:h.kLocked||false, locked_by:h.lockedBy||null,
+    notes:h.ghiChu||null, drive_folder_url:h.drive_folder_url||null,
+    updated_at:new Date().toISOString()
   };
 }
 
 // Map app KH object → customers columns
 function mapHSToCust(h) {
   return {
-    full_name:         h.tenKH        || null,
-    id_number:         h.cccd         || null,
-    phone:             h.sdt          || null,
-    email:             h.email        || null,
-    address:           h.diaChi       || null,
-    dob:               h.ngaySinh     || null,
-    occupation:        h.ngheNghiep   || null,
-    monthly_income:    parseFloat(h.thuNhap) || null,
-    cif:               h.cif          || null,
-    agent:             h.daiLy        || null,
-    has_co_borrower:   h.coVoChong    || false,
-    co_name:           h.tenVC        || null,
-    co_id_number:      h.cccdVC       || null,
-    co_phone:          h.sdtVC        || null,
-    co_dob:            h.ngaySinhVC   || null,
-    co_occupation:     h.ngheNghiepVC || null,
-    co_monthly_income: parseFloat(h.thuNhapVC) || null,
-    email_co_borrower: h.emailVC      || null,
-    cif_co_borrower:   h.cifVC        || null,
-    updated_at:        new Date().toISOString()
+    full_name:h.tenKH||null, id_number:h.cccd||null, phone:h.sdt||null,
+    email:h.email||null, address:h.diaChi||null, dob:h.ngaySinh||null,
+    occupation:h.ngheNghiep||null, monthly_income:parseFloat(h.thuNhap)||null,
+    cif:h.cif||null, agent:h.daiLy||null,
+    has_co_borrower:h.coVoChong||false, co_name:h.tenVC||null,
+    co_id_number:h.cccdVC||null, co_phone:h.sdtVC||null, co_dob:h.ngaySinhVC||null,
+    co_occupation:h.ngheNghiepVC||null, co_monthly_income:parseFloat(h.thuNhapVC)||null,
+    email_co_borrower:h.emailVC||null, cif_co_borrower:h.cifVC||null,
+    updated_at:new Date().toISOString()
   };
 }
 
@@ -1079,7 +804,6 @@ async function dbSaveLoanFile(h) {
 
   // Update loan_files
   console.log('[DB] Saving loan_file', h.id, lfData);
-  console.log('[DB] loan_files update:', h.id, Object.keys(lfData));
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id);
   if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error);
@@ -1107,15 +831,13 @@ async function dbSaveLoanFile(h) {
     }
   }
 
-  // Ghi activity log (bỏ qua nếu lỗi)
-  try {
-    await sb.from('activity_log').insert({
-      loan_file_id: h.id,
-      action: 'update',
-      description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
-      created_at: new Date().toISOString()
-    });
-  } catch(e) { console.warn('activity_log skip:', e.message); }
+  // Ghi activity log
+  await sb.from('activity_log').insert({
+    loan_file_id: h.id,
+    action: 'update',
+    description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
+    created_at: new Date().toISOString()
+  }).catch(function(){});
 
   if (errors.length) {
     console.warn('dbSaveLoanFile warnings:', errors);
@@ -1129,18 +851,17 @@ async function dbSaveWeeklyReport(h, entry) {
 
   // Map app status mới → enum contact_status trong DB
   var statusMap = {
-    // App key → DB contact_status enum (dùng giá trị có sẵn trong DB)
     'chua_lh':         'no_answer',
     'dang_can_nhac':   'contacted',
-    'dong_y_cung_cap': 'waiting_docs',
+    'dong_y_cung_cap': 'docs_complete',  // KH đồng ý + cung cấp HS
     'kh_tu_choi':      'rejected_kh',
     'nh_tu_choi':      'rejected_income',
     'von_tu_co':       'other',
     'nop_du':          'docs_complete',
     'da_phe_duyet':    'approved_loan',
-    'soan_hs':         'other',       // Dùng other, [KQ:soan_hs] lưu trong detail
-    'cho_gn':          'other',       // Dùng other, [KQ:cho_gn] lưu trong detail
-    'da_gn':           'other',       // Dùng other, [KQ:da_gn] lưu trong detail
+    'soan_hs':         'approved_loan',
+    'cho_gn':          'approved_loan',
+    'da_gn':           'approved_loan',  // Đã GN - dùng approved_loan vì enum không có disbursed
     'khac':            'other',
     // Legacy
     'da_lh':           'contacted',
@@ -1170,8 +891,6 @@ async function dbSaveWeeklyReport(h, entry) {
   }
 
   var dbStatus = statusMap[entry.ketQua] || 'other';
-  // Lưu app key gốc vào đầu detail để restore khi load lại
-  var detailWithKey = '[KQ:' + entry.ketQua + ']' + (entry.chiTiet ? ' ' + entry.chiTiet : '');
 
   var data = {
     loan_file_id:   h.id,
@@ -1180,7 +899,7 @@ async function dbSaveWeeklyReport(h, entry) {
     week_number:    getWeekNum(),
     year:           new Date().getFullYear(),
     contact_status: dbStatus,
-    detail:         detailWithKey,
+    detail:         entry.chiTiet || null,
     support_request:entry.deXuat  || null,
     created_at:     new Date().toISOString()
   };
@@ -1211,89 +930,49 @@ async function dbSaveWeeklyReport(h, entry) {
 // Lưu CIC lên DB
 async function dbSaveCIC(h, cic) {
   if (!h || !h.id) return;
-  // Xoá CIC cũ
-  try { await sb.from('cic_results').delete().eq('loan_file_id', h.id); } catch(e) {}
-
-  // Thử full data trước
-  var _cicOfficer = null;
-  if (currentUser) {
-    var _u = users.find(function(u){ return u.login===currentUser.login||u.id===currentUser.id; });
-    if (_u) _cicOfficer = _u.id;
-  }
-  var fullData = {
-    loan_file_id:  h.id,
-    worst_group:   cic.nhomNo ? 'group' + cic.nhomNo : null,
-    queried_at:    cic.ngay ? new Date(cic.ngay).toISOString() : new Date().toISOString(),
-    queried_by:    _cicOfficer || null,
-    ma_so_cic:     cic.maSoCIC    || null,
-    total_debt:    parseInt(cic.tongDuNo)   || null,
-    du_no_the:     parseInt(cic.duNoThe)    || null,
-    vc_ma_so_cic:  cic.vcMaSoCIC  || null,
-    vc_tong_du_no: parseInt(cic.vcTongDuNo) || null,
-    vc_du_no_the:  parseInt(cic.vcDuNoThe)  || null,
-    vc_nhom_no:    parseInt(cic.vcNhomNo)   || null,
-    vc_ngay:       cic.vcNgay || null
-  };
-
-  console.log('[CIC] Inserting:', JSON.stringify({loan_file_id: fullData.loan_file_id, worst_group: fullData.worst_group}));
-  var r = await sb.from('cic_results').insert(fullData);
-  if (!r.error) {
-    console.log('[DB] CIC saved OK');
-    return true;
-  }
-
-  console.warn('[DB] CIC full insert failed:', r.error.message, '— retrying minimal');
-
-  // Retry với data tối thiểu (chỉ cột luôn có)
-  var minData = {
+  // Xoá CIC cũ rồi insert mới
+  await sb.from('cic_results').delete().eq('loan_file_id', h.id);
+  var data = {
     loan_file_id: h.id,
-    worst_group:  fullData.worst_group,
-    queried_at:   fullData.queried_at
+    ma_so_cic:    cic.maSoCIC   || null,
+    total_debt:   parseInt(cic.tongDuNo) || null,
+    du_no_the:    parseInt(cic.duNoThe)  || null,
+    worst_group:  cic.nhomNo ? 'group' + cic.nhomNo : null,
+    is_qualified: (cic.nhomNo || 0) <= 1,
+    check_date:   cic.ngay     || null,
+    vc_ma_so_cic: cic.vcMaSoCIC   || null,
+    vc_tong_du_no:parseInt(cic.vcTongDuNo) || null,
+    vc_du_no_the: parseInt(cic.vcDuNoThe)  || null,
+    vc_nhom_no:   cic.vcNhomNo   || null,
+    vc_ngay:      cic.vcNgay     || null,
+    created_at:   new Date().toISOString()
   };
-  var r2 = await sb.from('cic_results').insert(minData);
-  if (r2.error) {
-    console.error('[DB] CIC minimal insert failed:', r2.error.message);
-    return false;
-  }
-  console.log('[DB] CIC saved (minimal)');
-  return true;
+  var r = await sb.from('cic_results').insert(data);
+  if (r.error) console.error('dbSaveCIC:', r.error);
+  return !r.error;
 }
 
 // Lưu checklist lên DB
 
-// CK_DOC_GROUP built after CK_GROUPS below
+var CK_GROUP_DB_MAP = {'gt':'personal_id','tn':'income_proof','tsbd':'collateral','kv':'existing_loan'};
+var CK_DOC_GROUP = {};
 
+// Build CK_DOC_GROUP map (phải sau CK_GROUPS)
+if (typeof CK_GROUPS !== 'undefined') {
+  CK_GROUPS.forEach(function(g){g.items.forEach(function(it){CK_DOC_GROUP[it.id]=CK_GROUP_DB_MAP[g.id]||'personal_id';});});
+}
 async function dbSaveCK(h, ck) {
   if (!h || !h.id) return;
   var now = new Date().toISOString();
   var codes = Object.keys(ck);
-  console.log('[CK] Saving', codes.length, 'items for', h.id);
-  var errors = 0;
-  for (var i = 0; i < codes.length; i++) {
-    var code = codes[i];
-    // Thử update trước
-    var r = await sb.from('checklist_items')
-      .update({ is_collected: ck[code], collected_at: ck[code] ? now : null })
-      .eq('loan_file_id', h.id)
-      .eq('item_code', code);
+  for (var i=0; i<codes.length; i++) {
+    var code=codes[i];
+    var r=await sb.from('checklist_items').update({is_collected:ck[code],collected_at:ck[code]?now:null}).eq('loan_file_id',h.id).eq('item_code',code);
     if (r.error) {
-      // Nếu update lỗi → thử upsert (insert nếu chưa có row)
-      var r2 = await sb.from('checklist_items').upsert({
-        loan_file_id: h.id,
-        doc_group:    CK_DOC_GROUP[code] || 'gt',
-        item_code:    code,
-        is_collected: ck[code],
-        collected_at: ck[code] ? now : null
-      }, { onConflict: 'loan_file_id,item_code' });
-      if (r2.error) {
-        console.error('[CK] upsert failed on', code, r2.error.message);
-        errors++;
-      } else {
-        console.log('[CK] upserted new row for', code);
-      }
+      var r2=await sb.from('checklist_items').upsert({loan_file_id:h.id,doc_group:CK_DOC_GROUP[code]||'personal_id',item_code:code,is_collected:ck[code],collected_at:ck[code]?now:null},{onConflict:'loan_file_id,item_code'});
+      if(r2.error) console.error('[CK] upsert failed:',code,r2.error.message);
     }
   }
-  console.log('[CK] Done:', codes.length - errors, '/', codes.length, 'saved');
 }
 
 // Lưu phân công CB lên DB
@@ -1374,13 +1053,8 @@ function startRealtimeSync() {
               hsList[idx].weeklyReports.push({
                 dbId:    wr.id,
                 time:    wr.created_at,
-                ketQua:  (function(){
-                  // Restore app key từ detail prefix [KQ:xxx]
-                  var d = wr.detail || '';
-                  var m = d.match(/^\[KQ:([^\]]+)\]/);
-                  return m ? m[1] : wr.contact_status;
-                })(),
-                chiTiet: (wr.detail||'').replace(/^\[KQ:[^\]]+\]\s*/,''),
+                ketQua:  wr.contact_status,
+                chiTiet: wr.detail || '',
                 deXuat:  wr.support_request || '',
                 who:     wr.officer_id || '',
                 type:    wr.type || 'report'
@@ -1610,12 +1284,9 @@ var SC = {
   tuchoi:{l:'Tu choi',        c:'b-tuchoi'}
 };
 var SC_VN = {
-  moi:   'Mới nhận',
-  dang:  'Đang xử lý',
-  cho:   'Chờ phê duyệt',
-  choky: 'Chờ ký',
-  chogn: 'Chờ giải ngân',
-  xong:  'Hoàn thành',
+  moi:   'Mới nhận',   dang:  'Đang xử lý',
+  cho:   'Chờ phê duyệt', choky: 'Chờ ký',
+  chogn: 'Chờ giải ngân', xong:  'Hoàn thành',
   tuchoi:'Từ chối'
 };
 function sBadge(s){
@@ -1649,20 +1320,6 @@ var CK_GROUPS = [
     {id:'saokeno',label:'Sao kê dư nợ tại ngân hàng khác (nếu có)'}
   ]}
 ];
-
-// Map item_code → DB doc_group enum (phải đặt SAU khi CK_GROUPS đã khai báo)
-var CK_GROUP_DB_MAP = {
-  'gt':   'personal_id',
-  'tn':   'income_proof',
-  'tsbd': 'collateral',
-  'kv':   'existing_loan'
-};
-var CK_DOC_GROUP = {};
-CK_GROUPS.forEach(function(g) {
-  g.items.forEach(function(it) {
-    CK_DOC_GROUP[it.id] = CK_GROUP_DB_MAP[g.id] || 'personal_id';
-  });
-});
 
 var CT_STATUS_LABELS_FULL = {
   chua_lh:         'Chưa liên hệ được với KH',
@@ -1879,7 +1536,7 @@ function mapDbHS(lf) {
       var _kqIdx = _d.indexOf('[KQ:');
       var _kqEnd = _d.indexOf(']', _kqIdx);
       var _appKey = (_kqIdx===0 && _kqEnd>0) ? _d.slice(4, _kqEnd) : wr.contact_status;
-      var _chiTiet = (_kqIdx===0 && _kqEnd>0) ? _d.slice(_kqEnd+1).replace(/^ /,'').trim() : _d;
+      var _chiTiet = (_kqIdx===0 && _kqEnd>0) ? (function(s){ return s.charAt(0)===String.fromCharCode(10)?s.slice(1):s; })(_d.slice(_kqEnd+1)).trim() : _d;
       return {
         time:    wr.created_at || wr.report_date || '',
         ketQua:  _appKey || '',
@@ -1900,7 +1557,6 @@ function mapDbHS(lf) {
     contacts: [],
     createdAt: lf.created_at || '',
     updatedAt: lf.updated_at || '',
-    // CIC từ DB
     cic: (function(){
       var cr = lf.cic_results && lf.cic_results[0];
       if (!cr) return {};
@@ -1945,7 +1601,7 @@ function applyPerms(){
   tog('panel-cbload', isQL() || isViewer());
   tog('ni-db',        !isCDT());
   tog('ni-hs',        true);
-  tog('ni-cdt-up',    false); // Tạm ẩn Upload KH mới
+  tog('ni-cdt-up',    false);
   tog('ni-cdt-view',  isCDT());
 }
 
@@ -2033,31 +1689,18 @@ function renderHSFilterCB(){
   sel.innerHTML = html;
 }
 
-// Deadline badge cho cột DEADLINE trong bảng danh sách
 function alertBadge(h) {
-  // Tính số ngày kể từ lần liên hệ cuối
   var lastDate = null;
-  var wrs = (h.weeklyReports||[]).filter(function(r){ return r.type!=='cdt_feedback'; });
-  if (wrs.length) {
-    wrs.sort(function(a,b){ return new Date(b.time)-new Date(a.time); });
-    lastDate = new Date(wrs[0].time);
-  } else {
-    lastDate = new Date(h.createdAt || h.created_at);
-  }
-  if (!lastDate || isNaN(lastDate)) return '<span style="color:var(--txt3)">—</span>';
-
-  var today = new Date(); today.setHours(0,0,0,0);
-  var diff = Math.floor((today - lastDate) / 86400000);
-
-  if (diff >= 7) {
-    return '<span class="b-deadline b-over">🔴 '+diff+' ngày trước</span>';
-  } else if (diff >= 3) {
-    return '<span class="b-deadline b-warn">🟡 '+diff+' ngày trước</span>';
-  } else if (diff === 0) {
-    return '<span class="b-deadline b-ok">🟢 Hôm nay</span>';
-  } else {
-    return '<span class="b-deadline b-ok">🟢 '+diff+' ngày trước</span>';
-  }
+  var wrs=(h.weeklyReports||[]).filter(function(r){return r.type!=='cdt_feedback';});
+  if(wrs.length){wrs.sort(function(a,b){return new Date(b.time)-new Date(a.time);}); lastDate=new Date(wrs[0].time);}
+  else{lastDate=new Date(h.createdAt||h.created_at);}
+  if(!lastDate||isNaN(lastDate)) return '<span style="color:var(--txt3)">—</span>';
+  var today=new Date(); today.setHours(0,0,0,0);
+  var diff=Math.floor((today-lastDate)/86400000);
+  if(diff>=7) return '<span class="b-deadline b-over">🔴 '+diff+' ngày trước</span>';
+  if(diff>=3) return '<span class="b-deadline b-warn">🟡 '+diff+' ngày trước</span>';
+  if(diff===0) return '<span class="b-deadline b-ok">🟢 Hôm nay</span>';
+  return '<span class="b-deadline b-ok">🟢 '+diff+' ngày trước</span>';
 }
 
 function renderHSTable(){
@@ -2195,7 +1838,12 @@ function toggleCK(id){
   var item=cb.closest('.ck-item'); if(item) item.classList.toggle('checked',cb.checked);
   updateCKPct();
 }
-
+function toggleCKGroup(gid){
+  var g=CK_GROUPS.find(function(x){return x.id===gid;}); if(!g) return;
+  var allDone=g.items.every(function(it){ var cb=document.getElementById('ck-'+it.id); return cb&&cb.checked; });
+  g.items.forEach(function(it){ var cb=document.getElementById('ck-'+it.id); if(cb){ cb.checked=!allDone; var item=cb.closest('.ck-item'); if(item) item.classList.toggle('checked',!allDone); } });
+  updateCKPct();
+}
 function collectCK(){
   var ck={};
   CK_GROUPS.forEach(function(g){ g.items.forEach(function(it){ var cb=document.getElementById('ck-'+it.id); ck[it.id]=!!(cb&&cb.checked); }); });
@@ -2205,64 +1853,6 @@ function collectCK(){
 // ================================================
 // BUILD HS FORM - 5 TAB REDESIGN
 // ================================================
-
-// ── Date utilities ────────────────────────────────────────
-// Chuyển bất kỳ format → YYYY-MM-DD (dùng cho input[type=date] value)
-function toISODate(v) {
-  if (!v) return '';
-  v = String(v).trim();
-  if (!v) return '';
-  // Đã là YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0,10);
-  // DD/MM/YYYY
-  var m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
-  // DD-MM-YYYY
-  m = v.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
-  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
-  // Excel serial number (số nguyên)
-  var n = parseInt(v);
-  if (!isNaN(n) && n > 40000 && n < 60000) {
-    var d = new Date(Date.UTC(1899,11,30) + n*86400000);
-    return d.toISOString().slice(0,10);
-  }
-  return '';
-}
-
-// Đọc value từ input[type=date] → luôn là YYYY-MM-DD hoặc ''
-function getDateVal(id) {
-  var el = document.getElementById(id);
-  if (!el) return '';
-  return el.value || ''; // input[type=date] luôn trả YYYY-MM-DD
-}
-
-// Hiển thị ngày dạng DD/MM/YYYY (cho text display, không phải input)
-
-// Hiển thị ngày dạng DD/MM/YYYY HH:mm hoặc chỉ DD/MM/YYYY
-function fmtDateFull(iso) {
-  if(!iso) return '—';
-  try {
-    var d = new Date(iso);
-    if(isNaN(d)) return fmtDateVN(iso) || iso;
-    var dd  = String(d.getDate()).padStart(2,'0');
-    var mm  = String(d.getMonth()+1).padStart(2,'0');
-    var yy  = d.getFullYear();
-    var hh  = String(d.getHours()).padStart(2,'0');
-    var min = String(d.getMinutes()).padStart(2,'0');
-    // Nếu có giờ phút thực (không phải 00:00)
-    if (hh !== '00' || min !== '00') return dd+'/'+mm+' '+hh+':'+min;
-    return dd+'/'+mm+'/'+yy;
-  } catch(e){ return iso; }
-}
-function fmtDateVN(v) {
-  if (!v) return '';
-  var iso = toISODate(v);
-  if (!iso) return '';
-  var p = iso.split('-');
-  if (p.length < 3) return v;
-  return p[2]+'/'+p[1]+'/'+p[0];
-}
-
 function fmt(val) {
   if (val === '' || val === null || val === undefined) return '';
   var n = Number(String(val).replace(/,/g,''));
@@ -2287,11 +1877,10 @@ function numInput(id, val, dis, extra) {
 function fld(label, id, val, dis, placeholder, type, full, extra) {
   var cls = full ? 'fg ffull' : 'fg';
   var t = type || 'text';
-  // Date input: luôn dùng YYYY-MM-DD
-  var safeVal = (t === 'date') ? toISODate(val) : (val || '');
   var p = placeholder ? ' placeholder="' + placeholder + '"' : '';
   var d = dis ? ' ' + dis : '';
   var x = extra ? ' ' + extra : '';
+  var safeVal = (t==='date') ? toISODate(val) : (val||'');
   return '<div class="' + cls + '"><label>' + label + '</label><input type="' + t + '" id="' + id + '" value="' + safeVal + '"' + p + d + x + '></div>';
 }
 
@@ -2304,12 +1893,9 @@ function buildHSForm(h) {
   var isCDTUser  = isCDT();
   var isCDTAdmin = currentUser && (currentUser.db_role === 'cdt_admin' || currentUser.role === 'cdt_admin');
   var isQLAdmin  = isQL();
-  // QL sở hữu hồ sơ của mình → edit như CB
   var isQLOwner  = isQL() && !isAdmin() && h && h.canBoId === currentUser.id;
-  // isCBOwner: người được phân hồ sơ (CB hoặc QL) → có quyền nhập liệu
   var isCBOwner  = !isCDTUser && !isViewerUser && h && h.canBoId === currentUser.id;
-  // isCBOther: CB không được phân → không xem được
-  var isCBOther  = !isQLAdmin && !isCDTUser && !isViewerUser && !(h && h.canBoId === currentUser.id);
+  var isCBOther  = !isQLAdmin && !isCDTUser && !(h && h.canBoId === currentUser.id);
 
   // Viewer: xem tất cả nhưng không sửa
   var isViewerUser = isViewer();
@@ -2358,8 +1944,8 @@ function buildHSForm(h) {
 
   // ── Thông tin KH chính ──
   // Tất cả thấy rõ | CB sửa được | QL/Admin/CĐT xem (dim)
-  var khDim = (isCDTUser || (isQLAdmin && !isCBOwner) || isViewerUser) ? 'disabled' : (kLocked ? 'disabled' : '');
-  var khDimClass = (isCDTUser || (isQLAdmin && !isCBOwner) || isViewerUser) ? 'cdt-section-dim' : '';
+  var khDim = (isCDTUser || isQLAdmin || isViewerUser) ? 'disabled' : (kLocked ? 'disabled' : '');
+  var khDimClass = (isCDTUser || isQLAdmin || isViewerUser) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div class="fsec-title" style="display:flex;align-items:center;justify-content:space-between">';
   html += '<span>Thông tin khách hàng chính</span>';
@@ -2448,7 +2034,7 @@ function buildHSForm(h) {
   });
   var gnCanEdit = isCBOwner && !locked && ckOK && !isViewerUser;
   var gnDim = gnCanEdit ? '' : 'disabled';
-  var gnDimClass = (!isCBOwner && !(isQLAdmin && !isCBOwner)) ? 'cdt-section-dim' : (isCBOwner && !ckOK ? 'cdt-section-dim' : '');
+  var gnDimClass = (!isCBOwner && !isQLAdmin) ? 'cdt-section-dim' : (isCBOwner && !ckOK ? 'cdt-section-dim' : '');
   html += '<div class="fsec ' + gnDimClass + '">';
   html += '<div class="fsec-title">Phê duyệt & Giải ngân';
   if (isCBOwner && !ckOK) {
@@ -2509,7 +2095,7 @@ function buildHSForm(h) {
   html += '<div class="fgrid fgrid3" style="margin-bottom:14px">';
   html += fld('Mã số CIC','cic-masocic',cic.maSoCIC||'',cicDim,'VD: 0100001234');
   html += fld('Tổng dư nợ (VNĐ)','cic-dn',String(cic.tongDuNo||''),cicDim,'','number');
-  html += fld('Tổng hạn mức thẻ tín dụng (VNĐ)','cic-the',String(cic.duNoThe||''),cicDim,'','number');
+  html += fld('Dư nợ thẻ tín dụng (VNĐ)','cic-the',String(cic.duNoThe||''),cicDim,'','number');
   html += '<div class="fg"><label>Nhóm nợ cao nhất</label>';
   html += '<select id="cic-nn" '+(cicDim?'disabled':'')+' onchange="onCICGroupChange()">';
   html += '<option value="">-- Chọn --</option>';
@@ -2521,7 +2107,7 @@ function buildHSForm(h) {
   html+='</select>';
   html+='<div id="cic-nn-warn" style="display:'+(cic.nhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
   html+='❌ Điều kiện KHÔNG ĐẠT: Nhóm nợ ≥ 2 → Tự động Từ chối hồ sơ!</div></div>';
-  html += fld('Ngày tra CIC','cic-ngay',toISODate(cic.ngay||''),cicDim,'','date');
+  html += fld('Ngày tra CIC','cic-ngay',cic.ngay||'',cicDim,'','date');
   html += '</div>';
   html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD — KH chính:</div>';
   html += '<div id="cic-tctd-list"></div>';
@@ -2537,7 +2123,7 @@ function buildHSForm(h) {
     html += '<div class="fgrid fgrid3" style="margin-bottom:14px">';
     html += fld('Mã số CIC','cic-vcmasocic',cic.vcMaSoCIC||'',cicDim,'VD: 0100001234');
     html += fld('Tổng dư nợ (VNĐ)','cic-vcdn',String(cic.vcTongDuNo||''),cicDim,'','number');
-    html += fld('Tổng hạn mức thẻ tín dụng (VNĐ)','cic-vcthe',String(cic.vcDuNoThe||''),cicDim,'','number');
+    html += fld('Dư nợ thẻ tín dụng (VNĐ)','cic-vcthe',String(cic.vcDuNoThe||''),cicDim,'','number');
     html += '<div class="fg"><label>Nhóm nợ cao nhất</label>';
     html += '<select id="cic-vcnn" '+(cicDim?'disabled':'')+' onchange="onCICVCGroupChange()">';
     html += '<option value="">-- Chọn --</option>';
@@ -2549,7 +2135,7 @@ function buildHSForm(h) {
     html += '</select>';
     html += '<div id="cic-vcnn-warn" style="display:'+(cic.vcNhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
     html += '❌ Vợ/Chồng: Nhóm nợ ≥ 2 → Tự động Từ chối!</div></div>';
-    html += fld('Ngày tra CIC vợ/chồng','cic-vcngay',toISODate(cic.vcNgay||''),cicDim,'','date');
+    html += fld('Ngày tra CIC vợ/chồng','cic-vcngay',cic.vcNgay||'',cicDim,'','date');
     html += '</div>';
     html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD — Vợ/Chồng:</div>';
     html += '<div id="cic-vc-tctd-list"></div>';
@@ -2646,118 +2232,48 @@ function toggleVC() {
 
 // Docs grid: checklist + upload combined per group
 function renderDocsGrid(h, locked) {
-  var el = document.getElementById('docs-grid');
-  if (!el) return;
-  var ck    = h ? (h.ck    || {}) : {};
+  var el = document.getElementById('docs-grid'); if (!el) return;
+  var ck = h ? (h.ck || {}) : {};
   var files = h ? (h.files || {}) : {};
-  var dfolders = h ? (h.driveFolders || {}) : {};
-
-  // Drive status bar
-  var driveBar = '';
-  if (!locked && !isCDT() && !isViewer()) {
-    driveBar = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;'
-      + 'padding:8px 12px;background:var(--surf2);border-radius:var(--r);border:1px solid var(--bdr)">';
-    driveBar += '<img src="https://www.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" style="height:18px">';
-    driveBar += '<div style="flex:1;font-size:12px;color:var(--txt2)">Upload lên Google Drive</div>';
-    if (h && h.drive_folder_url) {
-      driveBar += '<a href="' + h.drive_folder_url + '" target="_blank" class="btn btn-sm btn-success">📂 Xem thư mục</a>';
-    }
-    driveBar += '</div>';
-  }
-
-  // Build 2x2 grid
-  var rows = [];
-  for (var i = 0; i < CK_GROUPS.length; i += 2) {
-    rows.push(CK_GROUPS.slice(i, i + 2));
-  }
-
-  var html = driveBar;
-  html += '<div style="display:flex;flex-direction:column;gap:10px">';
-
-  rows.forEach(function(rowGroups) {
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
-    rowGroups.forEach(function(g) {
-      var done = g.items.every(function(it) { return ck[it.id]; });
-      var doneCount = g.items.filter(function(it) { return ck[it.id]; }).length;
-      var dfolder = dfolders[g.id];
-
-      html += '<div style="background:#fff;border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;display:flex;flex-direction:column">';
-
-      // Header
-      html += '<div style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;'
-        + 'letter-spacing:.4px;background:' + (done ? '#006B5E' : '#E0F5F1') + ';'
-        + 'color:' + (done ? '#fff' : '#006B5E') + ';'
-        + 'display:flex;align-items:center;justify-content:space-between">';
-      html += '<span>' + g.label.toUpperCase() + '</span>';
-      html += '<span style="font-size:11px;opacity:.85">' + doneCount + '/' + g.items.length + '</span>';
-      html += '</div>';
-
-      // Checklist items
-      html += '<div style="padding:6px 10px;flex:1">';
-      g.items.forEach(function(it) {
-        var chk = ck[it.id] ? 'checked' : '';
-        var bgColor = ck[it.id] ? '#EDF6F4' : 'transparent';
-        html += '<div data-ckid="' + it.id + '" onclick="' + (locked ? '' : 'toggleCK(this.dataset.ckid)') + '" '
-          + 'style="display:flex;align-items:flex-start;gap:6px;padding:5px 4px;border-radius:4px;'
-          + 'background:' + bgColor + ';margin-bottom:2px;cursor:' + (locked ? 'default' : 'pointer') + '">';
-        html += '<input type="checkbox" id="ck-' + it.id + '" ' + chk + (locked ? ' disabled' : '')
-          + ' onclick="event.stopPropagation()" style="margin-top:2px;accent-color:#006B5E;flex-shrink:0">';
-        html += '<span style="font-size:12px;line-height:1.3;color:' + (ck[it.id] ? '#006B5E' : 'var(--txt)') + ';'
-          + (ck[it.id] ? 'font-weight:500' : '') + '">' + it.label + '</span>';
-        html += '</div>';
-      });
-      html += '</div>';
-
-      // Drive folder link nếu có
-      if (dfolder && dfolder.link) {
-        html += '<div style="padding:5px 10px;background:#F0FBF8;border-top:1px solid var(--bdr)">';
-        html += '<a href="' + dfolder.link + '" target="_blank" '
-          + 'style="font-size:11px;color:#006B5E;text-decoration:none;display:flex;align-items:center;gap:4px">';
-        html += '📂 ' + (dfolder.name || 'Thư mục Drive') + '</a>';
-        html += '</div>';
-      }
-
-      // Upload zone
-      html += '<div style="padding:6px 10px;border-top:1px solid var(--bdr);background:var(--surf2)">';
-      if (!locked && !isCDT()) {
-        html += '<div class="upload-zone" data-upid="' + g.id + '" onclick="triggerUpload(this.dataset.upid)" '
-          + 'style="padding:6px;font-size:11px">📎 Upload PDF / Ảnh</div>';
-        html += '<input type="file" id="upl-' + g.id + '" style="display:none" multiple '
-          + 'accept=".pdf,image/*" data-gid="' + g.id + '" onchange="handleUploadEvt(event)">';
-      }
-      // File list
-      var gFiles = files[g.id] || [];
-      if (gFiles.length) {
-        html += '<div style="margin-top:4px">';
-        gFiles.forEach(function(f, i) {
-          html += '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">';
-          if (f.driveLink) {
-            html += '<a href="' + f.driveLink + '" target="_blank" style="flex:1;color:#006B5E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ' + f.name + '</a>';
-          } else {
-            html += '<span style="flex:1;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ' + f.name + '</span>';
-          }
-          if (!locked) {
-            html += '<span data-gid="' + g.id + '" data-idx="' + i + '" onclick="delFileEvt(this.dataset.gid,this.dataset.idx)" '
-              + 'style="color:var(--txt3);cursor:pointer;font-size:14px;flex-shrink:0">✕</span>';
-          }
-          html += '</div>';
-        });
-        html += '</div>';
-      }
-      html += '</div>';
-
-      html += '</div>'; // card
+  var html = '<div class="ck-grid">';
+  CK_GROUPS.forEach(function(g) {
+    var done = g.items.every(function(it) { return ck[it.id]; });
+    html += '<div class="ck-card">';
+    html += '<div class="ck-hd ' + (done ? 'done' : '') + '">';
+    html += '<span>' + g.label.toUpperCase() + '</span>';
+    html += '<span style="font-size:11px">' + g.items.filter(function(it) { return ck[it.id]; }).length + '/' + g.items.length + '</span>';
+    html += '</div>';
+    html += '<div class="ck-body">';
+    g.items.forEach(function(it) {
+      var chk = ck[it.id] ? 'checked' : '';
+      var cls2 = ck[it.id] ? 'ck-item checked' : 'ck-item';
+      var dattr = 'data-ckid="' + it.id + '"';
+      html += '<div class="' + cls2 + '" ' + dattr + ' onclick="' + (locked ? '' : 'toggleCK(this.dataset.ckid)') + '">';
+      html += '<input type="checkbox" id="ck-' + it.id + '" ' + chk + (locked ? ' disabled' : '') + ' onclick="event.stopPropagation()">';
+      html += '<span class="ck-lbl">' + it.label + '</span></div>';
     });
-
-    // Nếu row chỉ có 1 item, thêm div rỗng
-    if (rowGroups.length === 1) {
-      html += '<div></div>';
+    html += '</div>';
+    // Upload zone in same card
+    html += '<div style="padding:8px 14px;border-top:1px solid var(--bdr);background:var(--surf2)">';
+    if (!locked) {
+      var gid = g.id;
+      html += '<div class="upload-zone" data-upid="' + gid + '" onclick="triggerUpload(this.dataset.upid)">&#128206; Upload PDF / Anh</div>';
+      html += '<input type="file" id="upl-' + gid + '" style="display:none" multiple accept=".pdf,image/*" data-gid="' + gid + '" onchange="handleUploadEvt(event)">';
     }
-
-    html += '</div>'; // row
+    html += '<div class="file-list" id="fl-' + g.id + '">';
+    (files[g.id] || []).forEach(function(f, i) {
+      html += '<div class="file-item"><span class="fi-name">&#128196; ' + f.name + '</span>';
+      if (!locked) html += '<span class="fi-del" data-gid="' + g.id + '" data-idx="' + i + '" onclick="delFileEvt(this.dataset.gid,this.dataset.idx)">&#10005;</span>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+    // Tick all
+    html += '<div class="ck-all" data-gid="' + g.id + '" onclick="' + (locked ? '' : 'toggleCKGroup(this.dataset.gid)') + '">';
+    html += '<input type="checkbox" ' + (done ? 'checked' : '') + (locked ? ' disabled' : '') + ' onclick="event.stopPropagation()">';
+    html += '<span>' + (done ? '&#10003; Du nhom nay' : 'Tich tat ca nhom nay') + '</span></div>';
+    html += '</div>';
   });
-
-  html += '</div>'; // container
+  html += '</div>';
   el.innerHTML = html;
   updateCKPct();
 }
@@ -2819,7 +2335,7 @@ function buildProgTab(h) {
   if (h && (h.hanMucDuocDuyet || h.ngayGiaiNgan || h.soTienGiaiNgan)) {
     html2 += '<div style="background:var(--purple-l);border:1px solid #C9BEEE;border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap">';
     if (h.hanMucDuocDuyet) html2 += '<div><div class="text-sm">Han muc duoc duyet</div><div style="font-weight:600;color:var(--purple)">' + Number(h.hanMucDuocDuyet).toLocaleString('vi-VN') + ' tr.d</div></div>';
-    if (h.ngayGiaiNgan) html2 += '<div><div class="text-sm">Ngay giai ngan</div><div style="font-weight:600;color:var(--purple)">' + fmtDateVN(h.ngayGiaiNgan) + '</div></div>';
+    if (h.ngayGiaiNgan) html2 += '<div><div class="text-sm">Ngay giai ngan</div><div style="font-weight:600;color:var(--purple)">' + h.ngayGiaiNgan + '</div></div>';
     if (h.soTienGiaiNgan) html2 += '<div><div class="text-sm">So tien GN</div><div style="font-weight:600;color:var(--green)">' + Number(h.soTienGiaiNgan).toLocaleString('vi-VN') + ' tr.d</div></div>';
     html2 += '</div>';
   }
@@ -3237,11 +2753,7 @@ function saveCIC(){
   }
   persist(); renderHSTable();
   var _cicH = hsList.find(function(x){return x.id===currentHSId;});
-  console.log('[CIC] Saving:', JSON.stringify({id:_cicH&&_cicH.id, custId:_cicH&&_cicH.customerId, cic:cic}));
-  saveAndSync(
-    function(){ return dbSaveCIC(_cicH, cic); },
-    'CIC đã lưu! Nhóm nợ: '+worstGroup
-  );
+  saveAndSync(function(){ return Promise.all([dbSaveLoanFile(_cicH), dbSaveCIC(_cicH, cic)]); }, 'CIC đã lưu! Nhóm nợ: '+worstGroup);
 }
 
 
@@ -3524,332 +3036,791 @@ function renderCDTTable(){
   }
   document.getElementById('cdt-tbody').innerHTML=html;
 }
-function exportCDT() {
-  // Gọi hàm xuất Excel theo mẫu CĐT
-  exportCDTExcel();
+function exportCDT(){
+  var rows=[['STT','Du an','Ma can ho','Ten KH','CCCD','SDT','Gia HDMB','Han muc de xuat','VTC da nop',
+    'Ngay gui BIM','CB phu trach','Ngay cap nhat','Ket qua khai thac','Chi tiet','De xuat ho tro',
+    'Hạn mức được duyệt','Ngày giải ngân','Số tiền GN','Trang thai HS','GT CN','CM TN','TSBD','KV HT','Tien do']];
+  hsList.forEach(function(h,i){
+    var prog=ckProgress(h);
+    rows.push([
+      i+1,'Prima Bay - Ha Long',h.maCanHo||'',h.tenKH||'',h.cccd||'',h.sdt||'',
+      h.giaHDMB||'',h.hanMucDeXuat||'',h.vtcDaNop||'',
+      h.ngayGuiBIM||'',getUserName(h.canBoId),h.updatedAt||h.createdAt||'',
+      (CT_STATUS_LABELS_FULL && CT_STATUS_LABELS_FULL[h.ketQuaKhaiThac]) || h.ketQuaKhaiThac||'',
+      h.chiTiet||'',h.deXuatHoTro||'',
+      h.hanMucDuocDuyet||'',h.ngayGiaiNgan||'',h.soTienGiaiNgan||'',
+      h.status||'',
+      ckGroupDone(h,'gt')?'Du':'Chua',ckGroupDone(h,'tn')?'Du':'Chua',
+      ckGroupDone(h,'tsbd')?'Du':'Chua',ckGroupDone(h,'kv')?'Du':'Chua',
+      prog.pct+'%'
+    ]);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+c+'"';}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='BaoCao_PrimaBay_'+todayStr().replace(/\//g,'-')+'.csv'; a.click();
 }
 
-async function exportCDTExcel() {
-  // Load SheetJS với style support
-  if (typeof XLSX === 'undefined') {
-    await new Promise(function(resolve, reject) {
-      var s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
-      s.onload = resolve; s.onerror = reject;
-      document.head.appendChild(s);
-    });
+// ==================================================
+// USERS
+// ==================================================
+function renderUsrTable(){
+  var html='';
+  users.forEach(function(u){
+    var active=hsList.filter(function(h){return h.canBoId===u.id&&h.status!=='xong'&&h.status!=='tuchoi';}).length;
+    html += '<tr>';
+    html += '<td style="font-weight:500">'+u.name+'</td>';
+    html += '<td><code style="font-size:12px">'+u.login+'</code></td>';
+    html += '<td>'+rBadge(u.role)+'</td>';
+    html += '<td>'+active+' HS</td>';
+    html += '<td><span class="badge '+(u.active?'b-xong':'b-tuchoi')+'">'+(u.active?'Hoat dong':'Ngung')+'</span></td>';
+    html += '<td style="display:flex;gap:4px">';
+    html += '<button class="btn btn-sm" data-uid="'+u.id+'" onclick="openEditUser(this.dataset.uid)">Sua</button>';
+    html += '<button class="btn btn-sm '+(u.active?'btn-danger':'btn-success')+'" data-uid="'+u.id+'" onclick="toggleUsr(this.dataset.uid)">'+(u.active?'Tam ngung':'Kich hoat')+'</button>';
+    if(u.id!=='u1') html += '<button class="btn btn-sm btn-danger" data-uid="'+u.id+'" onclick="delUsr(this.dataset.uid)">X</button>';
+    html += '</td></tr>';
+  });
+  document.getElementById('usr-tbody').innerHTML=html;
+}
+
+function openAddUser(){ editUserId=null; document.getElementById('musr-title').textContent='Thêm người dùng'; ['u-name','u-login','u-pw'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('u-role').value='cb'; document.getElementById('modal-usr').classList.add('open'); }
+function openEditUser(id){
+  editUserId=id;
+  var u=users.find(function(x){return x.id===id;});
+  if(!u) return;
+  document.getElementById('musr-title').textContent='Sửa: '+u.name;
+  document.getElementById('u-name').value=u.name;
+  document.getElementById('u-login').value=u.login;
+  document.getElementById('u-pw').value=''; // Không hiện mật khẩu cũ — để trống = giữ nguyên
+  document.getElementById('u-pw').placeholder='Để trống = giữ mật khẩu hiện tại';
+  document.getElementById('u-role').value=u.role;
+  document.getElementById('modal-usr').classList.add('open');
+}
+
+async function delUsr(id){
+  showConf('Xoá người dùng?','Không thể khôi phục.',async function(){
+    var { error }=await sb.from('users').delete().eq('id',id);
+    if(error){ console.error('[DB] delUsr:', error); alert('Lỗi xoá: '+error.message); return; }
+    users=users.filter(function(u){return u.id!==id;});
+    persist(); renderUsrTable();
+    showNotif('✅ Đã xoá người dùng');
+  });
+}
+
+function closeUsrModal(){ document.getElementById('modal-usr').classList.remove('open'); editUserId=null; }
+async function saveUser(){
+  var name  = document.getElementById('u-name').value.trim();
+  var login = document.getElementById('u-login').value.trim().toLowerCase();
+  var pw    = document.getElementById('u-pw').value;
+  var role  = document.getElementById('u-role').value;
+
+  // Khi thêm mới: bắt buộc pw; khi sửa: pw để trống = giữ nguyên
+  if(!name || !login) { alert('Vui lòng điền họ tên và tên đăng nhập!'); return; }
+  if(!editUserId && !pw) { alert('Vui lòng nhập mật khẩu!'); return; }
+  if(!editUserId && users.find(function(u){return u.login===login;})){
+    alert('Tên đăng nhập đã tồn tại!'); return;
   }
 
-  // ── Helpers ──────────────────────────────────────────────
-  function toISO(v) { return toISODate(v) || ''; }
+  // Ghép email từ login
+  var email = login.indexOf('@') !== -1 ? login :
+              (login === 'bim1' ? 'bim1@bimgroup.vn' :
+               login === 'bim2' ? 'bim2@bimgroup.vn' :
+               login + '@bidv.com.vn');
 
-  function fmtD(v) {
-    var iso = toISO(v);
-    if (!iso) return '';
-    var p = iso.split('-');
-    return p[2]+'/'+p[1]+'/'+p[0];
-  }
+  // Map role app → DB role
+  var dbRole = role === 'cb'    ? 'officer' :
+               role === 'ql'    ? 'manager' :
+               role === 'admin' ? 'admin'   :
+               role === 'cdt'   ? 'cdt_view':
+               role === 'viewer'? 'viewer'  : role;
 
-  function fmtShort(v) {
-    // DD/MM từ ISO/timestamp
-    if (!v) return '';
-    try {
-      var d = new Date(v);
-      if (isNaN(d)) { var iso=toISO(v); if(iso){d=new Date(iso);}else return v; }
-      return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
-    } catch(e){ return v; }
-  }
+  var saveBtn = document.querySelector('#modal-usr .btn-primary');
+  if(saveBtn){ saveBtn.textContent='⏳ Đang lưu...'; saveBtn.disabled=true; }
 
-  function numFmt(v) {
-    var n = parseInt(v);
-    return isNaN(n) ? '' : n.toLocaleString('vi-VN');
-  }
+  try {
+    if(editUserId) {
+      // Sửa user hiện có
+      var u = users.find(function(x){return x.id===editUserId;});
+      if(u) {
+        u.name  = name;
+        u.login = login;
+        u.role  = role;
+        if(pw) u.pw = pw; // Chỉ update pw nếu nhập mới
 
-  // ── Build data ────────────────────────────────────────────
-  var data = hsList;
+        // Cập nhật DB
+        var updateData = { full_name: name, email: email, role: dbRole, updated_at: new Date().toISOString() };
+        if(pw) updateData.ma_cb = pw; // Dùng ma_cb làm password
 
-  // ── Styles ───────────────────────────────────────────────
-  var FILL = {
-    blue:   '1F4E79', teal:   '0070C0',
-    orange: 'ED7D31', purple: '7030A0',
-    yellow: 'FFFF00'
-  };
-  function mkS(fillRgb, fontRgb, bold, halign, wrap) {
-    return {
-      fill: { patternType:'solid', fgColor:{rgb: fillRgb||'FFFFFF'} },
-      font: { name:'Arial', sz:9, bold:!!bold, color:{rgb: fontRgb||'000000'} },
-      alignment: { horizontal:halign||'center', vertical:'center', wrapText:!!wrap },
-      border: {
-        top:{style:'thin',color:{rgb:'000000'}}, bottom:{style:'thin',color:{rgb:'000000'}},
-        left:{style:'thin',color:{rgb:'000000'}}, right:{style:'thin',color:{rgb:'000000'}}
+        var { error } = await sb.from('users').update(updateData).eq('id', editUserId);
+        if(error) {
+          console.error('[DB] saveUser update:', error);
+          alert('⚠️ Lưu local OK nhưng lỗi DB: ' + error.message);
+        } else {
+          showNotif('✅ Đã cập nhật người dùng: ' + name);
+        }
       }
-    };
-  }
-  var S = {
-    hBlue:   mkS(FILL.blue,   'FFFFFF', true,  'center', true),
-    hTeal:   mkS(FILL.teal,   'FFFFFF', true,  'center', true),
-    hOrange: mkS(FILL.orange, 'FFFFFF', true,  'center', true),
-    hPurple: mkS(FILL.purple, 'FFFFFF', true,  'center', true),
-    hYellow: mkS(FILL.yellow, '000000', true,  'center', false),
-    data:    { font:{name:'Arial',sz:9}, alignment:{horizontal:'left',vertical:'top',wrapText:true},
-               border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
-                       left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
-    dataC:   { font:{name:'Arial',sz:9}, alignment:{horizontal:'center',vertical:'center',wrapText:false},
-               border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
-                       left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
-    dataR:   { font:{name:'Arial',sz:9}, alignment:{horizontal:'right',vertical:'center'},
-               numFmt:'#,##0',
-               border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
-                       left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
-  };
+    } else {
+      // Thêm user mới
+      var newUser = { id: 'u'+Date.now(), name:name, login:login, pw:pw, role:role, active:true, email:email };
+      users.push(newUser);
 
-  function enc(r,c) { return XLSX.utils.encode_cell({r:r,c:c}); }
-
-  // ── Build worksheet ───────────────────────────────────────
-  var wb = XLSX.utils.book_new();
-  var wsData = [];
-
-  // HEADER ROW 1
-  var r1 = new Array(30).fill('');
-  r1[0]  = 'BẢNG THEO DÕI TIẾN ĐỘ HỒ SƠ VAY VỐN - DỰ ÁN PRIMA BAY HẠ LONG';
-  r1[29] = 'Ngày xuất: ' + fmtD(new Date().toISOString());
-  wsData.push(r1);
-
-  // HEADER ROW 2 - group labels
-  //  A-R: Thông tin SP-KH (18 cột: 0-17)
-  //  S-T: Ngân hàng (2 cột: 18-19)
-  //  U-W: CBBH (3 cột: 20-22)
-  //  X-Z: CB QL (3 cột: 23-25)
-  //  AA-AC: Phần ghi chú BIDV (3 cột: 26-28)
-  //  AD-AH: Báo cáo CĐT (5 cột: 29-33)
-  var r2 = new Array(34).fill('');
-  r2[0]  = 'STT';
-  r2[1]  = 'Thông tin sản phẩm - khách hàng vay';
-  r2[18] = 'Thông tin Ngân hàng tư vấn KH';
-  r2[29] = 'Cập nhật tiến độ';
-  wsData.push(r2);
-
-  // HEADER ROW 3
-  var r3 = new Array(34).fill('');
-  r3[20] = 'CBBH tư vấn KH';
-  r3[23] = 'CB quản lý trực tiếp';
-  wsData.push(r3);
-
-  // HEADER ROW 4 - column labels
-  var r4 = [
-    'STT',                                      // A  0
-    'Dự án',                                    // B  1
-    'Mã căn',                                   // C  2
-    'Tên KH',                                   // D  3
-    'Đại lý',                                   // E  4
-    'Địa chỉ liên hệ',                          // F  5
-    'Vùng',                                     // G  6
-    'CCCD',                                     // H  7
-    'Số điện thoại',                            // I  8
-    'Giá trị HĐMB\n(gồm VAT)',                 // J  9
-    'Hạn mức vay\nđề xuất',                    // K  10
-    'Số tiền VTC\nphải nộp',                   // L  11
-    'Số tiền VTC\nđã nộp',                     // M  12
-    'Tỷ lệ VTC\nđã nộp',                       // N  13
-    'CSBH áp dụng',                             // O  14
-    'Hình thức vay\n(HTLS)',                    // P  15
-    'Ngày ký HĐMB',                             // Q  16
-    'Hạn giải ngân',                            // R  17
-    'Ngân hàng',                                // S  18
-    'Chi nhánh',                                // T  19
-    'Họ tên',                                   // U  20 CBBH
-    'SĐT',                                      // V  21
-    'Email',                                    // W  22
-    'Họ tên',                                   // X  23 CB QL
-    'SĐT',                                      // Y  24
-    'Email',                                    // Z  25
-    'Trạng thái\nhồ sơ',                       // AA 26
-    'Ngày phê\nduyệt',                         // AB 27
-    'Số tiền\ngiải ngân',                      // AC 28
-    'Ngày bank\ncập nhật',                     // AD 29
-    'Kết quả khai thác\nhiện tại',             // AE 30
-    'Chi tiết',                                 // AF 31
-    'Đề xuất hỗ trợ',                          // AG 32
-    'Hạn mức vay\nđược duyệt',                 // AH 33
-  ];
-  wsData.push(r4);
-
-  // DATA ROWS
-  data.forEach(function(h, i) {
-    var cbUser = users.find(function(u){ return u.id===h.canBoId; });
-    var cbName  = cbUser ? cbUser.name  : '';
-    var cbPhone = cbUser ? (cbUser.phone||'') : '';
-    var cbEmail = cbUser ? (cbUser.email||'') : '';
-
-    var vtcRatio = '';
-    if (h.vtcPhaiNop && parseFloat(h.vtcPhaiNop)>0) {
-      vtcRatio = ((parseFloat(h.vtcDaNop||0)/parseFloat(h.vtcPhaiNop))*100).toFixed(1)+'%';
+      var insertData = {
+        full_name: name, email: email, role: dbRole,
+        ma_cb: pw, is_active: true, created_at: new Date().toISOString()
+      };
+      var { data: inserted, error: insErr } = await sb.from('users').insert(insertData).select().single();
+      if(insErr) {
+        console.error('[DB] saveUser insert:', insErr);
+        alert('⚠️ Lưu local OK nhưng lỗi DB: ' + insErr.message);
+      } else {
+        if(inserted) newUser.id = inserted.id; // Dùng UUID từ DB
+        showNotif('✅ Đã thêm người dùng: ' + name);
+      }
     }
-
-    // Lấy weekly_reports (chỉ CB, không phải CĐT feedback)
-    var wrs = (h.weeklyReports||[])
-      .filter(function(r){ return r.type!=='cdt_feedback'; })
-      .sort(function(a,b){ return new Date(a.time)-new Date(b.time); });
-
-    // Kết quả khai thác mới nhất
-    var lastWR = wrs.length ? wrs[wrs.length-1] : null;
-    var lastKQ = lastWR ? getStatusLabel(lastWR.ketQua) : '';
-    var lastDate = lastWR ? fmtShort(lastWR.time) : '';
-
-    // Cột Chi tiết: mỗi dòng "DD/MM: nội dung"
-    var chiTietLines = wrs
-      .filter(function(r){ return r.chiTiet && r.chiTiet.trim(); })
-      .map(function(r){ return fmtShort(r.time)+': '+r.chiTiet.trim(); });
-    var chiTiet = chiTietLines.join('\n');
-
-    // Cột Đề xuất hỗ trợ: chỉ những dòng có deXuat
-    var deXuatLines = wrs
-      .filter(function(r){ return r.deXuat && r.deXuat.trim(); })
-      .map(function(r){ return fmtShort(r.time)+': '+r.deXuat.trim(); });
-    var deXuat = deXuatLines.join('\n');
-
-    var row = [
-      i+1,                                      // A
-      'Prima Bay - Hạ Long',                    // B
-      h.maCanHo   || '',                        // C
-      h.tenKH     || '',                        // D
-      h.daiLy     || '',                        // E
-      h.diaChi    || '',                        // F
-      h.vung      || '',                        // G
-      h.cccd      || '',                        // H
-      h.sdt       || '',                        // I
-      parseInt(h.giaHDMB)    || '',             // J
-      parseInt(h.soTienVay)  || '',             // K
-      parseInt(h.vtcPhaiNop) || '',             // L
-      parseInt(h.vtcDaNop)   || '',             // M
-      vtcRatio,                                  // N
-      h.csChinhSach  || '',                     // O
-      h.hinhThucVay  || '',                     // P
-      fmtD(h.ngayKyHDMB),                      // Q
-      fmtD(h.hanGiaiNgan),                      // R
-      'BIDV',                                    // S
-      'Tràng Tiền - Hà Nội',                    // T
-      cbName, cbPhone, cbEmail,                  // U-W CBBH
-      cbName, cbPhone, cbEmail,                  // X-Z CB QL
-      SC_VN[deriveHSStatus(h)] || '',           // AA Trạng thái
-      fmtD(h.ngayGiaiNgan),                     // AB Ngày phê duyệt/GN
-      parseInt(h.soTienGiaiNgan) || '',         // AC Số tiền GN
-      lastDate,                                  // AD Ngày bank cập nhật
-      lastKQ,                                    // AE Kết quả khai thác
-      chiTiet,                                   // AF Chi tiết
-      deXuat,                                    // AG Đề xuất hỗ trợ
-      parseInt(h.hanMucDuocDuyet) || '',        // AH Hạn mức được duyệt
-    ];
-    wsData.push(row);
-  });
-
-  // ── Create worksheet ──────────────────────────────────────
-  var ws = XLSX.utils.aoa_to_sheet(wsData);
-
-  // Merges
-  ws['!merges'] = [
-    {s:{r:0,c:0},e:{r:0,c:28}},  // R1: Tiêu đề
-    {s:{r:1,c:0},e:{r:3,c:0}},   // A2:A4 STT
-    {s:{r:1,c:1},e:{r:2,c:17}},  // B2:R3 Thông tin SP
-    {s:{r:1,c:18},e:{r:1,c:25}}, // S2:Z2 Ngân hàng
-    {s:{r:2,c:20},e:{r:2,c:22}}, // U3:W3 CBBH
-    {s:{r:2,c:23},e:{r:2,c:25}}, // X3:Z3 CB QL
-    {s:{r:1,c:26},e:{r:1,c:28}}, // AA2:AC2 Phần BIDV
-    {s:{r:1,c:29},e:{r:2,c:33}}, // AD2:AH3 Báo cáo CĐT
-  ];
-
-  // Col widths
-  var colW = [
-    5,   // A STT
-    18,  // B Dự án
-    10,  // C Mã căn
-    18,  // D Tên KH
-    15,  // E Đại lý
-    20,  // F Địa chỉ
-    12,  // G Vùng
-    16,  // H CCCD
-    14,  // I SĐT
-    16,  // J Giá HĐMB
-    16,  // K Hạn mức
-    16,  // L VTC phải nộp
-    16,  // M VTC đã nộp
-    12,  // N Tỷ lệ
-    12,  // O CSBH
-    15,  // P Hình thức
-    14,  // Q Ngày ký
-    14,  // R Hạn GN
-    10,  // S NH
-    18,  // T Chi nhánh
-    18,14,22, // U-W CBBH
-    18,14,22, // X-Z CB QL
-    16,14,16, // AA-AC BIDV
-    14,  // AD Ngày cập nhật
-    22,  // AE Kết quả
-    35,  // AF Chi tiết (rộng)
-    35,  // AG Đề xuất
-    16,  // AH Hạn mức duyệt
-  ];
-  ws['!cols'] = colW.map(function(w){ return {wch:w}; });
-
-  // Row heights
-  ws['!rows'] = [{hpt:20},{hpt:30},{hpt:25},{hpt:50}];
-
-  // Apply styles
-  // Row 1: tiêu đề
-  ws[enc(0,0)] = {v: wsData[0][0], s: mkS(FILL.blue,'FFFFFF',true,'left',false)};
-
-  // Row 2: group headers
-  [[1,0,'STT',S.hBlue],[1,1,'Thông tin sản phẩm - khách hàng vay',S.hBlue],
-   [1,18,'Thông tin Ngân hàng tư vấn KH',S.hTeal],[1,29,'Cập nhật tiến độ',S.hOrange]]
-  .forEach(function(x){ ws[enc(x[0],x[1])] = {v:x[2],s:x[3]}; });
-
-  // Row 3: sub headers
-  ws[enc(2,20)] = {v:'CBBH tư vấn KH',s:S.hTeal};
-  ws[enc(2,23)] = {v:'CB quản lý trực tiếp',s:S.hTeal};
-
-  // Row 4: column headers
-  var hdrStyles = [];
-  for(var i=0;i<18;i++) hdrStyles.push(S.hBlue);
-  for(var i=0;i<2;i++) hdrStyles.push(S.hTeal);
-  for(var i=0;i<6;i++) hdrStyles.push(S.hTeal);
-  for(var i=0;i<3;i++) hdrStyles.push(S.hBlue);
-  for(var i=0;i<5;i++) hdrStyles.push(S.hOrange);
-
-  r4.forEach(function(h,ci){
-    ws[enc(3,ci)] = {v:h, s:hdrStyles[ci]||S.hBlue};
-  });
-
-  // Data rows
-  for(var ri=4; ri<wsData.length; ri++){
-    wsData[ri].forEach(function(val,ci){
-      var isNum = typeof val==='number' && ci>0;
-      var isWrap = ci===31||ci===32; // Chi tiết, Đề xuất - wrap
-      var st = isNum ? S.dataR : (isWrap ? S.data : S.dataC);
-      ws[enc(ri,ci)] = {v: val===0?'':val, s:st};
-    });
+  } catch(e) {
+    console.error('[DB] saveUser exception:', e);
+    alert('⚠️ Lỗi: ' + e.message);
+  } finally {
+    if(saveBtn){ saveBtn.textContent='Lưu'; saveBtn.disabled=false; }
   }
 
-  ws['!freeze'] = {xSplit:3, ySplit:4}; // Freeze 3 cột + 4 hàng header
+  persist(); closeUsrModal(); renderUsrTable();
+}
+async function toggleUsr(id){
+  var u=users.find(function(x){return x.id===id;});
+  if(!u) return;
+  u.active=!u.active;
+  var { error }=await sb.from('users').update({is_active:u.active}).eq('id',id);
+  if(error) console.error('[DB] toggleUsr:', error);
+  else showNotif((u.active?'✅ Kích hoạt: ':'🚫 Tạm ngừng: ')+u.name);
+  persist(); renderUsrTable();
+}
 
-  XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo CĐT');
+// ==================================================
+// CONFIRM
+// ==================================================
+function showConf(title, msg, fn){
+  document.getElementById('conf-title').textContent=title;
+  document.getElementById('conf-msg').textContent=msg;
+  confFn=fn;
+  document.getElementById('conf-ok').onclick=function(){ closeConf(); if(confFn) confFn(); };
+  document.getElementById('modal-conf').classList.add('open');
+}
+function closeConf(){ document.getElementById('modal-conf').classList.remove('open'); confFn=null; }
 
-  var today2 = new Date();
-  var fname = 'BaoCao_PrimaBay_CĐT_'
-    + today2.getFullYear()
-    + String(today2.getMonth()+1).padStart(2,'0')
-    + String(today2.getDate()).padStart(2,'0') + '.xlsx';
-  XLSX.writeFile(wb, fname);
-  showNotif('✅ Đã xuất báo cáo ' + data.length + ' hồ sơ!');
+// Close overlays on bg click
+document.querySelectorAll('.overlay').forEach(function(el){
+  el.addEventListener('click', function(e){ if(e.target===el) el.classList.remove('open'); });
+});
+
+// ==================================================
+// DEADLINE / ALERT SYSTEM
+// ==================================================
+function daysSince(dStr){
+  if(!dStr) return 9999;
+  var now = new Date(); now.setHours(0,0,0,0);
+  var then;
+  // ISO format: 2026-07-16T... hoặc 2026-07-16
+  if(dStr.indexOf('-')===4 || dStr.indexOf('T')!==-1){
+    then = new Date(dStr); then.setHours(0,0,0,0);
+  } else {
+    // dd/MM hoặc dd/MM/yyyy
+    var sp = dStr.split(' ')[0].split('/');
+    var d,m,y;
+    if(sp.length===3){ d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=parseInt(sp[2]); }
+    else { d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=now.getFullYear(); }
+    then = new Date(y,m,d,0,0,0);
+  }
+  if(isNaN(then)) return 9999;
+  return Math.max(0, Math.floor((now-then)/86400000));
+}
+function daysUntil(iso){
+  if(!iso) return null;
+  var now=new Date(); now.setHours(0,0,0,0);
+  var then=new Date(iso); then.setHours(0,0,0,0);
+  return Math.floor((then-now)/86400000);
+}
+function hsAlertLevel(h){
+  if(!h) return 'ok';
+  if(h.status==='xong'||h.status==='tuchoi'||h.status==='disbursed'||h.status==='rejected') return 'done';
+  if(ckProgress(h).pct===100) return 'done';
+  var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
+  if(dGN !== null && dGN <= 3) return 'over';
+  if(dGN !== null && dGN <= 7) return 'warn';
+  // Tính từ lastContactAt (hoặc ngày tạo HS nếu chưa có báo cáo)
+  if(!h.lastContactAt) return 'new';
+  var days = daysSince(h.lastContactAt);
+  if(days > 7) return 'over';
+  if(days >= 5) return 'warn';
+  return 'ok';
+}
+function alertBadge(h){
+  var lv = hsAlertLevel(h);
+  var days = h.lastContactAt ? daysSince(h.lastContactAt) : null;
+  var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
+  // Kết quả khai thác gần nhất
+  var lastKQ = '';
+  if (h.weeklyReports && h.weeklyReports.length) {
+    var lastWR = h.weeklyReports[h.weeklyReports.length-1];
+    if (lastWR && lastWR.type !== 'cdt_feedback') {
+      lastKQ = getStatusLabel(lastWR.ketQua);
+    }
+  }
+  var sp = '<span class="dl-badge ';
+  if(lv==='done')  return sp+'dl-ok">\u2713 Ho\u00e0n t\u1ea5t</span>';
+  if(lv==='over'){
+    if(dGN!==null && dGN<=3) return sp+'dl-over">\uD83D\uDD34 GN c\u00f2n '+dGN+' ng\u00e0y!</span>';
+    if(days!==null) return sp+'dl-over">\uD83D\uDD34 Qu\u00e1 h\u1ea1n '+(days-7)+' ng\u00e0y</span>';
+    return sp+'dl-over">\uD83D\uDD34 Qu\u00e1 h\u1ea1n</span>';
+  }
+  if(lv==='warn'){
+    if(dGN!==null && dGN<=7) return sp+'dl-warn">\uD83D\uDFE1 GN c\u00f2n '+dGN+' ng\u00e0y</span>';
+    if(days!==null) return sp+'dl-warn">\uD83D\uDFE1 C\u1eadp nh\u1eadt ('+days+'/7ng)</span>';
+    return sp+'dl-warn">\uD83D\uDFE1 S\u1eafp h\u1ea1n</span>';
+  }
+  if(lv==='new') return sp+'dl-new">\uD83C\uDD95 Ch\u01b0a c\u1eadp nh\u1eadt</span>';
+  if(days!==null) return sp+'dl-ok">\uD83D\uDFE2 '+days+' ng\u00e0y tr\u01b0\u1edbc</span>';
+  return sp+'dl-ok">\uD83D\uDFE2 OK</span>';
+}
+function gnBadge(h){
+  var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
+  if(dGN===null) return '<span style="color:var(--txt3);font-size:12px">\u2014</span>';
+  var cls = dGN<=3 ? 'dl-over' : dGN<=7 ? 'dl-warn' : 'dl-ok';
+  var lbl = dGN<0 ? '\u0110\u00e3 qua' : dGN===0 ? 'H\u00f4m nay' : dGN+' ng\u00e0y';
+  return '<span class="dl-badge '+cls+'">'+lbl+'</span>';
+}
+function sortHSByAlert(list){
+  var ord = {over:0,warn:1,new:2,ok:3,done:4};
+  return list.slice().sort(function(a,b){
+    return (ord[hsAlertLevel(a)]||3)-(ord[hsAlertLevel(b)]||3);
+  });
+}
+function renderAlertPanels(list){
+  var overL = list.filter(function(h){ return hsAlertLevel(h)==='over'; });
+  var warnL = list.filter(function(h){ return hsAlertLevel(h)==='warn'; });
+  var html = '';
+  function makeRows(arr){
+    var r='';
+    arr.slice(0,5).forEach(function(h){
+      r += '<div class="alert-row" data-id="'+h.id+'" onclick="openHS(this.dataset.id)">';
+      r += '<span style="font-weight:500;min-width:150px;flex-shrink:0">'+(h.tenKH||'')+'</span>';
+      r += '<span style="color:var(--txt2);font-size:12px;margin-right:6px">'+(h.maCanHo||'')+'</span>';
+      r += alertBadge(h);
+      r += '<span style="color:var(--txt3);margin-left:auto;font-size:12px">'+getUserName(h.canBoId)+'</span>';
+      r += '</div>';
+    });
+    return r;
+  }
+  if(overL.length){
+    html += '<div class="alert-panel"><div class="alert-panel-hd red">';
+    html += '<span style="font-weight:700;font-size:13px">\uD83D\uDD34 Qu\u00e1 h\u1ea1n c\u1eadp nh\u1eadt ('+overL.length+' h\u1ed3 s\u01a1)</span>';
+    html += '<button class="btn btn-sm btn-danger" onclick="showPage(this.dataset.pg)" data-pg="hs">Xem t\u1ea5t c\u1ea3</button></div>';
+    html += makeRows(overL)+'</div>';
+  }
+  if(warnL.length){
+    html += '<div class="alert-panel"><div class="alert-panel-hd amber">';
+    html += '<span style="font-weight:700;font-size:13px">\uD83D\uDFE1 S\u1eafp \u0111\u1ebfn h\u1ea1n ('+warnL.length+' h\u1ed3 s\u01a1)</span></div>';
+    html += makeRows(warnL)+'</div>';
+  }
+  var el = document.getElementById('db-alerts');
+  if(el) el.innerHTML = html;
+}
+
+// ==================================================
+// CONTACT UPDATE
+// ==================================================
+var CT_STATUS_LBL = {
+  da_lh:'\u2705 \u0110\u00e3 li\u00ean h\u1ec7, KH \u0111ang chu\u1ea9n b\u1ecb HS',
+  hen_gap:'\uD83D\uDCC5 \u0110\u00e3 h\u1eb9n g\u1eb7p tr\u1ef1c ti\u1ebfp',
+  cho_bs:'\u23F3 \u0110ang ch\u1edd KH b\u1ed5 sung gi\u1ea5y t\u1edd',
+  kh_nghe:'\uD83D\uDCF5 Kh\u00f4ng nghe m\u00e1y',
+  kh_bao_luu:'\u23F8 KH xin b\u1ea3o l\u01b0u',
+  da_nop:'\uD83D\uDCE6 KH \u0111\u00e3 n\u1ed9p \u0111\u1ee7 h\u1ed3 s\u01a1',
+  khac:'\uD83D\uDCDD Kh\u00e1c'
+};
+function onTCTDGroupChange(el){
+  var val = parseInt(el.value)||0;
+  if(val >= 2){
+    el.style.border = '2px solid #8A1F1F';
+    el.style.background = '#FDEAEA';
+  } else {
+    el.style.border = '';
+    el.style.background = '';
+  }
 }
 
 
-r()
-    + String(today2.getMonth()+1).padStart(2,'0')
-    + String(today2.getDate()).padStart(2,'0') + '.xlsx';
-  XLSX.writeFile(wb, fname);
-  showNotif('✅ Đã xuất báo cáo ' + data.length + ' hồ sơ!');
+function onCICVCGroupChange() {
+  var sel = document.getElementById('cic-vcnn');
+  var warn = document.getElementById('cic-vcnn-warn');
+  if (!sel || !warn) return;
+  warn.style.display = parseInt(sel.value) >= 2 ? 'block' : 'none';
 }
 
+function addCICVCRow() {
+  var el = document.getElementById('cic-vc-tctd-list');
+  if (!el) return;
+  var idx = el.querySelectorAll('.cic-row').length;
+  var row = document.createElement('div');
+  row.className = 'cic-row';
+  row.innerHTML = '<input placeholder="Tên TCTD" id="vc-tctd-name-'+idx+'"> '
+    + '<input placeholder="Dư nợ (VNĐ)" id="vc-tctd-dn-'+idx+'" type="number" style="width:130px"> '
+    + '<select id="vc-tctd-grp-'+idx+'"><option value="">Nhóm</option>'
+    + [1,2,3,4,5].map(function(n){return '<option value="'+n+'">Nhóm '+n+'</option>';}).join('')
+    + '</select> '
+    + '<button class="btn btn-sm" style="padding:3px 8px;background:#fee" onclick="this.parentNode.remove()">✕</button>';
+  el.appendChild(row);
+}
+
+function collectCICVCTCTDs() {
+  var el = document.getElementById('cic-vc-tctd-list'); if (!el) return [];
+  var rows = el.querySelectorAll('.cic-row'); var result = [];
+  rows.forEach(function(r, i) {
+    var n=document.getElementById('vc-tctd-name-'+i);
+    var d=document.getElementById('vc-tctd-dn-'+i);
+    var g=document.getElementById('vc-tctd-grp-'+i);
+    if(n&&n.value) result.push({name:n.value, duNo:d?d.value:'', group:g?g.value:''});
+  });
+  return result;
+}
+
+function onCICGroupChange(){
+  var nn = document.getElementById('cic-nn');
+  var warn = document.getElementById('cic-nn-warn');
+  if(!nn || !warn) return;
+  var val = parseInt(nn.value)||0;
+  if(val >= 2){
+    warn.style.display = 'block';
+    nn.style.border = '2px solid #8A1F1F';
+  } else {
+    warn.style.display = 'none';
+    nn.style.border = '';
+  }
+}
+
+
+// ==================================================
+// WEEKLY REPORT - 6 TRUONG BIM
+// ==================================================
+
+
+
+// Map DB enum → nhãn tiếng Việt (cho weekly_reports load từ DB)
+var DB_STATUS_LABELS = {
+  'no_answer':       'Chưa liên hệ được với KH',
+  'contacted':       'KH đang cân nhắc phương án vay',
+  'waiting_docs':    'KH đồng ý vay - Đang cung cấp hồ sơ',
+  'rejected_kh':     'KH từ chối vay',
+  'rejected_income': 'NH từ chối cho vay',
+  'other':           'Chuyển sang thanh toán bằng vốn tự có',
+  'docs_complete':   'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
+  'approved_loan':   'Đã phê duyệt cho vay',
+  'cho_gn':          'Đã ký hồ sơ - Chờ giải ngân',
+  'appointment':     'Đã hẹn gặp trực tiếp',
+  'on_hold':         'KH bảo lưu - chưa muốn tiếp tục',
+  'rejected_cic':    'NH từ chối cho vay - Nợ xấu CIC',
+  'cdt_feedback':    'Phản hồi CĐT'
+};
+
+
+// Derive trạng thái HS từ kết quả báo cáo gần nhất (ưu tiên hơn status DB)
+var KT_TO_STATUS = {
+  'chua_lh':          'dang',
+  'dang_can_nhac':    'dang',
+  'dong_y_cung_cap':  'dang',
+  'kh_tu_choi':       'tuchoi',
+  'nh_tu_choi':       'tuchoi',
+  'von_tu_co':        'tuchoi',
+  'nop_du':           'cho',
+  'da_phe_duyet':     'choky',
+  'soan_hs':          'choky',
+  'cho_gn':           'chogn',
+  'da_gn':            'xong',
+  'khac':             'dang',
+  // Legacy
+  'da_lh':            'dang',
+  'hen_gap':          'dang',
+  'cho_bs':           'dang',
+  'kh_nghe':          'dang',
+  'kh_bao_luu':       'dang',
+  'duoc_vay':         'choky',
+  'tu_choi_tn':       'tuchoi',
+  'tu_choi_cic':      'tuchoi',
+  'tu_choi_kh':       'tuchoi',
+  // DB enum values
+  'contacted':        'dang',
+  'appointment':      'dang',
+  'waiting_docs':     'dang',
+  'no_answer':        'dang',
+  'on_hold':          'dang',
+  'docs_complete':    'cho',
+  'approved_loan':    'choky',
+  'rejected_income':  'tuchoi',
+  'rejected_cic':     'tuchoi',
+  'rejected_kh':      'tuchoi',
+  'other':            'dang'
+};
+
+function deriveHSStatus(h) {
+  // Tìm báo cáo gần nhất (không phải CDT feedback)
+  var wrs = (h.weeklyReports || []).filter(function(r){ return r.type !== 'cdt_feedback'; });
+  if (!wrs.length) return h.status || 'moi'; // Chưa có báo cáo → giữ nguyên
+  var last = wrs[wrs.length - 1];
+  var kt   = last.ketQua || '';
+  return KT_TO_STATUS[kt] || h.status || 'moi';
+}
+
+function getStatusLabel(val) {
+  if (!val) return '—';
+  var clean = (val||'').replace(/^\[KQ:([^\]]+)\].*$/, '$1').trim();
+  return CT_STATUS_LABELS_FULL[clean] || DB_STATUS_LABELS[clean] || clean;
+}
+
+function getWhoName(whoVal) {
+  if (!whoVal) return '—';
+  // Nếu là UUID → tìm tên trong users
+  var u = users.find(function(u){ return u.id === whoVal || u.db_id === whoVal; });
+  if (u) return u.name;
+  // Nếu không phải UUID → đã là tên
+  return whoVal;
+}
+
+function buildWeeklyReportForm(h) {
+  var reports = h && h.weeklyReports ? h.weeklyReports : [];
+  var html2 = '';
+
+  // Cập nhật báo cáo: CB/QL/Admin nhập | CĐT xem
+  var canReport = !isCDT() && !isViewer();
+  html2 += '<div class="contact-form-box" style="margin-bottom:16px">';
+  html2 += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">Cập nhật báo cáo (gửi CĐT)</div>';
+  if (!canReport) {
+    html2 += '<div class="info-banner" style="margin-bottom:8px">📋 Chỉ Cán bộ / Quản lý / Admin được cập nhật báo cáo.</div>';
+  }
+  html2 += '<div class="fgrid" style="gap:10px;margin-bottom:12px">';
+  html2 += '<div class="fg ffull"><label>Kết quả khai thác hiện tại</label>';
+  html2 += '<select id="wr-ketqua" '+(canReport?'':'disabled')+'><option value="">-- Chọn tình trạng --</option>';
+  Object.keys(CT_STATUS_LABELS_FULL).forEach(function(k) {
+    html2 += '<option value="' + k + '">' + CT_STATUS_LABELS_FULL[k] + '</option>';
+  });
+  html2 += '</select></div>';
+  html2 += '<div class="fg ffull"><label>Chi tiết</label>';
+  html2 += '<textarea id="wr-chitiet" rows="2" '+(canReport?'':'disabled')+' placeholder="Mô tả chi tiết tình trạng..."></textarea></div>';
+  html2 += '<div class="fg ffull"><label>Đề xuất hỗ trợ từ CĐT</label>';
+  html2 += '<textarea id="wr-dexuat" rows="2" '+(canReport?'':'disabled')+' placeholder="Đề xuất hỗ trợ từ CĐT nếu cần..."></textarea></div>';
+  html2 += '</div>';
+  html2 += '<div class="save-bar" style="display:'+(canReport?'flex':'none')+'">';
+  html2 += '<button class="btn btn-primary btn-sm" onclick="saveWeeklyReport()">💾 Lưu cập nhật báo cáo</button>';
+  html2 += '</div>';
+  html2 += '</div>';
+
+  // Phản hồi CĐT: CĐT nhập | CB/QL/Admin xem
+  html2 += '<div class="divider"></div>';
+  html2 += '<div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">PHẢN HỒI CỦA CHỦ ĐẦU TƯ</div>';
+  html2 += '<div class="contact-form-box" style="background:var(--teal-l);border-color:#9DD5E0">';
+  if (isCDT()) {
+    html2 += '<div class="fg" style="margin-bottom:8px"><label>Nội dung phản hồi</label>';
+    html2 += '<textarea id="cdt-feedback" rows="2" placeholder="Nhập phản hồi, yêu cầu hỗ trợ từ CĐT..."></textarea></div>';
+    html2 += '<button class="btn btn-sm" style="background:var(--teal);color:#fff;border-color:var(--teal)" onclick="saveCDTFeedback()">💬 Gửi phản hồi</button>';
+  } else {
+    html2 += '<div style="font-size:12px;color:var(--txt3)">👀 Phần này Chủ đầu tư sẽ nhập phản hồi. Xem lịch sử bên dưới.</div>';
+  }
+  html2 += '</div>';
+
+  // Lịch sử báo cáo
+  html2 += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Lịch sử cập nhật (' + reports.length + ' lần)</div>';
+  if (!reports.length) {
+    html2 += '<div class="text-sm" style="padding:8px 0">Chưa có báo cáo nào. Cập nhật đầu tiên sẽ hiển thị ở đây.</div>';
+  } else {
+    html2 += '<div style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:6px;background:#F0F8FF"><table style="width:100%;font-size:12px;border-collapse:collapse">';
+    html2 += '<thead style="background:var(--surf2)"><tr>';
+    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Ngày cập nhật</th>';
+    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Kết quả khai thác</th>';
+    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Chi tiết</th>';
+    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Đề xuất hỗ trợ CĐT</th>';
+    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">CB cập nhật</th>';
+    html2 += '</tr></thead><tbody>';
+    reports.slice().reverse().forEach(function(r2) {
+      if (r2.type === 'cdt_feedback') {
+        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#FFF;color:#B8860B">';
+        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
+        html2 += '<td style="padding:6px 10px;font-weight:600;color:#B8860B" colspan="3">💬 CĐT: ' + (r2.chiTiet || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
+        html2 += '</tr>';
+      } else {
+        var lbl = getStatusLabel(r2.ketQua);
+        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#E8F4FD;color:#000">';
+        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
+        html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.chiTiet || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.deXuat || '') + '</td>';
+        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
+        html2 += '</tr>';
+      }
+    });
+    html2 += '</tbody></table></div>';
+  }
+  return html2;
+}
+
+
+function saveCDTFeedback() {
+  if (!currentHSId || !isCDT()) return;
+  var el = document.getElementById('cdt-feedback');
+  if (!el || !el.value.trim()) { alert('Vui lòng nhập nội dung phản hồi!'); return; }
+  var idx = hsList.findIndex(function(x){ return x.id===currentHSId; });
+  if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
+  var today2 = new Date().toISOString().slice(0,10);
+  var cdtEntry = {
+    time:    nowStr(),
+    type:    'cdt_feedback',
+    ketQua:  'cdt_feedback',
+    chiTiet: el.value.trim(),
+    deXuat:  '',
+    who:     currentUser.name,
+    weekNum: getWeekNum()
+  };
+  // Ghi đè phản hồi CĐT cùng ngày
+  var cdtIdx = -1;
+  hsList[idx].weeklyReports.forEach(function(r, i){
+    if (r.type === 'cdt_feedback' && (r.time||'').slice(0,10) === today2) cdtIdx = i;
+  });
+  if (cdtIdx >= 0) {
+    cdtEntry.dbId = hsList[idx].weeklyReports[cdtIdx].dbId;
+    hsList[idx].weeklyReports[cdtIdx] = cdtEntry;
+  } else {
+    hsList[idx].weeklyReports.push(cdtEntry);
+  }
+  hsList[idx].updatedAt = nowStr();
+  el.value = '';
+  addLog('CĐT phản hồi: ' + hsList[idx].tenKH, 'teal', currentHSId);
+  persist();
+  var _cdtH = hsList[idx];
+  var _lastEntry = _cdtH.weeklyReports[_cdtH.weeklyReports.length-1];
+  saveAndSync(function(){ return dbSaveWeeklyReport(_cdtH, _lastEntry); }, 'Đã gửi phản hồi CĐT!');
+  setTimeout(function(){ var tabs=document.querySelectorAll('#mhs-body .tab'); if(tabs[3]) swTab(tabs[3],'t-prog'); },60);
+}
+
+function saveWeeklyReport() {
+  if (!currentHSId) return;
+  var kq = document.getElementById('wr-ketqua');
+  var ct = document.getElementById('wr-chitiet');
+  var dx = document.getElementById('wr-dexuat');
+  if (!kq || !kq.value) { alert('Vui lòng chọn kết quả khai thác!'); return; }
+  var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
+  if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
+  var today = new Date().toISOString().slice(0,10);
+  var entry = {
+    time:    nowStr(),
+    ketQua:  kq.value,
+    chiTiet: ct ? ct.value : '',
+    deXuat:  dx ? dx.value : '',
+    who:     currentUser.name,
+    weekNum: getWeekNum()
+  };
+  // Kiểm tra đã có báo cáo hôm nay chưa (không phải CDT feedback)
+  var todayIdx = -1;
+  hsList[idx].weeklyReports.forEach(function(r, i){
+    if (r.type !== 'cdt_feedback' && (r.time||'').slice(0,10) === today) todayIdx = i;
+  });
+  if (todayIdx >= 0) {
+    // Ghi đè báo cáo cũ trong ngày
+    entry.dbId = hsList[idx].weeklyReports[todayIdx].dbId; // giữ id DB để update
+    hsList[idx].weeklyReports[todayIdx] = entry;
+  } else {
+    hsList[idx].weeklyReports.push(entry);
+  }
+  // Update latest values on HS record
+  hsList[idx].ketQuaKhaiThac = kq.value;
+  hsList[idx].chiTiet = ct ? ct.value : '';
+  hsList[idx].deXuatHoTro = dx ? dx.value : '';
+  hsList[idx].lastContactAt = nowStr();
+  hsList[idx].updatedAt = nowStr();
+  // Auto update status based on result
+  // Tự động cập nhật trạng thái hồ sơ theo kết quả khai thác
+  var ktMap = {
+    'chua_lh':       'dang',   // Chưa liên hệ được → Đang xử lý (đã tiếp cận)
+    'dang_can_nhac': 'dang',   // Đang cân nhắc → Đang xử lý
+    'dong_y_cung_cap':'dang',  // Đồng ý - đang cung cấp HS → Đang xử lý
+    'kh_tu_choi':    'tuchoi', // KH từ chối → Từ chối
+    'nh_tu_choi':    'tuchoi', // NH từ chối → Từ chối
+    'von_tu_co':     'tuchoi', // Chuyển vốn tự có → Từ chối
+    'nop_du':        'cho',    // Đã nộp đủ HS → Chờ phê duyệt
+    'da_phe_duyet':  'choky',  // Đã phê duyệt → Chờ ký
+    'soan_hs':       'choky',  // Đã soạn HS → Chờ ký
+    'cho_gn':        'choky',  // Đã ký - chờ GN → Chờ ký
+    'da_gn':         'xong',   // Đã giải ngân → Hoàn thành
+    // Legacy values
+    'duoc_vay':      'choky',
+    'tu_choi_tn':    'tuchoi',
+    'tu_choi_cic':   'tuchoi',
+    'tu_choi_kh':    'tuchoi',
+    'da_lh':         'dang',
+    'hen_gap':       'dang',
+    'cho_bs':        'dang',
+  };
+  if (ktMap[kq.value]) hsList[idx].status = ktMap[kq.value];
+  addLog('BC tuan: ' + (CT_STATUS_LABELS_FULL[kq.value]||kq.value) + ' - ' + hsList[idx].tenKH, 'green', currentHSId);
+  persist(); renderHSTable(); renderDB();
+  // Reset form + save DB + reload
+  if(kq) kq.value=''; if(ct) ct.value=''; if(dx) dx.value='';
+  var _wrH = hsList[idx];
+  saveAndSync(
+    function(){ return dbSaveWeeklyReport(_wrH, entry); },
+    'Đã lưu báo cáo!'
+  ).then(function(){
+    setTimeout(function(){
+      var tabs=document.querySelectorAll('#mhs-body .tab');
+      if(tabs[3]) swTab(tabs[3],'t-prog');
+    },60);
+  });
+}
+
+function saveGiaiNganInfo() {
+  if (!canSetGiaiNgan() || !currentHSId) return;
+  var hm = document.getElementById('wr-hanmuc');
+  var ng = document.getElementById('wr-ngaygn');
+  var st = document.getElementById('wr-sotien');
+  var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
+  if (hm) hsList[idx].hanMucDuocDuyet = parseFloat(hm.value) || 0;
+  if (ng) hsList[idx].ngayGiaiNgan = ng.value || '';
+  if (st) hsList[idx].soTienGiaiNgan = parseFloat(st.value) || 0;
+  hsList[idx].updatedAt = nowStr();
+  addLog('Cap nhat thong tin giai ngan: ' + hsList[idx].tenKH, 'green', currentHSId);
+  persist(); renderHSTable(); alert('Da luu thong tin giai ngan!');
+}
+
+function getWeekNum() {
+  var d = new Date();
+  var start = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil(((d - start) / 86400000 + start.getDay() + 1) / 7);
+}
+
+function saveContact(){
+  if(!currentHSId){ alert('Luu ho so truoc!'); return; }
+  var st = document.getElementById('ct-status');
+  var note = document.getElementById('ct-note');
+  if(!st || !st.value){ alert('Vui long chon tinh trang!'); return; }
+  var idx = hsList.findIndex(function(x){ return x.id===currentHSId; });
+  if(!hsList[idx].contacts) hsList[idx].contacts=[];
+  hsList[idx].contacts.push({time:nowStr(), status:st.value, note:note?note.value:'', who:currentUser.name});
+  hsList[idx].lastContactAt = nowStr();
+  hsList[idx].updatedAt = nowStr();
+  addLog('Cap nhat tinh trang KH: '+(CT_STATUS_LBL[st.value]||st.value)+' / '+hsList[idx].tenKH,'green',currentHSId);
+  persist(); renderHSTable();
+  openHS(currentHSId);
+  setTimeout(function(){
+    var tabs=document.querySelectorAll('#mhs-body .tab');
+    if(tabs[1]) swTab(tabs[1],'t-contact');
+  },50);
+}
+
+
+function buildHSFooter(h, locked) {
+  var fl=document.getElementById('mhs-fl');
+  var fr=document.getElementById('mhs-fr');
+  if (!fl || !fr) return;
+  var leftHtml='', rightHtml='';
+  if (h) {
+  }
+  rightHtml += '<button class="btn" onclick="closeHS()">Đóng</button>';
+  // CB được chốt hồ sơ (khi chưa chốt)
+  if (h && !locked && !isCDT() && !isViewer()) {
+    rightHtml += ' <button class="btn btn-amber" onclick="lockHS()">🔒 Chốt hồ sơ</button>';
+  }
+  // QL/Admin mở lại
+  if (h && locked && isQL() && !isViewer()) {
+    rightHtml += ' <button class="btn btn-success" onclick="unlockHS()">🔓 Mở lại hồ sơ</button>';
+  }
+  fl.innerHTML = leftHtml;
+  fr.innerHTML = rightHtml;
+}
+
+function lockHS() {
+  if (!currentHSId) return;
+  var h = hsList.find(function(x){ return x.id===currentHSId; });
+  if (!h) return;
+  var gv = function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
+  var errors = [];
+
+  // 1. Kiểm tra checklist 3 nhóm bắt buộc (gt + tn + tsbd)
+  var ck = h.ck || {};
+  var reqGroups = [
+    {id:'gt',   label:'Giấy tờ cá nhân'},
+    {id:'tn',   label:'Chứng minh thu nhập'},
+    {id:'tsbd', label:'Hồ sơ tài sản bảo đảm'}
+  ];
+  reqGroups.forEach(function(rg){
+    var grp = CK_GROUPS.find(function(g){return g.id===rg.id;});
+    if(!grp) return;
+    var allChecked = grp.items.every(function(it){return ck[it.id];});
+    if(!allChecked) errors.push('Chưa tích đủ mục "' + rg.label + '"');
+  });
+
+  // 2. Kiểm tra đủ trường TSBĐ (Căn hộ & HĐMB)
+  if (!gv('f-mach') && !h.maCanHo)       errors.push('Mã căn hộ');
+  if (!(h.giaHDMB || gv('f-giahdmb')))   errors.push('Giá HĐMB');
+  if (!gv('f-sohdmb') && !h.soHDMB)      errors.push('Số HĐMB');
+  if (!gv('f-ngayky') && !h.ngayKyHDMB)  errors.push('Ngày ký HĐMB');
+
+  if (errors.length) {
+    alert('Chưa đủ điều kiện chốt hồ sơ:\n• ' + errors.join('\n• '));
+    return;
+  }
+
+  showConf('Chốt hồ sơ?',
+    'Sau khi chốt, toàn bộ hồ sơ sẽ không chỉnh sửa được. Chỉ Quản lý / Admin mới mở lại.',
+    function(){
+      var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
+      hsList[idx].locked    = true;
+      hsList[idx].lockedBy  = currentUser.name;
+      hsList[idx].lockedAt  = nowStr();
+      hsList[idx].updatedAt = nowStr();
+      addLog('Chốt hồ sơ: '+hsList[idx].tenKH, 'green', currentHSId);
+      persist(); openHS(currentHSId); renderHSTable();
+      saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã chốt hồ sơ!');
+    });
+}
+
+function unlockHS() {
+  if (!isQL() || !currentHSId) return;
+  showConf('Mở lại hồ sơ?', 'Thao tác sẽ được ghi log.', function(){
+    var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
+    hsList[idx].locked=false; hsList[idx].updatedAt=nowStr();
+    addLog('Mở lại hồ sơ: '+hsList[idx].tenKH,'amber',currentHSId);
+    persist(); openHS(currentHSId); renderHSTable();
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// RESTORE SESSION KHI RELOAD TRANG
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async function() {
+  if (!restoreSession()) return; // Không có session hoặc đã hết hạn → ở lại màn hình login
+
+  // Có session hợp lệ → load dữ liệu và vào app
+  try {
+    var btn = document.getElementById('login-btn');
+    if (btn) { btn.textContent = '⏳ Đang khôi phục...'; btn.disabled = true; }
+
+    var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
+    if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
+    if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
+    persist();
+
+    // Hiển thị app
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('app-wrap').classList.add('show');
+    applyPerms();
+    showPage(isCDT() ? 'cdt-view' : 'db');
+    initIdleWatcher();
+    showNotif('✅ Đã khôi phục phiên đăng nhập');
+  } catch(e) {
+    console.error('Restore session failed:', e);
+    // Nếu load DB thất bại → ở lại login
+    currentUser = null;
+    localStorage.removeItem('pb5_session');
+  }
+});
 
 </script>
 <script>
@@ -3868,6 +3839,3 @@ r()
 })();
 
 </script>
-<div id="toast-notif"></div>
-</body>
-</html>
