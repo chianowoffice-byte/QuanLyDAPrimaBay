@@ -290,6 +290,10 @@ input[type=checkbox]:checked{accent-color:#006B5E}
   .fgrid3 { grid-template-columns: 1fr !important; }
   .stats-row { grid-template-columns: repeat(2,1fr) !important; }
 }
+.b-deadline{padding:2px 8px;border-radius:10px;font-size:11px;white-space:nowrap}
+.b-over{background:#FDECEA;color:#C0392B}
+.b-warn{background:#FEF9E7;color:#9A7D0A}
+.b-ok{background:#EAFAF1;color:#1E8449}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -595,16 +599,7 @@ input[type=checkbox]:checked{accent-color:#006B5E}
 <div class="overlay" id="modal-conf">
   <div class="modal sm">
     <div class="mhd" id="conf-title">Xác nhận</div>
-    <div class="mbody" id="conf-msg" style="padding:16px 20px;font-size:14px"></div>
-    <div class="mft">
-      <button class="btn" onclick="closeConf()">Huỷ</button>
-      <button class="btn btn-primary" id="conf-ok">Xác nhận</button>
-    </div>
-  </div>
-</div>
-
-
-<script>
+    <div class="mbody" id="conf-msg" style="padding:16px 20px;font-s
 
 
 // v20260716_232320_113025
@@ -2037,6 +2032,34 @@ function renderHSFilterCB(){
   });
   sel.innerHTML = html;
 }
+
+// Deadline badge cho cột DEADLINE trong bảng danh sách
+function alertBadge(h) {
+  // Tính số ngày kể từ lần liên hệ cuối
+  var lastDate = null;
+  var wrs = (h.weeklyReports||[]).filter(function(r){ return r.type!=='cdt_feedback'; });
+  if (wrs.length) {
+    wrs.sort(function(a,b){ return new Date(b.time)-new Date(a.time); });
+    lastDate = new Date(wrs[0].time);
+  } else {
+    lastDate = new Date(h.createdAt || h.created_at);
+  }
+  if (!lastDate || isNaN(lastDate)) return '<span style="color:var(--txt3)">—</span>';
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  var diff = Math.floor((today - lastDate) / 86400000);
+
+  if (diff >= 7) {
+    return '<span class="b-deadline b-over">🔴 '+diff+' ngày trước</span>';
+  } else if (diff >= 3) {
+    return '<span class="b-deadline b-warn">🟡 '+diff+' ngày trước</span>';
+  } else if (diff === 0) {
+    return '<span class="b-deadline b-ok">🟢 Hôm nay</span>';
+  } else {
+    return '<span class="b-deadline b-ok">🟢 '+diff+' ngày trước</span>';
+  }
+}
+
 function renderHSTable(){
   var q   = (document.getElementById('s-q')||{value:''}).value.toLowerCase();
   var st  = (document.getElementById('s-st')||{value:''}).value;
@@ -3813,6 +3836,14 @@ async function exportCDTExcel() {
   var today2 = new Date();
   var fname = 'BaoCao_PrimaBay_CĐT_'
     + today2.getFullYear()
+    + String(today2.getMonth()+1).padStart(2,'0')
+    + String(today2.getDate()).padStart(2,'0') + '.xlsx';
+  XLSX.writeFile(wb, fname);
+  showNotif('✅ Đã xuất báo cáo ' + data.length + ' hồ sơ!');
+}
+
+
+r()
     + String(today2.getMonth()+1).padStart(2,'0')
     + String(today2.getDate()).padStart(2,'0') + '.xlsx';
   XLSX.writeFile(wb, fname);
