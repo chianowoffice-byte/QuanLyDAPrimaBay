@@ -2214,10 +2214,29 @@ function getDateVal(id) {
 }
 
 // Hiển thị ngày dạng DD/MM/YYYY (cho text display, không phải input)
+
+// Hiển thị ngày dạng DD/MM/YYYY HH:mm hoặc chỉ DD/MM/YYYY
+function fmtDateFull(iso) {
+  if(!iso) return '—';
+  try {
+    var d = new Date(iso);
+    if(isNaN(d)) return fmtDateVN(iso) || iso;
+    var dd  = String(d.getDate()).padStart(2,'0');
+    var mm  = String(d.getMonth()+1).padStart(2,'0');
+    var yy  = d.getFullYear();
+    var hh  = String(d.getHours()).padStart(2,'0');
+    var min = String(d.getMinutes()).padStart(2,'0');
+    // Nếu có giờ phút thực (không phải 00:00)
+    if (hh !== '00' || min !== '00') return dd+'/'+mm+' '+hh+':'+min;
+    return dd+'/'+mm+'/'+yy;
+  } catch(e){ return iso; }
+}
 function fmtDateVN(v) {
+  if (!v) return '';
   var iso = toISODate(v);
   if (!iso) return '';
   var p = iso.split('-');
+  if (p.length < 3) return v;
   return p[2]+'/'+p[1]+'/'+p[0];
 }
 
@@ -2479,7 +2498,7 @@ function buildHSForm(h) {
   html+='</select>';
   html+='<div id="cic-nn-warn" style="display:'+(cic.nhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
   html+='❌ Điều kiện KHÔNG ĐẠT: Nhóm nợ ≥ 2 → Tự động Từ chối hồ sơ!</div></div>';
-  html += fld('Ngày tra CIC','cic-ngay',cic.ngay||'',cicDim,'','date');
+  html += fld('Ngày tra CIC','cic-ngay',toISODate(cic.ngay||''),cicDim,'','date');
   html += '</div>';
   html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD — KH chính:</div>';
   html += '<div id="cic-tctd-list"></div>';
@@ -2507,7 +2526,7 @@ function buildHSForm(h) {
     html += '</select>';
     html += '<div id="cic-vcnn-warn" style="display:'+(cic.vcNhomNo>=2?'block':'none')+';margin-top:5px;padding:6px 10px;background:#FDEAEA;border-radius:6px;font-size:12px;color:#8A1F1F;font-weight:600">';
     html += '❌ Vợ/Chồng: Nhóm nợ ≥ 2 → Tự động Từ chối!</div></div>';
-    html += fld('Ngày tra CIC vợ/chồng','cic-vcngay',cic.vcNgay||'',cicDim,'','date');
+    html += fld('Ngày tra CIC vợ/chồng','cic-vcngay',toISODate(cic.vcNgay||''),cicDim,'','date');
     html += '</div>';
     html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px">Dư nợ từng TCTD — Vợ/Chồng:</div>';
     html += '<div id="cic-vc-tctd-list"></div>';
@@ -2777,7 +2796,7 @@ function buildProgTab(h) {
   if (h && (h.hanMucDuocDuyet || h.ngayGiaiNgan || h.soTienGiaiNgan)) {
     html2 += '<div style="background:var(--purple-l);border:1px solid #C9BEEE;border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap">';
     if (h.hanMucDuocDuyet) html2 += '<div><div class="text-sm">Han muc duoc duyet</div><div style="font-weight:600;color:var(--purple)">' + Number(h.hanMucDuocDuyet).toLocaleString('vi-VN') + ' tr.d</div></div>';
-    if (h.ngayGiaiNgan) html2 += '<div><div class="text-sm">Ngay giai ngan</div><div style="font-weight:600;color:var(--purple)">' + h.ngayGiaiNgan + '</div></div>';
+    if (h.ngayGiaiNgan) html2 += '<div><div class="text-sm">Ngay giai ngan</div><div style="font-weight:600;color:var(--purple)">' + fmtDateVN(h.ngayGiaiNgan) + '</div></div>';
     if (h.soTienGiaiNgan) html2 += '<div><div class="text-sm">So tien GN</div><div style="font-weight:600;color:var(--green)">' + Number(h.soTienGiaiNgan).toLocaleString('vi-VN') + ' tr.d</div></div>';
     html2 += '</div>';
   }
@@ -3488,268 +3507,71 @@ function exportCDT() {
 }
 
 async function exportCDTExcel() {
-  // ── 1. Tính khoảng tuần ──────────────────────────────
-  // Ngày đầu tiên import = MIN created_at của loan_files
-  var firstDate = null;
-  hsList.forEach(function(h) {
-    var d = new Date(h.createdAt);
-    if (!firstDate || d < firstDate) firstDate = d;
-  });
-  if (!firstDate) { alert('Không có dữ liệu!'); return; }
-
-  var today = new Date();
-  today.setHours(0,0,0,0);
-
-  // Hàm lấy thứ Hai đầu tuần
-  function getMonday(d) {
-    var dt = new Date(d);
-    var day = dt.getDay(); // 0=CN,1=T2,...
-    var diff = (day === 0) ? -6 : 1 - day;
-    dt.setDate(dt.getDate() + diff);
-    dt.setHours(0,0,0,0);
-    return dt;
-  }
-  function getSunday(mon) {
-    var dt = new Date(mon);
-    dt.setDate(dt.getDate() + 6);
-    return dt;
-  }
-  function fmtDate(d) {
-    if (!d) return '';
-    var dt = new Date(d);
-    if (isNaN(dt)) return '';
-    return dt.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'});
-  }
-
-  // Tạo danh sách tất cả tuần từ tuần chứa firstDate đến tuần chứa today
-  var weeks = [];
-  var cur = getMonday(firstDate);
-  var endMon = getMonday(today);
-  while (cur <= endMon) {
-    weeks.push({ mon: new Date(cur), sun: getSunday(cur) });
-    cur.setDate(cur.getDate() + 7);
-  }
-
-  // ── 2. Build dữ liệu ──────────────────────────────────
-  // Lấy kết quả khai thác của 1 hồ sơ trong 1 tuần cụ thể
-  function getWeekData(h, mon, sun) {
-    var wrs = (h.weeklyReports || []).filter(function(r) {
-      if (r.type === 'cdt_feedback') return false;
-      var d = new Date(r.time);
-      return d >= mon && d <= sun;
-    });
-    if (!wrs.length) return null;
-    // Lấy bản mới nhất trong tuần
-    wrs.sort(function(a,b){ return new Date(b.time)-new Date(a.time); });
-    var wr = wrs[0];
-    return {
-      ngayCapNhat: fmtDate(wr.time),
-      ketQua:      getStatusLabel(wr.ketQua),
-      chiTiet:     (wr.chiTiet||'').replace(/^\[KQ:[^\]]+\]\s*/,''),
-      deXuat:      wr.deXuat || '',
-    };
-  }
-
-  // ── 3. Xuất Excel bằng SheetJS (dùng trong browser) ──
-  // SheetJS không available → dùng openpyxl phía server
-  // Thực ra trong browser dùng cách tạo URL download từ API Edge Function
-  // Hoặc: gọi Supabase function → nhưng đơn giản nhất: tạo CSV rồi để user mở Excel
-
-  // Thực tế: không có backend → tạo file HTML download với dữ liệu đầy đủ
-  // Cách tốt nhất cho browser: dùng SheetJS từ CDN
-
-  // Load SheetJS dynamically nếu chưa có
+  // Load SheetJS với style support
   if (typeof XLSX === 'undefined') {
     await new Promise(function(resolve, reject) {
       var s = document.createElement('script');
       s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
-      s.onload = resolve;
-      s.onerror = reject;
+      s.onload = resolve; s.onerror = reject;
       document.head.appendChild(s);
     });
   }
 
-  // ── 4. Tạo workbook với SheetJS ───────────────────────
-  var wb = XLSX.utils.book_new();
-  var wsData = [];
+  // ── Helpers ──────────────────────────────────────────────
+  function toISO(v) { return toISODate(v) || ''; }
 
-  // Màu fill theo mẫu
-  // Dùng SheetJS + xlsx-style hoặc chỉ data thuần
+  function fmtD(v) {
+    var iso = toISO(v);
+    if (!iso) return '';
+    var p = iso.split('-');
+    return p[2]+'/'+p[1]+'/'+p[0];
+  }
 
-  // Header Row 1: Tuần headers (cột động)
-  var FIXED_COLS = 26; // A-Z
-  var WEEK_COLS = 7;   // 7 cột/tuần
+  function fmtShort(v) {
+    // DD/MM từ ISO/timestamp
+    if (!v) return '';
+    try {
+      var d = new Date(v);
+      if (isNaN(d)) { var iso=toISO(v); if(iso){d=new Date(iso);}else return v; }
+      return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+    } catch(e){ return v; }
+  }
 
-  // Build header rows
-  var row1 = new Array(FIXED_COLS + weeks.length * WEEK_COLS).fill('');
-  var row2 = new Array(FIXED_COLS + weeks.length * WEEK_COLS).fill('');
-  var row3 = new Array(FIXED_COLS + weeks.length * WEEK_COLS).fill('');
-  var row4 = new Array(FIXED_COLS + weeks.length * WEEK_COLS).fill('');
+  function numFmt(v) {
+    var n = parseInt(v);
+    return isNaN(n) ? '' : n.toLocaleString('vi-VN');
+  }
 
-  // Row 1: Tuần labels (bắt đầu từ cột AA = index 26)
-  weeks.forEach(function(w, i) {
-    row1[FIXED_COLS + i*WEEK_COLS] = 'Tuần từ ngày ' + fmtDate(w.mon) + ' đến ngày ' + fmtDate(w.sun);
-  });
+  // ── Build data ────────────────────────────────────────────
+  var data = hsList;
 
-  // Row 2
-  row2[0]  = 'STT';
-  row2[1]  = 'Thông tin sản phẩm - khách hàng vay';
-  row2[18] = 'Thông tin Ngân hàng tư vấn KH';
-  weeks.forEach(function(w, i) {
-    row2[FIXED_COLS + i*WEEK_COLS]     = 'Tình trạng hồ sơ vay';
-    row2[FIXED_COLS + i*WEEK_COLS + 5] = 'Thông tin giải ngân';
-  });
-
-  // Row 3
-  row3[20] = 'CBBH tư vấn KH';   // U
-  row3[23] = 'CB quản lý trực tiếp'; // X
-
-  // Row 4: column headers
-  var fixedHeaders = [
-    'STT',          // A
-    'Dự án',        // B
-    'Mã căn',       // C
-    'Tên KH',       // D
-    'Đại lý',       // E
-    'Địa chỉ liên hệ', // F
-    'Vùng',         // G
-    'CCCD',         // H
-    'Số điện thoại',// I
-    'Giá trị HĐMB (gồm VAT - không gồm phí)', // J
-    'Hạn mức vay đề xuất', // K
-    'Số tiền VTC phải nộp', // L
-    'Số tiền VTC đã nộp hiện tại', // M
-    'Tỷ lệ VTC đã nộp hiện tại', // N
-    'CSBH áp dụng', // O
-    'Hình thức vay (Thời gian HTLS)', // P
-    'Ngày ký HĐMB', // Q
-    'Hạn giải ngân', // R
-    'Ngân hàng',    // S
-    'Chi nhánh',    // T
-    'Họ tên',       // U (CBBH)
-    'SĐT',          // V
-    'Email',        // W
-    'Họ tên',       // X (CB QL)
-    'SĐT',          // Y
-    'Email',        // Z
-  ];
-  for (var fi=0; fi<fixedHeaders.length; fi++) row4[fi] = fixedHeaders[fi];
-
-  var weekColHeaders = ['Ngày bank cập nhật','Kết quả khai thác hiện tại','Chi tiết',
-    'Đề xuất hỗ trợ','Hạn mức vay được duyệt vay','Ngày giải ngân','Số tiền giải ngân'];
-  weeks.forEach(function(w, i) {
-    for (var wc=0; wc<7; wc++) {
-      row4[FIXED_COLS + i*WEEK_COLS + wc] = weekColHeaders[wc];
-    }
-  });
-
-  wsData.push(row1, row2, row3, row4);
-
-  // ── 5. Data rows ──────────────────────────────────────
-  hsList.forEach(function(h, idx) {
-    var cbName  = getWhoName(h.canBoId);
-    var cbPhone = '';
-    var cbEmail = '';
-    var cbUser  = users.find(function(u){ return u.id === h.canBoId; });
-    if (cbUser) { cbPhone = cbUser.phone || ''; cbEmail = cbUser.email || ''; }
-
-    var vtcRatio = (h.vtcPhaiNop && h.vtcDaNop)
-      ? (parseFloat(h.vtcDaNop)/parseFloat(h.vtcPhaiNop)*100).toFixed(1)+'%' : '';
-
-    var row = [
-      idx+1,                        // A: STT
-      'Prima Bay - Hạ Long',        // B: Dự án
-      h.maCanHo || '',              // C: Mã căn
-      h.tenKH   || '',              // D: Tên KH
-      h.daiLy   || '',              // E: Đại lý
-      h.diaChi  || '',              // F: Địa chỉ
-      h.vung    || '',              // G: Vùng
-      h.cccd    || '',              // H: CCCD
-      h.sdt     || '',              // I: SĐT
-      h.giaHDMB         || '',      // J: Giá HĐMB
-      h.soTienVay       || '',      // K: Hạn mức đề xuất
-      h.vtcPhaiNop      || '',      // L: VTC phải nộp
-      h.vtcDaNop        || '',      // M: VTC đã nộp
-      vtcRatio,                     // N: Tỷ lệ VTC
-      h.csChinhSach     || '',      // O: CSBH
-      h.hinhThucVay     || '',      // P: Hình thức vay
-      h.ngayKyHDMB      || '',      // Q: Ngày ký HĐMB
-      h.hanGiaiNgan     || '',      // R: Hạn giải ngân
-      'BIDV',                       // S: Ngân hàng
-      'Tràng Tiền - Hà Nội',        // T: Chi nhánh
-      cbName,  cbPhone, cbEmail,    // U-W: CBBH
-      cbName,  cbPhone, cbEmail,    // X-Z: CB QL
-    ];
-
-    // Các cột tuần
-    weeks.forEach(function(w) {
-      var wd = getWeekData(h, w.mon, w.sun);
-      if (wd) {
-        row.push(wd.ngayCapNhat, wd.ketQua, wd.chiTiet, wd.deXuat,
-          h.hanMucDuocDuyet||'', h.ngayGiaiNgan||'', h.soTienGiaiNgan||'');
-      } else {
-        row.push('','','','','','','');
-      }
-    });
-
-    wsData.push(row);
-  });
-
-  // ── 6. Tạo worksheet với formatting ─────────────────
-  var ws = XLSX.utils.aoa_to_sheet(wsData);
-
-  // Merge cells
-  var merges = [
-    {s:{r:1,c:0},e:{r:3,c:0}},   // A2:A4 STT
-    {s:{r:1,c:1},e:{r:2,c:17}},  // B2:R3 Thông tin SP
-    {s:{r:1,c:18},e:{r:1,c:25}}, // S2:Z2 Ngân hàng
-    {s:{r:2,c:20},e:{r:2,c:22}}, // U3:W3 CBBH
-    {s:{r:2,c:23},e:{r:2,c:25}}, // X3:Z3 CB QL
-  ];
-  weeks.forEach(function(w, i) {
-    var sc = FIXED_COLS + i*WEEK_COLS;
-    merges.push({s:{r:0,c:sc},e:{r:0,c:sc+6}});
-    merges.push({s:{r:1,c:sc},e:{r:2,c:sc+4}});
-    merges.push({s:{r:1,c:sc+5},e:{r:2,c:sc+6}});
-  });
-  ws['!merges'] = merges;
-
-  // Col widths
-  var cols = [{wch:5}]; // A: STT
-  for (var ci=1; ci<18; ci++) cols.push({wch:14}); // B-R
-  for (var ci=18; ci<26; ci++) cols.push({wch:15}); // S-Z
-  for (var ci=26; ci<FIXED_COLS+weeks.length*WEEK_COLS; ci++) cols.push({wch:18}); // Tuần
-  ws['!cols'] = cols;
-
-  // Row heights
-  ws['!rows'] = [{hpt:28},{hpt:32},{hpt:28},{hpt:52}];
-
-  // Cell styles
-  var COLORS = {
+  // ── Styles ───────────────────────────────────────────────
+  var FILL = {
     blue:   '1F4E79', teal:   '0070C0',
     orange: 'ED7D31', purple: '7030A0',
-    yellow: 'FFFF00', white:  'FFFFFF', black: '000000'
+    yellow: 'FFFF00'
   };
-
-  function mkStyle(fillColor, fontColor, bold, halign, wrap) {
+  function mkS(fillRgb, fontRgb, bold, halign, wrap) {
     return {
-      fill: { patternType: 'solid', fgColor: { rgb: fillColor } },
-      font: { name: 'Arial', sz: 9, bold: !!bold, color: { rgb: fontColor||'FFFFFF' } },
-      alignment: { horizontal: halign||'center', vertical: 'center', wrapText: !!wrap },
+      fill: { patternType:'solid', fgColor:{rgb: fillRgb||'FFFFFF'} },
+      font: { name:'Arial', sz:9, bold:!!bold, color:{rgb: fontRgb||'000000'} },
+      alignment: { horizontal:halign||'center', vertical:'center', wrapText:!!wrap },
       border: {
-        top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
-        left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}
+        top:{style:'thin',color:{rgb:'000000'}}, bottom:{style:'thin',color:{rgb:'000000'}},
+        left:{style:'thin',color:{rgb:'000000'}}, right:{style:'thin',color:{rgb:'000000'}}
       }
     };
   }
-
   var S = {
-    hBlue:   mkStyle(COLORS.blue,   COLORS.white, true,  'center', true),
-    hTeal:   mkStyle(COLORS.teal,   COLORS.white, true,  'center', true),
-    hOrange: mkStyle(COLORS.orange, COLORS.white, true,  'center', true),
-    hPurple: mkStyle(COLORS.purple, COLORS.white, true,  'center', true),
-    hYellow: mkStyle(COLORS.yellow, COLORS.black, true,  'center', false),
-    data:    { font:{name:'Arial',sz:9}, alignment:{horizontal:'left',vertical:'center',wrapText:true},
+    hBlue:   mkS(FILL.blue,   'FFFFFF', true,  'center', true),
+    hTeal:   mkS(FILL.teal,   'FFFFFF', true,  'center', true),
+    hOrange: mkS(FILL.orange, 'FFFFFF', true,  'center', true),
+    hPurple: mkS(FILL.purple, 'FFFFFF', true,  'center', true),
+    hYellow: mkS(FILL.yellow, '000000', true,  'center', false),
+    data:    { font:{name:'Arial',sz:9}, alignment:{horizontal:'left',vertical:'top',wrapText:true},
+               border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
+                       left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
+    dataC:   { font:{name:'Arial',sz:9}, alignment:{horizontal:'center',vertical:'center',wrapText:false},
                border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},
                        left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
     dataR:   { font:{name:'Arial',sz:9}, alignment:{horizontal:'right',vertical:'center'},
@@ -3758,825 +3580,245 @@ async function exportCDTExcel() {
                        left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}} },
   };
 
-  function enc(r,c){ return XLSX.utils.encode_cell({r:r,c:c}); }
+  function enc(r,c) { return XLSX.utils.encode_cell({r:r,c:c}); }
 
-  // Apply header styles row 1 (tuần)
-  weeks.forEach(function(w,i){
-    ws[enc(0,FIXED_COLS+i*WEEK_COLS)] = Object.assign({}, ws[enc(0,FIXED_COLS+i*WEEK_COLS)]||{}, {s:S.hYellow});
-  });
+  // ── Build worksheet ───────────────────────────────────────
+  var wb = XLSX.utils.book_new();
+  var wsData = [];
 
-  // Row 2 styles
-  ws[enc(1,0)] = Object.assign({}, ws[enc(1,0)]||{}, {s:S.hBlue});
-  ws[enc(1,1)] = Object.assign({}, ws[enc(1,1)]||{}, {s:S.hBlue});
-  ws[enc(1,18)] = Object.assign({}, ws[enc(1,18)]||{}, {s:S.hTeal});
-  weeks.forEach(function(w,i){
-    var sc=FIXED_COLS+i*WEEK_COLS;
-    ws[enc(1,sc)]   = Object.assign({}, ws[enc(1,sc)]||{},   {s:S.hOrange});
-    ws[enc(1,sc+5)] = Object.assign({}, ws[enc(1,sc+5)]||{}, {s:S.hPurple});
-  });
+  // HEADER ROW 1
+  var r1 = new Array(30).fill('');
+  r1[0]  = 'BẢNG THEO DÕI TIẾN ĐỘ HỒ SƠ VAY VỐN - DỰ ÁN PRIMA BAY HẠ LONG';
+  r1[29] = 'Ngày xuất: ' + fmtD(new Date().toISOString());
+  wsData.push(r1);
 
-  // Row 3 styles
-  ws[enc(2,20)] = Object.assign({}, ws[enc(2,20)]||{}, {s:S.hTeal});
-  ws[enc(2,23)] = Object.assign({}, ws[enc(2,23)]||{}, {s:S.hTeal});
+  // HEADER ROW 2 - group labels
+  //  A-R: Thông tin SP-KH (18 cột: 0-17)
+  //  S-T: Ngân hàng (2 cột: 18-19)
+  //  U-W: CBBH (3 cột: 20-22)
+  //  X-Z: CB QL (3 cột: 23-25)
+  //  AA-AC: Phần ghi chú BIDV (3 cột: 26-28)
+  //  AD-AH: Báo cáo CĐT (5 cột: 29-33)
+  var r2 = new Array(34).fill('');
+  r2[0]  = 'STT';
+  r2[1]  = 'Thông tin sản phẩm - khách hàng vay';
+  r2[18] = 'Thông tin Ngân hàng tư vấn KH';
+  r2[29] = 'Cập nhật tiến độ';
+  wsData.push(r2);
 
-  // Row 4 styles
-  for (var ci=0; ci<18; ci++) {
-    ws[enc(3,ci)] = Object.assign({}, ws[enc(3,ci)]||{}, {s:S.hBlue});
-  }
-  for (var ci=18; ci<26; ci++) {
-    ws[enc(3,ci)] = Object.assign({}, ws[enc(3,ci)]||{}, {s:S.hTeal});
-  }
-  weeks.forEach(function(w,i){
-    for (var j=0; j<WEEK_COLS; j++){
-      var sc=FIXED_COLS+i*WEEK_COLS+j;
-      ws[enc(3,sc)] = Object.assign({}, ws[enc(3,sc)]||{}, {s: j>=5 ? S.hPurple : S.hOrange});
-    }
-  });
+  // HEADER ROW 3
+  var r3 = new Array(34).fill('');
+  r3[20] = 'CBBH tư vấn KH';
+  r3[23] = 'CB quản lý trực tiếp';
+  wsData.push(r3);
 
-  // Data rows styles
-  for (var ri=4; ri<wsData.length; ri++) {
-    for (var ci=0; ci<wsData[ri].length; ci++) {
-      var isNum = typeof wsData[ri][ci] === 'number' && ci > 0;
-      ws[enc(ri,ci)] = Object.assign({}, ws[enc(ri,ci)]||{}, {s: isNum ? S.dataR : S.data});
-    }
-  }
-
-  // Freeze panes
-  ws['!freeze'] = {xSplit:1, ySplit:4};
-
-  XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo');
-
-  // Download
-  var today2 = new Date();
-  var fname = 'BaoCao_PrimaBay_' + today2.getFullYear()
-    + '_' + String(today2.getMonth()+1).padStart(2,'0')
-    + '_' + String(today2.getDate()).padStart(2,'0') + '.xlsx';
-  XLSX.writeFile(wb, fname);
-  showNotif('✅ Đã xuất báo cáo ' + weeks.length + ' tuần!');
-}
-
-
-// ==================================================
-// USERS
-// ==================================================
-function renderUsrTable(){
-  var html='';
-  users.forEach(function(u){
-    var active=hsList.filter(function(h){return h.canBoId===u.id&&h.status!=='xong'&&h.status!=='tuchoi';}).length;
-    html += '<tr>';
-    html += '<td style="font-weight:500">'+u.name+'</td>';
-    html += '<td><code style="font-size:12px">'+u.login+'</code></td>';
-    html += '<td>'+rBadge(u.role)+'</td>';
-    html += '<td>'+active+' HS</td>';
-    html += '<td><span class="badge '+(u.active?'b-xong':'b-tuchoi')+'">'+(u.active?'Hoat dong':'Ngung')+'</span></td>';
-    html += '<td style="display:flex;gap:4px">';
-    html += '<button class="btn btn-sm" data-uid="'+u.id+'" onclick="openEditUser(this.dataset.uid)">Sua</button>';
-    html += '<button class="btn btn-sm '+(u.active?'btn-danger':'btn-success')+'" data-uid="'+u.id+'" onclick="toggleUsr(this.dataset.uid)">'+(u.active?'Tam ngung':'Kich hoat')+'</button>';
-    if(u.id!=='u1') html += '<button class="btn btn-sm btn-danger" data-uid="'+u.id+'" onclick="delUsr(this.dataset.uid)">X</button>';
-    html += '</td></tr>';
-  });
-  document.getElementById('usr-tbody').innerHTML=html;
-}
-
-function openAddUser(){ editUserId=null; document.getElementById('musr-title').textContent='Thêm người dùng'; ['u-name','u-login','u-pw'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('u-role').value='cb'; document.getElementById('modal-usr').classList.add('open'); }
-function openEditUser(id){
-  editUserId=id;
-  var u=users.find(function(x){return x.id===id;});
-  if(!u) return;
-  document.getElementById('musr-title').textContent='Sửa: '+u.name;
-  document.getElementById('u-name').value=u.name;
-  document.getElementById('u-login').value=u.login;
-  document.getElementById('u-pw').value=''; // Không hiện mật khẩu cũ — để trống = giữ nguyên
-  document.getElementById('u-pw').placeholder='Để trống = giữ mật khẩu hiện tại';
-  document.getElementById('u-role').value=u.role;
-  document.getElementById('modal-usr').classList.add('open');
-}
-
-async function delUsr(id){
-  showConf('Xoá người dùng?','Không thể khôi phục.',async function(){
-    var { error }=await sb.from('users').delete().eq('id',id);
-    if(error){ console.error('[DB] delUsr:', error); alert('Lỗi xoá: '+error.message); return; }
-    users=users.filter(function(u){return u.id!==id;});
-    persist(); renderUsrTable();
-    showNotif('✅ Đã xoá người dùng');
-  });
-}
-
-function closeUsrModal(){ document.getElementById('modal-usr').classList.remove('open'); editUserId=null; }
-async function saveUser(){
-  var name  = document.getElementById('u-name').value.trim();
-  var login = document.getElementById('u-login').value.trim().toLowerCase();
-  var pw    = document.getElementById('u-pw').value;
-  var role  = document.getElementById('u-role').value;
-
-  // Khi thêm mới: bắt buộc pw; khi sửa: pw để trống = giữ nguyên
-  if(!name || !login) { alert('Vui lòng điền họ tên và tên đăng nhập!'); return; }
-  if(!editUserId && !pw) { alert('Vui lòng nhập mật khẩu!'); return; }
-  if(!editUserId && users.find(function(u){return u.login===login;})){
-    alert('Tên đăng nhập đã tồn tại!'); return;
-  }
-
-  // Ghép email từ login
-  var email = login.indexOf('@') !== -1 ? login :
-              (login === 'bim1' ? 'bim1@bimgroup.vn' :
-               login === 'bim2' ? 'bim2@bimgroup.vn' :
-               login + '@bidv.com.vn');
-
-  // Map role app → DB role
-  var dbRole = role === 'cb'    ? 'officer' :
-               role === 'ql'    ? 'manager' :
-               role === 'admin' ? 'admin'   :
-               role === 'cdt'   ? 'cdt_view':
-               role === 'viewer'? 'viewer'  : role;
-
-  var saveBtn = document.querySelector('#modal-usr .btn-primary');
-  if(saveBtn){ saveBtn.textContent='⏳ Đang lưu...'; saveBtn.disabled=true; }
-
-  try {
-    if(editUserId) {
-      // Sửa user hiện có
-      var u = users.find(function(x){return x.id===editUserId;});
-      if(u) {
-        u.name  = name;
-        u.login = login;
-        u.role  = role;
-        if(pw) u.pw = pw; // Chỉ update pw nếu nhập mới
-
-        // Cập nhật DB
-        var updateData = { full_name: name, email: email, role: dbRole, updated_at: new Date().toISOString() };
-        if(pw) updateData.ma_cb = pw; // Dùng ma_cb làm password
-
-        var { error } = await sb.from('users').update(updateData).eq('id', editUserId);
-        if(error) {
-          console.error('[DB] saveUser update:', error);
-          alert('⚠️ Lưu local OK nhưng lỗi DB: ' + error.message);
-        } else {
-          showNotif('✅ Đã cập nhật người dùng: ' + name);
-        }
-      }
-    } else {
-      // Thêm user mới
-      var newUser = { id: 'u'+Date.now(), name:name, login:login, pw:pw, role:role, active:true, email:email };
-      users.push(newUser);
-
-      var insertData = {
-        full_name: name, email: email, role: dbRole,
-        ma_cb: pw, is_active: true, created_at: new Date().toISOString()
-      };
-      var { data: inserted, error: insErr } = await sb.from('users').insert(insertData).select().single();
-      if(insErr) {
-        console.error('[DB] saveUser insert:', insErr);
-        alert('⚠️ Lưu local OK nhưng lỗi DB: ' + insErr.message);
-      } else {
-        if(inserted) newUser.id = inserted.id; // Dùng UUID từ DB
-        showNotif('✅ Đã thêm người dùng: ' + name);
-      }
-    }
-  } catch(e) {
-    console.error('[DB] saveUser exception:', e);
-    alert('⚠️ Lỗi: ' + e.message);
-  } finally {
-    if(saveBtn){ saveBtn.textContent='Lưu'; saveBtn.disabled=false; }
-  }
-
-  persist(); closeUsrModal(); renderUsrTable();
-}
-async function toggleUsr(id){
-  var u=users.find(function(x){return x.id===id;});
-  if(!u) return;
-  u.active=!u.active;
-  var { error }=await sb.from('users').update({is_active:u.active}).eq('id',id);
-  if(error) console.error('[DB] toggleUsr:', error);
-  else showNotif((u.active?'✅ Kích hoạt: ':'🚫 Tạm ngừng: ')+u.name);
-  persist(); renderUsrTable();
-}
-
-// ==================================================
-// CONFIRM
-// ==================================================
-function showConf(title, msg, fn){
-  document.getElementById('conf-title').textContent=title;
-  document.getElementById('conf-msg').textContent=msg;
-  confFn=fn;
-  document.getElementById('conf-ok').onclick=function(){ closeConf(); if(confFn) confFn(); };
-  document.getElementById('modal-conf').classList.add('open');
-}
-function closeConf(){ document.getElementById('modal-conf').classList.remove('open'); confFn=null; }
-
-// Close overlays on bg click
-document.querySelectorAll('.overlay').forEach(function(el){
-  el.addEventListener('click', function(e){ if(e.target===el) el.classList.remove('open'); });
-});
-
-// ==================================================
-// DEADLINE / ALERT SYSTEM
-// ==================================================
-function daysSince(dStr){
-  if(!dStr) return 9999;
-  var now = new Date(); now.setHours(0,0,0,0);
-  var then;
-  // ISO format: 2026-07-16T... hoặc 2026-07-16
-  if(dStr.indexOf('-')===4 || dStr.indexOf('T')!==-1){
-    then = new Date(dStr); then.setHours(0,0,0,0);
-  } else {
-    // dd/MM hoặc dd/MM/yyyy
-    var sp = dStr.split(' ')[0].split('/');
-    var d,m,y;
-    if(sp.length===3){ d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=parseInt(sp[2]); }
-    else { d=parseInt(sp[0]); m=parseInt(sp[1])-1; y=now.getFullYear(); }
-    then = new Date(y,m,d,0,0,0);
-  }
-  if(isNaN(then)) return 9999;
-  return Math.max(0, Math.floor((now-then)/86400000));
-}
-function daysUntil(iso){
-  if(!iso) return null;
-  var now=new Date(); now.setHours(0,0,0,0);
-  var then=new Date(iso); then.setHours(0,0,0,0);
-  return Math.floor((then-now)/86400000);
-}
-function hsAlertLevel(h){
-  if(!h) return 'ok';
-  if(h.status==='xong'||h.status==='tuchoi'||h.status==='disbursed'||h.status==='rejected') return 'done';
-  if(ckProgress(h).pct===100) return 'done';
-  var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
-  if(dGN !== null && dGN <= 3) return 'over';
-  if(dGN !== null && dGN <= 7) return 'warn';
-  // Tính từ lastContactAt (hoặc ngày tạo HS nếu chưa có báo cáo)
-  if(!h.lastContactAt) return 'new';
-  var days = daysSince(h.lastContactAt);
-  if(days > 7) return 'over';
-  if(days >= 5) return 'warn';
-  return 'ok';
-}
-function alertBadge(h){
-  var lv = hsAlertLevel(h);
-  var days = h.lastContactAt ? daysSince(h.lastContactAt) : null;
-  var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
-  // Kết quả khai thác gần nhất
-  var lastKQ = '';
-  if (h.weeklyReports && h.weeklyReports.length) {
-    var lastWR = h.weeklyReports[h.weeklyReports.length-1];
-    if (lastWR && lastWR.type !== 'cdt_feedback') {
-      lastKQ = getStatusLabel(lastWR.ketQua);
-    }
-  }
-  var sp = '<span class="dl-badge ';
-  if(lv==='done')  return sp+'dl-ok">\u2713 Ho\u00e0n t\u1ea5t</span>';
-  if(lv==='over'){
-    if(dGN!==null && dGN<=3) return sp+'dl-over">\uD83D\uDD34 GN c\u00f2n '+dGN+' ng\u00e0y!</span>';
-    if(days!==null) return sp+'dl-over">\uD83D\uDD34 Qu\u00e1 h\u1ea1n '+(days-7)+' ng\u00e0y</span>';
-    return sp+'dl-over">\uD83D\uDD34 Qu\u00e1 h\u1ea1n</span>';
-  }
-  if(lv==='warn'){
-    if(dGN!==null && dGN<=7) return sp+'dl-warn">\uD83D\uDFE1 GN c\u00f2n '+dGN+' ng\u00e0y</span>';
-    if(days!==null) return sp+'dl-warn">\uD83D\uDFE1 C\u1eadp nh\u1eadt ('+days+'/7ng)</span>';
-    return sp+'dl-warn">\uD83D\uDFE1 S\u1eafp h\u1ea1n</span>';
-  }
-  if(lv==='new') return sp+'dl-new">\uD83C\uDD95 Ch\u01b0a c\u1eadp nh\u1eadt</span>';
-  if(days!==null) return sp+'dl-ok">\uD83D\uDFE2 '+days+' ng\u00e0y tr\u01b0\u1edbc</span>';
-  return sp+'dl-ok">\uD83D\uDFE2 OK</span>';
-}
-function gnBadge(h){
-  var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
-  if(dGN===null) return '<span style="color:var(--txt3);font-size:12px">\u2014</span>';
-  var cls = dGN<=3 ? 'dl-over' : dGN<=7 ? 'dl-warn' : 'dl-ok';
-  var lbl = dGN<0 ? '\u0110\u00e3 qua' : dGN===0 ? 'H\u00f4m nay' : dGN+' ng\u00e0y';
-  return '<span class="dl-badge '+cls+'">'+lbl+'</span>';
-}
-function sortHSByAlert(list){
-  var ord = {over:0,warn:1,new:2,ok:3,done:4};
-  return list.slice().sort(function(a,b){
-    return (ord[hsAlertLevel(a)]||3)-(ord[hsAlertLevel(b)]||3);
-  });
-}
-function renderAlertPanels(list){
-  var overL = list.filter(function(h){ return hsAlertLevel(h)==='over'; });
-  var warnL = list.filter(function(h){ return hsAlertLevel(h)==='warn'; });
-  var html = '';
-  function makeRows(arr){
-    var r='';
-    arr.slice(0,5).forEach(function(h){
-      r += '<div class="alert-row" data-id="'+h.id+'" onclick="openHS(this.dataset.id)">';
-      r += '<span style="font-weight:500;min-width:150px;flex-shrink:0">'+(h.tenKH||'')+'</span>';
-      r += '<span style="color:var(--txt2);font-size:12px;margin-right:6px">'+(h.maCanHo||'')+'</span>';
-      r += alertBadge(h);
-      r += '<span style="color:var(--txt3);margin-left:auto;font-size:12px">'+getUserName(h.canBoId)+'</span>';
-      r += '</div>';
-    });
-    return r;
-  }
-  if(overL.length){
-    html += '<div class="alert-panel"><div class="alert-panel-hd red">';
-    html += '<span style="font-weight:700;font-size:13px">\uD83D\uDD34 Qu\u00e1 h\u1ea1n c\u1eadp nh\u1eadt ('+overL.length+' h\u1ed3 s\u01a1)</span>';
-    html += '<button class="btn btn-sm btn-danger" onclick="showPage(this.dataset.pg)" data-pg="hs">Xem t\u1ea5t c\u1ea3</button></div>';
-    html += makeRows(overL)+'</div>';
-  }
-  if(warnL.length){
-    html += '<div class="alert-panel"><div class="alert-panel-hd amber">';
-    html += '<span style="font-weight:700;font-size:13px">\uD83D\uDFE1 S\u1eafp \u0111\u1ebfn h\u1ea1n ('+warnL.length+' h\u1ed3 s\u01a1)</span></div>';
-    html += makeRows(warnL)+'</div>';
-  }
-  var el = document.getElementById('db-alerts');
-  if(el) el.innerHTML = html;
-}
-
-// ==================================================
-// CONTACT UPDATE
-// ==================================================
-var CT_STATUS_LBL = {
-  da_lh:'\u2705 \u0110\u00e3 li\u00ean h\u1ec7, KH \u0111ang chu\u1ea9n b\u1ecb HS',
-  hen_gap:'\uD83D\uDCC5 \u0110\u00e3 h\u1eb9n g\u1eb7p tr\u1ef1c ti\u1ebfp',
-  cho_bs:'\u23F3 \u0110ang ch\u1edd KH b\u1ed5 sung gi\u1ea5y t\u1edd',
-  kh_nghe:'\uD83D\uDCF5 Kh\u00f4ng nghe m\u00e1y',
-  kh_bao_luu:'\u23F8 KH xin b\u1ea3o l\u01b0u',
-  da_nop:'\uD83D\uDCE6 KH \u0111\u00e3 n\u1ed9p \u0111\u1ee7 h\u1ed3 s\u01a1',
-  khac:'\uD83D\uDCDD Kh\u00e1c'
-};
-function onTCTDGroupChange(el){
-  var val = parseInt(el.value)||0;
-  if(val >= 2){
-    el.style.border = '2px solid #8A1F1F';
-    el.style.background = '#FDEAEA';
-  } else {
-    el.style.border = '';
-    el.style.background = '';
-  }
-}
-
-
-function onCICVCGroupChange() {
-  var sel = document.getElementById('cic-vcnn');
-  var warn = document.getElementById('cic-vcnn-warn');
-  if (!sel || !warn) return;
-  warn.style.display = parseInt(sel.value) >= 2 ? 'block' : 'none';
-}
-
-function addCICVCRow() {
-  var el = document.getElementById('cic-vc-tctd-list');
-  if (!el) return;
-  var idx = el.querySelectorAll('.cic-row').length;
-  var row = document.createElement('div');
-  row.className = 'cic-row';
-  row.innerHTML = '<input placeholder="Tên TCTD" id="vc-tctd-name-'+idx+'"> '
-    + '<input placeholder="Dư nợ (VNĐ)" id="vc-tctd-dn-'+idx+'" type="number" style="width:130px"> '
-    + '<select id="vc-tctd-grp-'+idx+'"><option value="">Nhóm</option>'
-    + [1,2,3,4,5].map(function(n){return '<option value="'+n+'">Nhóm '+n+'</option>';}).join('')
-    + '</select> '
-    + '<button class="btn btn-sm" style="padding:3px 8px;background:#fee" onclick="this.parentNode.remove()">✕</button>';
-  el.appendChild(row);
-}
-
-function collectCICVCTCTDs() {
-  var el = document.getElementById('cic-vc-tctd-list'); if (!el) return [];
-  var rows = el.querySelectorAll('.cic-row'); var result = [];
-  rows.forEach(function(r, i) {
-    var n=document.getElementById('vc-tctd-name-'+i);
-    var d=document.getElementById('vc-tctd-dn-'+i);
-    var g=document.getElementById('vc-tctd-grp-'+i);
-    if(n&&n.value) result.push({name:n.value, duNo:d?d.value:'', group:g?g.value:''});
-  });
-  return result;
-}
-
-function onCICGroupChange(){
-  var nn = document.getElementById('cic-nn');
-  var warn = document.getElementById('cic-nn-warn');
-  if(!nn || !warn) return;
-  var val = parseInt(nn.value)||0;
-  if(val >= 2){
-    warn.style.display = 'block';
-    nn.style.border = '2px solid #8A1F1F';
-  } else {
-    warn.style.display = 'none';
-    nn.style.border = '';
-  }
-}
-
-
-// ==================================================
-// WEEKLY REPORT - 6 TRUONG BIM
-// ==================================================
-
-
-
-// Map DB enum → nhãn tiếng Việt (cho weekly_reports load từ DB)
-var DB_STATUS_LABELS = {
-  'no_answer':       'Chưa liên hệ được với KH',
-  'contacted':       'KH đang cân nhắc phương án vay',
-  'waiting_docs':    'KH đồng ý vay - Đang cung cấp hồ sơ',
-  'rejected_kh':     'KH từ chối vay',
-  'rejected_income': 'NH từ chối cho vay',
-  'other':           'Chuyển sang thanh toán bằng vốn tự có',
-  'docs_complete':   'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
-  'approved_loan':   'Đã phê duyệt cho vay',
-  'cho_gn':          'Đã ký hồ sơ - Chờ giải ngân',
-  'appointment':     'Đã hẹn gặp trực tiếp',
-  'on_hold':         'KH bảo lưu - chưa muốn tiếp tục',
-  'rejected_cic':    'NH từ chối cho vay - Nợ xấu CIC',
-  'cdt_feedback':    'Phản hồi CĐT'
-};
-
-
-// Derive trạng thái HS từ kết quả báo cáo gần nhất (ưu tiên hơn status DB)
-var KT_TO_STATUS = {
-  'chua_lh':          'dang',
-  'dang_can_nhac':    'dang',
-  'dong_y_cung_cap':  'dang',
-  'kh_tu_choi':       'tuchoi',
-  'nh_tu_choi':       'tuchoi',
-  'von_tu_co':        'tuchoi',
-  'nop_du':           'cho',
-  'da_phe_duyet':     'choky',
-  'soan_hs':          'choky',
-  'cho_gn':           'chogn',
-  'da_gn':            'xong',
-  'khac':             'dang',
-  // Legacy
-  'da_lh':            'dang',
-  'hen_gap':          'dang',
-  'cho_bs':           'dang',
-  'kh_nghe':          'dang',
-  'kh_bao_luu':       'dang',
-  'duoc_vay':         'choky',
-  'tu_choi_tn':       'tuchoi',
-  'tu_choi_cic':      'tuchoi',
-  'tu_choi_kh':       'tuchoi',
-  // DB enum values
-  'contacted':        'dang',
-  'appointment':      'dang',
-  'waiting_docs':     'dang',
-  'no_answer':        'dang',
-  'on_hold':          'dang',
-  'docs_complete':    'cho',
-  'approved_loan':    'choky',
-  'rejected_income':  'tuchoi',
-  'rejected_cic':     'tuchoi',
-  'rejected_kh':      'tuchoi',
-  'other':            'dang'
-};
-
-function deriveHSStatus(h) {
-  // Tìm báo cáo gần nhất (không phải CDT feedback)
-  var wrs = (h.weeklyReports || []).filter(function(r){ return r.type !== 'cdt_feedback'; });
-  if (!wrs.length) return h.status || 'moi'; // Chưa có báo cáo → giữ nguyên
-  var last = wrs[wrs.length - 1];
-  var kt   = last.ketQua || '';
-  return KT_TO_STATUS[kt] || h.status || 'moi';
-}
-
-function getStatusLabel(val) {
-  if (!val) return '—';
-  // Strip [KQ:xxx] → lấy app key
-  var clean = val.replace(/^\[KQ:([^\]]+)\].*$/, '$1').trim();
-  return CT_STATUS_LABELS_FULL[clean] || DB_STATUS_LABELS[clean] || clean;
-}
-
-function getWhoName(whoVal) {
-  if (!whoVal) return '—';
-  // Nếu là UUID → tìm tên trong users
-  var u = users.find(function(u){ return u.id === whoVal || u.db_id === whoVal; });
-  if (u) return u.name;
-  // Nếu không phải UUID → đã là tên
-  return whoVal;
-}
-
-function buildWeeklyReportForm(h) {
-  var reports = h && h.weeklyReports ? h.weeklyReports : [];
-  var html2 = '';
-
-  // Cập nhật báo cáo: CB/QL/Admin nhập | CĐT xem
-  var canReport = !isCDT() && !isViewer();
-  html2 += '<div class="contact-form-box" style="margin-bottom:16px">';
-  html2 += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">Cập nhật báo cáo (gửi CĐT)</div>';
-  if (!canReport) {
-    html2 += '<div class="info-banner" style="margin-bottom:8px">📋 Chỉ Cán bộ / Quản lý / Admin được cập nhật báo cáo.</div>';
-  }
-  html2 += '<div class="fgrid" style="gap:10px;margin-bottom:12px">';
-  html2 += '<div class="fg ffull"><label>Kết quả khai thác hiện tại</label>';
-  html2 += '<select id="wr-ketqua" '+(canReport?'':'disabled')+'><option value="">-- Chọn tình trạng --</option>';
-  Object.keys(CT_STATUS_LABELS_FULL).forEach(function(k) {
-    html2 += '<option value="' + k + '">' + CT_STATUS_LABELS_FULL[k] + '</option>';
-  });
-  html2 += '</select></div>';
-  html2 += '<div class="fg ffull"><label>Chi tiết</label>';
-  html2 += '<textarea id="wr-chitiet" rows="2" '+(canReport?'':'disabled')+' placeholder="Mô tả chi tiết tình trạng..."></textarea></div>';
-  html2 += '<div class="fg ffull"><label>Đề xuất hỗ trợ từ CĐT</label>';
-  html2 += '<textarea id="wr-dexuat" rows="2" '+(canReport?'':'disabled')+' placeholder="Đề xuất hỗ trợ từ CĐT nếu cần..."></textarea></div>';
-  html2 += '</div>';
-  html2 += '<div class="save-bar" style="display:'+(canReport?'flex':'none')+'">';
-  html2 += '<button class="btn btn-primary btn-sm" onclick="saveWeeklyReport()">💾 Lưu cập nhật báo cáo</button>';
-  html2 += '</div>';
-  html2 += '</div>';
-
-  // Phản hồi CĐT: CĐT nhập | CB/QL/Admin xem
-  html2 += '<div class="divider"></div>';
-  html2 += '<div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">PHẢN HỒI CỦA CHỦ ĐẦU TƯ</div>';
-  html2 += '<div class="contact-form-box" style="background:var(--teal-l);border-color:#9DD5E0">';
-  if (isCDT()) {
-    html2 += '<div class="fg" style="margin-bottom:8px"><label>Nội dung phản hồi</label>';
-    html2 += '<textarea id="cdt-feedback" rows="2" placeholder="Nhập phản hồi, yêu cầu hỗ trợ từ CĐT..."></textarea></div>';
-    html2 += '<button class="btn btn-sm" style="background:var(--teal);color:#fff;border-color:var(--teal)" onclick="saveCDTFeedback()">💬 Gửi phản hồi</button>';
-  } else {
-    html2 += '<div style="font-size:12px;color:var(--txt3)">👀 Phần này Chủ đầu tư sẽ nhập phản hồi. Xem lịch sử bên dưới.</div>';
-  }
-  html2 += '</div>';
-
-  // Lịch sử báo cáo
-  html2 += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Lịch sử cập nhật (' + reports.length + ' lần)</div>';
-  if (!reports.length) {
-    html2 += '<div class="text-sm" style="padding:8px 0">Chưa có báo cáo nào. Cập nhật đầu tiên sẽ hiển thị ở đây.</div>';
-  } else {
-    html2 += '<div style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:6px;background:#F0F8FF"><table style="width:100%;font-size:12px;border-collapse:collapse">';
-    html2 += '<thead style="background:var(--surf2)"><tr>';
-    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Ngày cập nhật</th>';
-    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Kết quả khai thác</th>';
-    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Chi tiết</th>';
-    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">Đề xuất hỗ trợ CĐT</th>';
-    html2 += '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--bdr)">CB cập nhật</th>';
-    html2 += '</tr></thead><tbody>';
-    reports.slice().reverse().forEach(function(r2) {
-      if (r2.type === 'cdt_feedback') {
-        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#FFF;color:#B8860B">';
-        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
-        html2 += '<td style="padding:6px 10px;font-weight:600;color:#B8860B" colspan="3">💬 CĐT: ' + ((r2.chiTiet||'').replace(/^\[KQ:[^\]]+\]\s*/,'')) + '</td>';
-        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
-        html2 += '</tr>';
-      } else {
-        var lbl = getStatusLabel(r2.ketQua);
-        html2 += '<tr style="border-bottom:1px solid var(--bdr);background:#E8F4FD;color:#000">';
-        html2 += '<td style="padding:6px 10px;white-space:nowrap">' + fmtDate(r2.time) + '</td>';
-        html2 += '<td style="padding:6px 10px;font-weight:500">' + lbl + '</td>';
-        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + ((r2.chiTiet||'').replace(/^\[KQ:[^\]]+\]\s*/,'')) + '</td>';
-        html2 += '<td style="padding:6px 10px;color:var(--txt2)">' + (r2.deXuat || '') + '</td>';
-        html2 += '<td style="padding:6px 10px;color:var(--txt3)">' + getWhoName(r2.who) + '</td>';
-        html2 += '</tr>';
-      }
-    });
-    html2 += '</tbody></table></div>';
-  }
-  return html2;
-}
-
-
-function saveCDTFeedback() {
-  if (!currentHSId || !isCDT()) return;
-  var el = document.getElementById('cdt-feedback');
-  if (!el || !el.value.trim()) { alert('Vui lòng nhập nội dung phản hồi!'); return; }
-  var idx = hsList.findIndex(function(x){ return x.id===currentHSId; });
-  if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
-  var today2 = new Date().toISOString().slice(0,10);
-  var cdtEntry = {
-    time:    nowStr(),
-    type:    'cdt_feedback',
-    ketQua:  'cdt_feedback',
-    chiTiet: el.value.trim(),
-    deXuat:  '',
-    who:     currentUser.name,
-    weekNum: getWeekNum()
-  };
-  // Ghi đè phản hồi CĐT cùng ngày
-  var cdtIdx = -1;
-  hsList[idx].weeklyReports.forEach(function(r, i){
-    if (r.type === 'cdt_feedback' && (r.time||'').slice(0,10) === today2) cdtIdx = i;
-  });
-  if (cdtIdx >= 0) {
-    cdtEntry.dbId = hsList[idx].weeklyReports[cdtIdx].dbId;
-    hsList[idx].weeklyReports[cdtIdx] = cdtEntry;
-  } else {
-    hsList[idx].weeklyReports.push(cdtEntry);
-  }
-  hsList[idx].updatedAt = nowStr();
-  el.value = '';
-  addLog('CĐT phản hồi: ' + hsList[idx].tenKH, 'teal', currentHSId);
-  persist();
-  var _cdtH = hsList[idx];
-  var _lastEntry = _cdtH.weeklyReports[_cdtH.weeklyReports.length-1];
-  saveAndSync(function(){ return dbSaveWeeklyReport(_cdtH, _lastEntry); }, 'Đã gửi phản hồi CĐT!');
-  setTimeout(function(){ var tabs=document.querySelectorAll('#mhs-body .tab'); if(tabs[3]) swTab(tabs[3],'t-prog'); },60);
-}
-
-function saveWeeklyReport() {
-  if (!currentHSId) return;
-  var kq = document.getElementById('wr-ketqua');
-  var ct = document.getElementById('wr-chitiet');
-  var dx = document.getElementById('wr-dexuat');
-  if (!kq || !kq.value) { alert('Vui lòng chọn kết quả khai thác!'); return; }
-  var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
-  if (!hsList[idx].weeklyReports) hsList[idx].weeklyReports = [];
-  var today = new Date().toISOString().slice(0,10);
-  var entry = {
-    time:    nowStr(),
-    ketQua:  kq.value,
-    chiTiet: ct ? ct.value.trim() : '',
-    deXuat:  dx ? dx.value : '',
-    who:     currentUser.name,
-    weekNum: getWeekNum()
-  };
-  // Kiểm tra đã có báo cáo hôm nay chưa (không phải CDT feedback)
-  var todayIdx = -1;
-  hsList[idx].weeklyReports.forEach(function(r, i){
-    if (r.type !== 'cdt_feedback' && (r.time||'').slice(0,10) === today) todayIdx = i;
-  });
-  if (todayIdx >= 0) {
-    // Ghi đè báo cáo cũ trong ngày
-    entry.dbId = hsList[idx].weeklyReports[todayIdx].dbId; // giữ id DB để update
-    hsList[idx].weeklyReports[todayIdx] = entry;
-  } else {
-    hsList[idx].weeklyReports.push(entry);
-  }
-  // Update latest values on HS record
-  hsList[idx].ketQuaKhaiThac = kq.value;
-  hsList[idx].chiTiet = ct ? ct.value : '';
-  hsList[idx].deXuatHoTro = dx ? dx.value : '';
-  hsList[idx].lastContactAt = nowStr();
-  hsList[idx].updatedAt = nowStr();
-  // Auto update status based on result
-  // Tự động cập nhật trạng thái hồ sơ theo kết quả khai thác
-  var ktMap = {
-    'chua_lh':       'dang',   // Chưa liên hệ được → Đang xử lý (đã tiếp cận)
-    'dang_can_nhac': 'dang',   // Đang cân nhắc → Đang xử lý
-    'dong_y_cung_cap':'dang',  // Đồng ý - đang cung cấp HS → Đang xử lý
-    'kh_tu_choi':    'tuchoi', // KH từ chối → Từ chối
-    'nh_tu_choi':    'tuchoi', // NH từ chối → Từ chối
-    'von_tu_co':     'tuchoi', // Chuyển vốn tự có → Từ chối
-    'nop_du':        'cho',    // Đã nộp đủ HS → Chờ phê duyệt
-    'da_phe_duyet':  'choky',  // Đã phê duyệt → Chờ ký
-    'soan_hs':       'choky',  // Đã soạn HS → Chờ ký
-    'cho_gn':        'choky',  // Đã ký - chờ GN → Chờ ký
-    'da_gn':         'xong',   // Đã giải ngân → Hoàn thành
-    // Legacy values
-    'duoc_vay':      'choky',
-    'tu_choi_tn':    'tuchoi',
-    'tu_choi_cic':   'tuchoi',
-    'tu_choi_kh':    'tuchoi',
-    'da_lh':         'dang',
-    'hen_gap':       'dang',
-    'cho_bs':        'dang',
-  };
-  if (ktMap[kq.value]) hsList[idx].status = ktMap[kq.value];
-  addLog('BC tuan: ' + (CT_STATUS_LABELS_FULL[kq.value]||kq.value) + ' - ' + hsList[idx].tenKH, 'green', currentHSId);
-  persist(); renderHSTable(); renderDB();
-  // Reset form + save DB + reload
-  if(kq) kq.value=''; if(ct) ct.value=''; if(dx) dx.value='';
-  var _wrH = hsList[idx];
-  saveAndSync(
-    function(){ return dbSaveWeeklyReport(_wrH, entry); },
-    'Đã lưu báo cáo!'
-  ).then(function(){
-    setTimeout(function(){
-      var tabs=document.querySelectorAll('#mhs-body .tab');
-      if(tabs[3]) swTab(tabs[3],'t-prog');
-    },60);
-  });
-}
-
-function saveGiaiNganInfo() {
-  if (!canSetGiaiNgan() || !currentHSId) return;
-  var hm = document.getElementById('wr-hanmuc');
-  var ng = document.getElementById('wr-ngaygn');
-  var st = document.getElementById('wr-sotien');
-  var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
-  if (hm) hsList[idx].hanMucDuocDuyet = parseFloat(hm.value) || 0;
-  if (ng) hsList[idx].ngayGiaiNgan = ng.value || '';
-  if (st) hsList[idx].soTienGiaiNgan = parseFloat(st.value) || 0;
-  hsList[idx].updatedAt = nowStr();
-  addLog('Cap nhat thong tin giai ngan: ' + hsList[idx].tenKH, 'green', currentHSId);
-  persist(); renderHSTable(); alert('Da luu thong tin giai ngan!');
-}
-
-function getWeekNum() {
-  var d = new Date();
-  var start = new Date(d.getFullYear(), 0, 1);
-  return Math.ceil(((d - start) / 86400000 + start.getDay() + 1) / 7);
-}
-
-function saveContact(){
-  if(!currentHSId){ alert('Luu ho so truoc!'); return; }
-  var st = document.getElementById('ct-status');
-  var note = document.getElementById('ct-note');
-  if(!st || !st.value){ alert('Vui long chon tinh trang!'); return; }
-  var idx = hsList.findIndex(function(x){ return x.id===currentHSId; });
-  if(!hsList[idx].contacts) hsList[idx].contacts=[];
-  hsList[idx].contacts.push({time:nowStr(), status:st.value, note:note?note.value:'', who:currentUser.name});
-  hsList[idx].lastContactAt = nowStr();
-  hsList[idx].updatedAt = nowStr();
-  addLog('Cap nhat tinh trang KH: '+(CT_STATUS_LBL[st.value]||st.value)+' / '+hsList[idx].tenKH,'green',currentHSId);
-  persist(); renderHSTable();
-  openHS(currentHSId);
-  setTimeout(function(){
-    var tabs=document.querySelectorAll('#mhs-body .tab');
-    if(tabs[1]) swTab(tabs[1],'t-contact');
-  },50);
-}
-
-
-function buildHSFooter(h, locked) {
-  var fl=document.getElementById('mhs-fl');
-  var fr=document.getElementById('mhs-fr');
-  if (!fl || !fr) return;
-  var leftHtml='', rightHtml='';
-  if (h) {
-  }
-  rightHtml += '<button class="btn" onclick="closeHS()">Đóng</button>';
-  // CB được chốt hồ sơ (khi chưa chốt)
-  if (h && !locked && !isCDT() && !isViewer()) {
-    rightHtml += ' <button class="btn btn-amber" onclick="lockHS()">🔒 Chốt hồ sơ</button>';
-  }
-  // QL/Admin mở lại
-  if (h && locked && isQL() && !isViewer()) {
-    rightHtml += ' <button class="btn btn-success" onclick="unlockHS()">🔓 Mở lại hồ sơ</button>';
-  }
-  fl.innerHTML = leftHtml;
-  fr.innerHTML = rightHtml;
-}
-
-function lockHS() {
-  if (!currentHSId) return;
-  var h = hsList.find(function(x){ return x.id===currentHSId; });
-  if (!h) return;
-  var gv = function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
-  var errors = [];
-
-  // 1. Kiểm tra checklist 3 nhóm bắt buộc (gt + tn + tsbd)
-  var ck = h.ck || {};
-  var reqGroups = [
-    {id:'gt',   label:'Giấy tờ cá nhân'},
-    {id:'tn',   label:'Chứng minh thu nhập'},
-    {id:'tsbd', label:'Hồ sơ tài sản bảo đảm'}
+  // HEADER ROW 4 - column labels
+  var r4 = [
+    'STT',                                      // A  0
+    'Dự án',                                    // B  1
+    'Mã căn',                                   // C  2
+    'Tên KH',                                   // D  3
+    'Đại lý',                                   // E  4
+    'Địa chỉ liên hệ',                          // F  5
+    'Vùng',                                     // G  6
+    'CCCD',                                     // H  7
+    'Số điện thoại',                            // I  8
+    'Giá trị HĐMB\n(gồm VAT)',                 // J  9
+    'Hạn mức vay\nđề xuất',                    // K  10
+    'Số tiền VTC\nphải nộp',                   // L  11
+    'Số tiền VTC\nđã nộp',                     // M  12
+    'Tỷ lệ VTC\nđã nộp',                       // N  13
+    'CSBH áp dụng',                             // O  14
+    'Hình thức vay\n(HTLS)',                    // P  15
+    'Ngày ký HĐMB',                             // Q  16
+    'Hạn giải ngân',                            // R  17
+    'Ngân hàng',                                // S  18
+    'Chi nhánh',                                // T  19
+    'Họ tên',                                   // U  20 CBBH
+    'SĐT',                                      // V  21
+    'Email',                                    // W  22
+    'Họ tên',                                   // X  23 CB QL
+    'SĐT',                                      // Y  24
+    'Email',                                    // Z  25
+    'Trạng thái\nhồ sơ',                       // AA 26
+    'Ngày phê\nduyệt',                         // AB 27
+    'Số tiền\ngiải ngân',                      // AC 28
+    'Ngày bank\ncập nhật',                     // AD 29
+    'Kết quả khai thác\nhiện tại',             // AE 30
+    'Chi tiết',                                 // AF 31
+    'Đề xuất hỗ trợ',                          // AG 32
+    'Hạn mức vay\nđược duyệt',                 // AH 33
   ];
-  reqGroups.forEach(function(rg){
-    var grp = CK_GROUPS.find(function(g){return g.id===rg.id;});
-    if(!grp) return;
-    var allChecked = grp.items.every(function(it){return ck[it.id];});
-    if(!allChecked) errors.push('Chưa tích đủ mục "' + rg.label + '"');
+  wsData.push(r4);
+
+  // DATA ROWS
+  data.forEach(function(h, i) {
+    var cbUser = users.find(function(u){ return u.id===h.canBoId; });
+    var cbName  = cbUser ? cbUser.name  : '';
+    var cbPhone = cbUser ? (cbUser.phone||'') : '';
+    var cbEmail = cbUser ? (cbUser.email||'') : '';
+
+    var vtcRatio = '';
+    if (h.vtcPhaiNop && parseFloat(h.vtcPhaiNop)>0) {
+      vtcRatio = ((parseFloat(h.vtcDaNop||0)/parseFloat(h.vtcPhaiNop))*100).toFixed(1)+'%';
+    }
+
+    // Lấy weekly_reports (chỉ CB, không phải CĐT feedback)
+    var wrs = (h.weeklyReports||[])
+      .filter(function(r){ return r.type!=='cdt_feedback'; })
+      .sort(function(a,b){ return new Date(a.time)-new Date(b.time); });
+
+    // Kết quả khai thác mới nhất
+    var lastWR = wrs.length ? wrs[wrs.length-1] : null;
+    var lastKQ = lastWR ? getStatusLabel(lastWR.ketQua) : '';
+    var lastDate = lastWR ? fmtShort(lastWR.time) : '';
+
+    // Cột Chi tiết: mỗi dòng "DD/MM: nội dung"
+    var chiTietLines = wrs
+      .filter(function(r){ return r.chiTiet && r.chiTiet.trim(); })
+      .map(function(r){ return fmtShort(r.time)+': '+r.chiTiet.trim(); });
+    var chiTiet = chiTietLines.join('\n');
+
+    // Cột Đề xuất hỗ trợ: chỉ những dòng có deXuat
+    var deXuatLines = wrs
+      .filter(function(r){ return r.deXuat && r.deXuat.trim(); })
+      .map(function(r){ return fmtShort(r.time)+': '+r.deXuat.trim(); });
+    var deXuat = deXuatLines.join('\n');
+
+    var row = [
+      i+1,                                      // A
+      'Prima Bay - Hạ Long',                    // B
+      h.maCanHo   || '',                        // C
+      h.tenKH     || '',                        // D
+      h.daiLy     || '',                        // E
+      h.diaChi    || '',                        // F
+      h.vung      || '',                        // G
+      h.cccd      || '',                        // H
+      h.sdt       || '',                        // I
+      parseInt(h.giaHDMB)    || '',             // J
+      parseInt(h.soTienVay)  || '',             // K
+      parseInt(h.vtcPhaiNop) || '',             // L
+      parseInt(h.vtcDaNop)   || '',             // M
+      vtcRatio,                                  // N
+      h.csChinhSach  || '',                     // O
+      h.hinhThucVay  || '',                     // P
+      fmtD(h.ngayKyHDMB),                      // Q
+      fmtD(h.hanGiaiNgan),                      // R
+      'BIDV',                                    // S
+      'Tràng Tiền - Hà Nội',                    // T
+      cbName, cbPhone, cbEmail,                  // U-W CBBH
+      cbName, cbPhone, cbEmail,                  // X-Z CB QL
+      SC_VN[deriveHSStatus(h)] || '',           // AA Trạng thái
+      fmtD(h.ngayGiaiNgan),                     // AB Ngày phê duyệt/GN
+      parseInt(h.soTienGiaiNgan) || '',         // AC Số tiền GN
+      lastDate,                                  // AD Ngày bank cập nhật
+      lastKQ,                                    // AE Kết quả khai thác
+      chiTiet,                                   // AF Chi tiết
+      deXuat,                                    // AG Đề xuất hỗ trợ
+      parseInt(h.hanMucDuocDuyet) || '',        // AH Hạn mức được duyệt
+    ];
+    wsData.push(row);
   });
 
-  // 2. Kiểm tra đủ trường TSBĐ (Căn hộ & HĐMB)
-  if (!gv('f-mach') && !h.maCanHo)       errors.push('Mã căn hộ');
-  if (!(h.giaHDMB || gv('f-giahdmb')))   errors.push('Giá HĐMB');
-  if (!gv('f-sohdmb') && !h.soHDMB)      errors.push('Số HĐMB');
-  if (!gv('f-ngayky') && !h.ngayKyHDMB)  errors.push('Ngày ký HĐMB');
+  // ── Create worksheet ──────────────────────────────────────
+  var ws = XLSX.utils.aoa_to_sheet(wsData);
 
-  if (errors.length) {
-    alert('Chưa đủ điều kiện chốt hồ sơ:\n• ' + errors.join('\n• '));
-    return;
-  }
+  // Merges
+  ws['!merges'] = [
+    {s:{r:0,c:0},e:{r:0,c:28}},  // R1: Tiêu đề
+    {s:{r:1,c:0},e:{r:3,c:0}},   // A2:A4 STT
+    {s:{r:1,c:1},e:{r:2,c:17}},  // B2:R3 Thông tin SP
+    {s:{r:1,c:18},e:{r:1,c:25}}, // S2:Z2 Ngân hàng
+    {s:{r:2,c:20},e:{r:2,c:22}}, // U3:W3 CBBH
+    {s:{r:2,c:23},e:{r:2,c:25}}, // X3:Z3 CB QL
+    {s:{r:1,c:26},e:{r:1,c:28}}, // AA2:AC2 Phần BIDV
+    {s:{r:1,c:29},e:{r:2,c:33}}, // AD2:AH3 Báo cáo CĐT
+  ];
 
-  showConf('Chốt hồ sơ?',
-    'Sau khi chốt, toàn bộ hồ sơ sẽ không chỉnh sửa được. Chỉ Quản lý / Admin mới mở lại.',
-    function(){
-      var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-      hsList[idx].locked    = true;
-      hsList[idx].lockedBy  = currentUser.name;
-      hsList[idx].lockedAt  = nowStr();
-      hsList[idx].updatedAt = nowStr();
-      addLog('Chốt hồ sơ: '+hsList[idx].tenKH, 'green', currentHSId);
-      persist(); openHS(currentHSId); renderHSTable();
-      saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã chốt hồ sơ!');
+  // Col widths
+  var colW = [
+    5,   // A STT
+    18,  // B Dự án
+    10,  // C Mã căn
+    18,  // D Tên KH
+    15,  // E Đại lý
+    20,  // F Địa chỉ
+    12,  // G Vùng
+    16,  // H CCCD
+    14,  // I SĐT
+    16,  // J Giá HĐMB
+    16,  // K Hạn mức
+    16,  // L VTC phải nộp
+    16,  // M VTC đã nộp
+    12,  // N Tỷ lệ
+    12,  // O CSBH
+    15,  // P Hình thức
+    14,  // Q Ngày ký
+    14,  // R Hạn GN
+    10,  // S NH
+    18,  // T Chi nhánh
+    18,14,22, // U-W CBBH
+    18,14,22, // X-Z CB QL
+    16,14,16, // AA-AC BIDV
+    14,  // AD Ngày cập nhật
+    22,  // AE Kết quả
+    35,  // AF Chi tiết (rộng)
+    35,  // AG Đề xuất
+    16,  // AH Hạn mức duyệt
+  ];
+  ws['!cols'] = colW.map(function(w){ return {wch:w}; });
+
+  // Row heights
+  ws['!rows'] = [{hpt:20},{hpt:30},{hpt:25},{hpt:50}];
+
+  // Apply styles
+  // Row 1: tiêu đề
+  ws[enc(0,0)] = {v: wsData[0][0], s: mkS(FILL.blue,'FFFFFF',true,'left',false)};
+
+  // Row 2: group headers
+  [[1,0,'STT',S.hBlue],[1,1,'Thông tin sản phẩm - khách hàng vay',S.hBlue],
+   [1,18,'Thông tin Ngân hàng tư vấn KH',S.hTeal],[1,29,'Cập nhật tiến độ',S.hOrange]]
+  .forEach(function(x){ ws[enc(x[0],x[1])] = {v:x[2],s:x[3]}; });
+
+  // Row 3: sub headers
+  ws[enc(2,20)] = {v:'CBBH tư vấn KH',s:S.hTeal};
+  ws[enc(2,23)] = {v:'CB quản lý trực tiếp',s:S.hTeal};
+
+  // Row 4: column headers
+  var hdrStyles = [];
+  for(var i=0;i<18;i++) hdrStyles.push(S.hBlue);
+  for(var i=0;i<2;i++) hdrStyles.push(S.hTeal);
+  for(var i=0;i<6;i++) hdrStyles.push(S.hTeal);
+  for(var i=0;i<3;i++) hdrStyles.push(S.hBlue);
+  for(var i=0;i<5;i++) hdrStyles.push(S.hOrange);
+
+  r4.forEach(function(h,ci){
+    ws[enc(3,ci)] = {v:h, s:hdrStyles[ci]||S.hBlue};
+  });
+
+  // Data rows
+  for(var ri=4; ri<wsData.length; ri++){
+    wsData[ri].forEach(function(val,ci){
+      var isNum = typeof val==='number' && ci>0;
+      var isWrap = ci===31||ci===32; // Chi tiết, Đề xuất - wrap
+      var st = isNum ? S.dataR : (isWrap ? S.data : S.dataC);
+      ws[enc(ri,ci)] = {v: val===0?'':val, s:st};
     });
-}
-
-function unlockHS() {
-  if (!isQL() || !currentHSId) return;
-  showConf('Mở lại hồ sơ?', 'Thao tác sẽ được ghi log.', function(){
-    var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-    hsList[idx].locked=false; hsList[idx].updatedAt=nowStr();
-    addLog('Mở lại hồ sơ: '+hsList[idx].tenKH,'amber',currentHSId);
-    persist(); openHS(currentHSId); renderHSTable();
-  });
-}
-
-// ════════════════════════════════════════════════════════
-// RESTORE SESSION KHI RELOAD TRANG
-// ════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async function() {
-  if (!restoreSession()) return; // Không có session hoặc đã hết hạn → ở lại màn hình login
-
-  // Có session hợp lệ → load dữ liệu và vào app
-  try {
-    var btn = document.getElementById('login-btn');
-    if (btn) { btn.textContent = '⏳ Đang khôi phục...'; btn.disabled = true; }
-
-    var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
-    if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
-    if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
-    persist();
-
-    // Hiển thị app
-    document.getElementById('login-wrap').style.display = 'none';
-    document.getElementById('app-wrap').classList.add('show');
-    applyPerms();
-    showPage(isCDT() ? 'cdt-view' : 'db');
-    initIdleWatcher();
-    showNotif('✅ Đã khôi phục phiên đăng nhập');
-  } catch(e) {
-    console.error('Restore session failed:', e);
-    // Nếu load DB thất bại → ở lại login
-    currentUser = null;
-    localStorage.removeItem('pb5_session');
   }
-});
+
+  ws['!freeze'] = {xSplit:3, ySplit:4}; // Freeze 3 cột + 4 hàng header
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo CĐT');
+
+  var today2 = new Date();
+  var fname = 'BaoCao_PrimaBay_CĐT_'
+    + today2.getFullYear()
+    + String(today2.getMonth()+1).padStart(2,'0')
+    + String(today2.getDate()).padStart(2,'0') + '.xlsx';
+  XLSX.writeFile(wb, fname);
+  showNotif('✅ Đã xuất báo cáo ' + data.length + ' hồ sơ!');
+}
+
 
 </script>
 <script>
