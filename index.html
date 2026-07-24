@@ -847,16 +847,16 @@ async function dbSaveWeeklyReport(h, entry) {
   var statusMap = {
     'chua_lh':         'no_answer',
     'dang_can_nhac':   'contacted',
-    'dong_y_cung_cap': 'docs_complete',  // KH đồng ý + cung cấp HS
+    'dong_y_cung_cap': 'waiting_docs',  // KH đồng ý - đang cung cấp
     'kh_tu_choi':      'rejected_kh',
     'nh_tu_choi':      'rejected_income',
-    'von_tu_co':       'other',
+    'von_tu_co':       'on_hold',   // Chuyển vốn tự có
     'nop_du':          'docs_complete',
     'da_phe_duyet':    'approved_loan',
-    'soan_hs':         'approved_loan',
-    'cho_gn':          'approved_loan',
-    'da_gn':           'approved_loan',  // Đã GN - dùng approved_loan vì enum không có disbursed
-    'khac':            'other',
+    'soan_hs':         'appointment',    // Đã soạn HS - dùng appointment
+    'cho_gn':          'rejected_cic',   // Chờ GN - dùng rejected_cic (enum dư)
+    'da_gn':           'rejected_income',// Đã GN - dùng rejected_income (override label)
+    'khac':            'other',     // Khác
     // Legacy
     'da_lh':           'contacted',
     'hen_gap':         'appointment',
@@ -886,6 +886,9 @@ async function dbSaveWeeklyReport(h, entry) {
 
   var dbStatus = statusMap[entry.ketQua] || 'other';
 
+  // Lưu app key vào đầu detail để restore khi load
+  var detailSaved = '[KQ:' + (entry.ketQua||'') + ']' + (entry.chiTiet ? '\n' + entry.chiTiet : '');
+
   var data = {
     loan_file_id:   h.id,
     officer_id:     officerId,
@@ -893,7 +896,7 @@ async function dbSaveWeeklyReport(h, entry) {
     week_number:    getWeekNum(),
     year:           new Date().getFullYear(),
     contact_status: dbStatus,
-    detail:         entry.chiTiet || null,
+    detail:         detailSaved,
     support_request:entry.deXuat  || null,
     created_at:     new Date().toISOString()
   };
@@ -1529,8 +1532,24 @@ function mapDbHS(lf) {
       var _d = wr.detail || '';
       var _kqIdx = _d.indexOf('[KQ:');
       var _kqEnd = _d.indexOf(']', _kqIdx);
-      var _appKey = (_kqIdx===0 && _kqEnd>0) ? _d.slice(4, _kqEnd) : wr.contact_status;
-      var _chiTiet = (_kqIdx===0 && _kqEnd>0) ? (function(s){ return s.charAt(0)===String.fromCharCode(10)?s.slice(1):s; })(_d.slice(_kqEnd+1)).trim() : _d;
+      var _appKey, _chiTiet;
+      if (_kqIdx===0 && _kqEnd>0) {
+        // Có [KQ:xxx] prefix → dùng app key
+        _appKey  = _d.slice(4, _kqEnd);
+        var _rest = _d.slice(_kqEnd+1);
+        _chiTiet = (_rest.charAt(0)===String.fromCharCode(10)) ? _rest.slice(1).trim() : _rest.trim();
+      } else {
+        // Không có [KQ:] prefix → dữ liệu cũ
+        // Giữ contact_status nhưng đặt chiTiet = detail (nội dung thực)
+        // Nếu contact_status không map được → dùng 'khac'
+        var _cs = wr.contact_status || '';
+        var _validKeys = ['chua_lh','dang_can_nhac','dong_y_cung_cap','kh_tu_choi',
+          'nh_tu_choi','von_tu_co','nop_du','da_phe_duyet','soan_hs','cho_gn','da_gn','khac',
+          'no_answer','contacted','waiting_docs','rejected_kh','rejected_income',
+          'docs_complete','approved_loan','other','on_hold','appointment'];
+        _appKey  = _cs; // giữ để getStatusLabel tra DB_STATUS_LABELS
+        _chiTiet = _d;  // detail thực tế là nội dung CB nhập
+      }
       return {
         time:    wr.created_at || wr.report_date || '',
         ketQua:  _appKey || '',
@@ -3030,30 +3049,6 @@ function renderCDTTable(){
   }
   document.getElementById('cdt-tbody').innerHTML=html;
 }
-function exportCDT(){
-  var rows=[['STT','Du an','Ma can ho','Ten KH','CCCD','SDT','Gia HDMB','Han muc de xuat','VTC da nop',
-    'Ngay gui BIM','CB phu trach','Ngay cap nhat','Ket qua khai thac','Chi tiet','De xuat ho tro',
-    'Hạn mức được duyệt','Ngày giải ngân','Số tiền GN','Trang thai HS','GT CN','CM TN','TSBD','KV HT','Tien do']];
-  hsList.forEach(function(h,i){
-    var prog=ckProgress(h);
-    rows.push([
-      i+1,'Prima Bay - Ha Long',h.maCanHo||'',h.tenKH||'',h.cccd||'',h.sdt||'',
-      h.giaHDMB||'',h.hanMucDeXuat||'',h.vtcDaNop||'',
-      h.ngayGuiBIM||'',getUserName(h.canBoId),h.updatedAt||h.createdAt||'',
-      (CT_STATUS_LABELS_FULL && CT_STATUS_LABELS_FULL[h.ketQuaKhaiThac]) || h.ketQuaKhaiThac||'',
-      h.chiTiet||'',h.deXuatHoTro||'',
-      h.hanMucDuocDuyet||'',h.ngayGiaiNgan||'',h.soTienGiaiNgan||'',
-      h.status||'',
-      ckGroupDone(h,'gt')?'Du':'Chua',ckGroupDone(h,'tn')?'Du':'Chua',
-      ckGroupDone(h,'tsbd')?'Du':'Chua',ckGroupDone(h,'kv')?'Du':'Chua',
-      prog.pct+'%'
-    ]);
-  });
-  var csv=rows.map(function(r){return r.map(function(c){return '"'+c+'"';}).join(',');}).join('\n');
-  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='BaoCao_PrimaBay_'+todayStr().replace(/\//g,'-')+'.csv'; a.click();
-}
 
 // ==================================================
 // USERS
@@ -3405,15 +3400,15 @@ var DB_STATUS_LABELS = {
   'contacted':       'KH đang cân nhắc phương án vay',
   'waiting_docs':    'KH đồng ý vay - Đang cung cấp hồ sơ',
   'rejected_kh':     'KH từ chối vay',
-  'rejected_income': 'NH từ chối cho vay',
-  'other':           'Chuyển sang thanh toán bằng vốn tự có',
+  'rejected_income': 'Đã giải ngân',
+  'other':           'Khác',
   'docs_complete':   'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
   'approved_loan':   'Đã phê duyệt cho vay',
-  'cho_gn':          'Đã ký hồ sơ - Chờ giải ngân',
-  'appointment':     'Đã hẹn gặp trực tiếp',
-  'on_hold':         'KH bảo lưu - chưa muốn tiếp tục',
-  'rejected_cic':    'NH từ chối cho vay - Nợ xấu CIC',
-  'cdt_feedback':    'Phản hồi CĐT'
+  'appointment':     'Đã soạn hồ sơ và check file mềm',
+  'rejected_cic':    'Đã ký hồ sơ - Chờ giải ngân',
+  'on_hold':         'Chuyển sang thanh toán bằng vốn tự có',
+  'cdt_feedback':    'Phản hồi CĐT',
+  'nh_tu_choi':      'NH từ chối cho vay'
 };
 
 
@@ -3848,9 +3843,33 @@ async function exportCDTExcel() {
     var cbU=users.find(function(u){return u.id===h.canBoId;})||{};
     var vtcR=(h.vtcPhaiNop&&parseFloat(h.vtcPhaiNop)>0)?((parseFloat(h.vtcDaNop||0)/parseFloat(h.vtcPhaiNop))*100).toFixed(1)+'%':'';
     var wrs=(h.weeklyReports||[]).filter(function(r){return r.type!=='cdt_feedback';}).sort(function(a,b){return new Date(a.time)-new Date(b.time);});
-    var lwr=wrs.length?wrs[wrs.length-1]:null;
-    var chiTiet=wrs.filter(function(r){return r.chiTiet&&r.chiTiet.trim();}).map(function(r){return fmtShort(r.time)+': '+r.chiTiet.trim();}).join('\n');
-    var deXuat=wrs.filter(function(r){return r.deXuat&&r.deXuat.trim();}).map(function(r){return fmtShort(r.time)+': '+r.deXuat.trim();}).join('\n');
+    // Gom nhóm theo ngày, chỉ lấy bản cuối cùng mỗi ngày
+    var wrsByDay = {};
+    wrs.forEach(function(r) {
+      var day = fmtShort(r.time); // DD/MM
+      wrsByDay[day] = r; // ghi đè → giữ bản cuối cùng mỗi ngày
+    });
+    // Sắp xếp theo ngày tăng dần
+    var dayKeys = Object.keys(wrsByDay).sort(function(a,b) {
+      var pa=a.split('/'), pb=b.split('/');
+      return (parseInt(pa[1])*100+parseInt(pa[0])) - (parseInt(pb[1])*100+parseInt(pb[0]));
+    });
+    var lwr = dayKeys.length ? wrsByDay[dayKeys[dayKeys.length-1]] : null;
+
+    // Chi tiết: mỗi ngày 1 dòng, nếu không có chiTiet thì dùng kết quả khai thác
+    var chiTiet = dayKeys.map(function(day) {
+      var r = wrsByDay[day];
+      var nd = (r.chiTiet||'').trim();
+      if (!nd) nd = getStatusLabel(r.ketQua); // fallback = kết quả khai thác
+      return day + ': ' + nd;
+    }).join('\n');
+
+    // Đề xuất: chỉ các ngày có đề xuất
+    var deXuat = dayKeys.filter(function(day) {
+      return (wrsByDay[day].deXuat||'').trim();
+    }).map(function(day) {
+      return day + ': ' + wrsByDay[day].deXuat.trim();
+    }).join('\n');
     wsData.push([i+1,'Prima Bay - Hạ Long',h.maCanHo||'',h.tenKH||'',h.daiLy||'',h.diaChi||'',h.vung||'',h.cccd||'',h.sdt||'',parseInt(h.giaHDMB)||'',parseInt(h.soTienVay)||'',parseInt(h.vtcPhaiNop)||'',parseInt(h.vtcDaNop)||'',vtcR,h.csChinhSach||'',h.hinhThucVay||'',fmtD(h.ngayKyHDMB),fmtD(h.hanGiaiNgan),'BIDV','Tràng Tiền - HN',cbU.name||'',cbU.phone||'',cbU.email||'',cbU.name||'',cbU.phone||'',cbU.email||'',SC_VN[deriveHSStatus(h)]||'',fmtD(h.ngayGiaiNgan),parseInt(h.soTienGiaiNgan)||'',lwr?fmtShort(lwr.time):'',lwr?getStatusLabel(lwr.ketQua):'',chiTiet,deXuat,parseInt(h.hanMucDuocDuyet)||'']);
   });
   var ws=XLSX.utils.aoa_to_sheet(wsData);
