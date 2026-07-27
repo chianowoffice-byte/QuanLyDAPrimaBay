@@ -3986,44 +3986,45 @@ async function exportCDTExcel() {
       return day+': '+byDay[day].deXuat.trim();
     }).join('\n');
 
-    wsData.push([
-      i+1,                              // A  STT
-      'Prima Bay - Hạ Long',            // B  Dự án
-      h.maCanHo   || '',                // C  Mã căn
-      h.tenKH     || '',                // D  Tên KH
-      h.daiLy     || '',                // E  Đại lý
-      h.diaChi    || '',                // F  Địa chỉ
-      h.vung      || '',                // G  Vùng
-      h.cccd      || '',                // H  CCCD
-      h.sdt       || '',                // I  SĐT
-      parseInt(h.giaHDMB)    || '',     // J  Giá HĐMB
-      parseInt(h.soTienVay)  || '',     // K  Hạn mức đề xuất
-      parseInt(h.vtcPhaiNop) || '',     // L  VTC phải nộp
-      parseInt(h.vtcDaNop)   || '',     // M  VTC đã nộp
-      vtcR,                             // N  Tỷ lệ VTC
-      h.csChinhSach  || '',             // O  CSBH
-      h.hinhThucVay  || '',             // P  Hình thức vay
-      fmtD(h.ngayKyHDMB),              // Q  Ngày ký HĐMB
-      fmtD(h.hanGiaiNgan),             // R  Hạn GN
-      '',                               // S  NH nguyện vọng 1 (không có dữ liệu)
-      '',                               // T  NH nguyện vọng 2
-      '',                               // U  Ngày gửi TT cho NH
-      'BIDV',                           // V  Ngân hàng
-      'Tràng Tiền - Hà Nội',           // W  Chi nhánh
-      cbU.name  || '',                  // X  CBBH Họ tên
-      cbU.phone || '',                  // Y  SĐT
-      cbU.email || '',                  // Z  Email
-      cbU.name  || '',                  // AA CB QL Họ tên
-      cbU.phone || '',                  // AB SĐT
-      cbU.email || '',                  // AC Email
-      lwr ? fmtShort(lwr.time) : '',   // AD Ngày bank cập nhật
-      lwr ? getStatusLabel(lwr.ketQua) : '', // AE Kết quả
-      chiTiet,                          // AF Chi tiết
-      deXuat,                           // AG Đề xuất hỗ trợ
-      parseInt(h.hanMucDuocDuyet)||'',  // AH Hạn mức được duyệt
-      fmtD(h.ngayGiaiNgan),            // AI Ngày giải ngân
-      parseInt(h.soTienGiaiNgan)||'',  // AJ Số tiền GN
-    ]);
+    var dataRow = [
+      i+1,                              // A  0  STT
+      'Prima Bay - Hạ Long',            // B  1  Dự án
+      h.maCanHo   || '',                // C  2  Mã căn
+      h.tenKH     || '',                // D  3  Tên KH
+      h.daiLy     || '',                // E  4  Đại lý
+      h.diaChi    || '',                // F  5  Địa chỉ
+      h.vung      || '',                // G  6  Vùng
+      h.cccd      || '',                // H  7  CCCD
+      h.sdt       || '',                // I  8  SĐT
+      parseInt(h.giaHDMB)    || null,   // J  9  Giá HĐMB
+      parseInt(h.soTienVay)  || null,   // K  10 Hạn mức đề xuất
+      parseInt(h.vtcPhaiNop) || null,   // L  11 VTC phải nộp
+      parseInt(h.vtcDaNop)   || null,   // M  12 VTC đã nộp
+      null,                             // N  13 Tỷ lệ VTC (công thức)
+      h.csChinhSach  || '',             // O  14 CSBH
+      h.hinhThucVay  || '',             // P  15 Hình thức vay
+      fmtD(h.ngayKyHDMB),              // Q  16 Ngày ký HĐMB
+      fmtD(h.hanGiaiNgan),             // R  17 Hạn GN
+      '',                               // S  18 NH nguyện vọng 1
+      '',                               // T  19 NH nguyện vọng 2
+      '',                               // U  20 Ngày gửi TT
+      'BIDV',                           // V  21 Ngân hàng
+      'Tràng Tiền - Hà Nội',           // W  22 Chi nhánh
+      cbU.name  || '',                  // X  23 CBBH Họ tên
+      cbU.phone || '',                  // Y  24 SĐT
+      cbU.email || '',                  // Z  25 Email
+      cbU.name  || '',                  // AA 26 CB QL Họ tên
+      cbU.phone || '',                  // AB 27 SĐT
+      cbU.email || '',                  // AC 28 Email
+      lwr ? fmtShort(lwr.time) : '',   // AD 29 Ngày cập nhật
+      lwr ? getStatusLabel(lwr.ketQua) : '', // AE 30 Kết quả
+      chiTiet,                          // AF 31 Chi tiết
+      deXuat,                           // AG 32 Đề xuất
+      parseInt(h.hanMucDuocDuyet)||null,// AH 33 Hạn mức duyệt
+      fmtD(h.ngayGiaiNgan),            // AI 34 Ngày GN
+      parseInt(h.soTienGiaiNgan)||null, // AJ 35 Số tiền GN
+    ];
+    wsData.push(dataRow);
   });
 
   // ── Create worksheet ─────────────────────────────────────
@@ -4082,12 +4083,40 @@ async function exportCDTExcel() {
     ws[enc(3,ci)] = {v:h2, s:S.hNum};
   });
 
-  // Data rows
+  // Data rows - apply styles + công thức cột N
+  var NUM_COLS  = {9:true,10:true,11:true,12:true,33:true,35:true}; // J,K,L,M,AH,AJ
+  var WRAP_COLS = {31:true,32:true}; // AF,AG
+  var PCT_FMT   = '0.0%';
+  var NUM_FMT   = '#,##0';
+
   for(var ri=4; ri<wsData.length; ri++){
     wsData[ri].forEach(function(val,ci){
-      var isNum = typeof val==='number' && ci>0;
-      var isWrap = ci===31||ci===32; // AF, AG
-      ws[enc(ri,ci)] = {v: val===0?'':val, s: isNum?S.dR:(isWrap?S.dWrap:S.dC)};
+      var cellRef = enc(ri,ci);
+      var st;
+      if (NUM_COLS[ci]) {
+        st = Object.assign({}, S.dR);
+        ws[cellRef] = {v: val||0, t:'n', s: st};
+      } else if (ci===13) {
+        // Cột N: công thức =M/L (tỷ lệ VTC)
+        var colL = 'L'+(ri+1); // L = index 11
+        var colM = 'M'+(ri+1); // M = index 12
+        ws[cellRef] = {
+          f: 'IF('+colL+'=0,"",'+colM+'/'+colL+')',
+          t: 'n',
+          s: Object.assign({}, S.dC, {numFmt: PCT_FMT})
+        };
+      } else if (WRAP_COLS[ci]) {
+        st = S.dWrap;
+        ws[cellRef] = {v: val||'', s: st};
+      } else {
+        st = S.dC;
+        ws[cellRef] = {v: val||'', s: st};
+      }
+    });
+    // Set numFmt cho các cột số
+    Object.keys(NUM_COLS).forEach(function(ci){
+      var cellRef = enc(ri, parseInt(ci));
+      if (ws[cellRef]) ws[cellRef].s = Object.assign({}, S.dR, {numFmt: NUM_FMT});
     });
   }
 
