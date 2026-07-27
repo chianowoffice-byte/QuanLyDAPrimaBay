@@ -1325,16 +1325,15 @@ var CK_GROUPS = [
 var CT_STATUS_LABELS_FULL = {
   chua_lh:         'Chưa liên hệ được với KH',
   dang_can_nhac:   'KH đang cân nhắc phương án vay',
-  dong_y_cung_cap: 'KH đồng ý vay - Đang cung cấp hồ sơ',
+  dong_y_cung_cap: 'KH đồng ý vay. Đang cung cấp hồ sơ',
   kh_tu_choi:      'KH từ chối vay',
   nh_tu_choi:      'NH từ chối cho vay',
-  von_tu_co:       'Chuyển sang thanh toán bằng vốn tự có',
-  nop_du:          'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
+  von_tu_co:       'Chuyển sang TT bằng vốn tự có/ Thanh lý HĐMB',
+  nop_du:          'KH đồng ý vay. Đã nộp đủ hồ sơ, chờ thẩm định',
   da_phe_duyet:    'Đã phê duyệt cho vay',
   soan_hs:         'Đã soạn hồ sơ và check file mềm',
-  cho_gn:          'Đã ký hồ sơ - Chờ giải ngân',
-  da_gn:           'Đã giải ngân',
-  khac:            'Khác'
+  cho_gn:          'Đã kí hồ sơ chờ GN',
+  da_gn:           'Đã Giải ngân'
 };
 function ckProgress(h){
   var total=0, done=0;
@@ -3406,15 +3405,15 @@ function onCICGroupChange(){
 var DB_STATUS_LABELS = {
   'no_answer':       'Chưa liên hệ được với KH',
   'contacted':       'KH đang cân nhắc phương án vay',
-  'waiting_docs':    'KH đồng ý vay - Đang cung cấp hồ sơ',
+  'waiting_docs':    'KH đồng ý vay. Đang cung cấp hồ sơ',
   'rejected_kh':     'KH từ chối vay',
-  'rejected_income': 'Đã giải ngân',
+  'rejected_income': 'Đã Giải ngân',
   'other':           'Khác',
-  'docs_complete':   'KH đồng ý vay - Đã nộp đủ hồ sơ - Chờ thẩm định',
+  'docs_complete':   'KH đồng ý vay. Đã nộp đủ hồ sơ, chờ thẩm định',
   'approved_loan':   'Đã phê duyệt cho vay',
   'appointment':     'Đã soạn hồ sơ và check file mềm',
-  'rejected_cic':    'Đã ký hồ sơ - Chờ giải ngân',
-  'on_hold':         'Chuyển sang thanh toán bằng vốn tự có',
+  'rejected_cic':    'Đã kí hồ sơ chờ GN',
+  'on_hold':         'Chuyển sang TT bằng vốn tự có/ Thanh lý HĐMB',
   'cdt_feedback':    'Phản hồi CĐT',
   'nh_tu_choi':      'NH từ chối cho vay'
 };
@@ -3831,6 +3830,7 @@ async function exportCDTExcel() {
       s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
     });
   }
+
   function toISO(v){return toISODate(v)||'';}
   function fmtD(v){var iso=toISO(v);if(!iso)return '';var p=iso.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
   function fmtShort(v){
@@ -3838,64 +3838,267 @@ async function exportCDTExcel() {
     try{var d=new Date(v);if(isNaN(d)){var iso=toISO(v);if(iso)d=new Date(iso);else return v;}
     return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}catch(e){return v;}
   }
-  var FILL={blue:'1F4E79',teal:'0070C0',orange:'ED7D31',purple:'7030A0'};
-  function mkS(fg,fc,bold,ha,wrap){return{fill:{patternType:'solid',fgColor:{rgb:fg||'FFFFFF'}},font:{name:'Arial',sz:9,bold:!!bold,color:{rgb:fc||'000000'}},alignment:{horizontal:ha||'center',vertical:'center',wrapText:!!wrap},border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}}};}
-  var S={hB:mkS(FILL.blue,'FFFFFF',true,'center',true),hT:mkS(FILL.teal,'FFFFFF',true,'center',true),hO:mkS(FILL.orange,'FFFFFF',true,'center',true),d:{font:{name:'Arial',sz:9},alignment:{horizontal:'left',vertical:'top',wrapText:true},border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}}},dC:{font:{name:'Arial',sz:9},alignment:{horizontal:'center',vertical:'center'},border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}}},dR:{font:{name:'Arial',sz:9},numFmt:'#,##0',alignment:{horizontal:'right',vertical:'center'},border:{top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}}}};
+
+  // ── Colors theo mẫu BIM ──────────────────────────────────
+  var FILL = {
+    orange: 'F79646',  // Thông tin SP-KH
+    red:    'C00000',  // Ngân hàng nguyện vọng (S-U)
+    navy:   '1F497D',  // NH tư vấn KH
+    purple: '7030A0',  // Giải ngân
+    status: '4BACC6',  // Tình trạng
+    gray:   'D9D9D9',  // Đánh số row 4
+  };
+
+  function mkS(fg, fc, bold, ha, wrap) {
+    return {
+      fill: {patternType:'solid', fgColor:{rgb: fg||'FFFFFF'}},
+      font: {name:'Arial', sz:9, bold:!!bold, color:{rgb: fc||'000000'}},
+      alignment: {horizontal:ha||'center', vertical:'center', wrapText:!!wrap},
+      border: {
+        top:{style:'thin',color:{rgb:'000000'}}, bottom:{style:'thin',color:{rgb:'000000'}},
+        left:{style:'thin',color:{rgb:'000000'}}, right:{style:'thin',color:{rgb:'000000'}}
+      }
+    };
+  }
+  function mkData(ha, wrap) {
+    return {
+      font: {name:'Arial', sz:9},
+      alignment: {horizontal:ha||'left', vertical:'center', wrapText:!!wrap},
+      border: {
+        top:{style:'thin',color:{rgb:'000000'}}, bottom:{style:'thin',color:{rgb:'000000'}},
+        left:{style:'thin',color:{rgb:'000000'}}, right:{style:'thin',color:{rgb:'000000'}}
+      }
+    };
+  }
+  var S = {
+    hOrange: mkS(FILL.orange,'FFFFFF',true,'center',true),
+    hRed:    mkS(FILL.red,   'FFFFFF',true,'center',true),
+    hNavy:   mkS(FILL.navy,  'FFFFFF',true,'center',true),
+    hStatus: mkS(FILL.status,'FFFFFF',true,'center',true),
+    hPurple: mkS(FILL.purple,'FFFFFF',true,'center',true),
+    hNum:    mkS(FILL.gray,  '000000',false,'center',false),
+    dL:      mkData('left',  true),
+    dC:      mkData('center',false),
+    dR:      Object.assign(mkData('right',false), {numFmt:'#,##0'}),
+    dWrap:   mkData('left',  true),
+  };
+
   function enc(r,c2){return XLSX.utils.encode_cell({r:r,c:c2});}
-  var wb=XLSX.utils.book_new(),wsData=[];
-  var r1=new Array(34).fill('');r1[0]='BẢNG THEO DÕI TIẾN ĐỘ HỒ SƠ VAY VỐN - DỰ ÁN PRIMA BAY HẠ LONG';wsData.push(r1);
-  var r2=new Array(34).fill('');r2[0]='STT';r2[1]='Thông tin sản phẩm - khách hàng vay';r2[18]='Thông tin Ngân hàng tư vấn KH';r2[29]='Cập nhật tiến độ';wsData.push(r2);
-  var r3=new Array(34).fill('');r3[20]='CBBH tư vấn KH';r3[23]='CB quản lý trực tiếp';wsData.push(r3);
-  var r4=['STT','Dự án','Mã căn','Tên KH','Đại lý','Địa chỉ','Vùng','CCCD','SĐT','Giá HĐMB','Hạn mức đề xuất','VTC phải nộp','VTC đã nộp','Tỷ lệ VTC','CSBH','Hình thức vay','Ngày ký HĐMB','Hạn GN','Ngân hàng','Chi nhánh','Họ tên','SĐT','Email','Họ tên','SĐT','Email','Trạng thái','Ngày GN','Số tiền GN','Ngày cập nhật','Kết quả khai thác','Chi tiết','Đề xuất hỗ trợ','Hạn mức duyệt'];wsData.push(r4);
-  hsList.forEach(function(h,i){
-    var cbU=users.find(function(u){return u.id===h.canBoId;})||{};
-    var vtcR=(h.vtcPhaiNop&&parseFloat(h.vtcPhaiNop)>0)?((parseFloat(h.vtcDaNop||0)/parseFloat(h.vtcPhaiNop))*100).toFixed(1)+'%':'';
-    var wrs=(h.weeklyReports||[]).filter(function(r){return r.type!=='cdt_feedback';}).sort(function(a,b){return new Date(a.time)-new Date(b.time);});
-    // Gom nhóm theo ngày, chỉ lấy bản cuối cùng mỗi ngày
-    var wrsByDay = {};
-    wrs.forEach(function(r) {
-      var day = fmtShort(r.time); // DD/MM
-      wrsByDay[day] = r; // ghi đè → giữ bản cuối cùng mỗi ngày
-    });
-    // Sắp xếp theo ngày tăng dần
-    var dayKeys = Object.keys(wrsByDay).sort(function(a,b) {
-      var pa=a.split('/'), pb=b.split('/');
-      return (parseInt(pa[1])*100+parseInt(pa[0])) - (parseInt(pb[1])*100+parseInt(pb[0]));
-    });
-    var lwr = dayKeys.length ? wrsByDay[dayKeys[dayKeys.length-1]] : null;
 
-    // Chi tiết: mỗi ngày 1 dòng, nếu không có chiTiet thì dùng kết quả khai thác
-    var chiTiet = dayKeys.map(function(day) {
-      var r = wrsByDay[day];
-      var nd = (r.chiTiet||'').trim();
-      if (!nd) nd = getStatusLabel(r.ketQua); // fallback = kết quả khai thác
-      return day + ': ' + nd;
+  var wb = XLSX.utils.book_new();
+  var wsData = [];
+
+  // ── ROW 1: Group headers ─────────────────────────────────
+  // A1: STT (merge A1:A3)
+  // B1:U1: Thông tin SP-KH (20 cột: index 1-20)
+  // V1:AC1: Thông tin NH tư vấn KH (8 cột: 21-28)
+  // AD1:AH1: Tình trạng hồ sơ vay (5 cột: 29-33)
+  // AI1:AJ1: Thông tin giải ngân (2 cột: 34-35)
+  var r1 = new Array(36).fill('');
+  r1[0]  = 'STT';
+  r1[1]  = 'Thông tin sản phẩm - khách hàng vay';
+  r1[21] = 'Thông tin Ngân hàng tư vấn KH';
+  r1[29] = 'Tình trạng hồ sơ vay';
+  r1[34] = 'Thông tin giải ngân';
+  wsData.push(r1);
+
+  // ── ROW 2: Sub-group ─────────────────────────────────────
+  var r2 = new Array(36).fill('');
+  r2[23] = 'CBBH tư vấn KH';    // X2:Z2
+  r2[26] = 'CB quản lý trực tiếp'; // AA2:AC2
+  wsData.push(r2);
+
+  // ── ROW 3: Column headers ────────────────────────────────
+  var r3 = [
+    'STT',                                                    // A  0
+    'Dự án',                                                  // B  1
+    'Mã căn',                                                 // C  2
+    'Tên KH',                                                 // D  3
+    'Đại lý',                                                 // E  4
+    'Địa chỉ liên hệ',                                        // F  5
+    'Vùng',                                                   // G  6
+    'CCCD',                                                   // H  7
+    'Số điện thoại',                                          // I  8
+    'Giá trị HĐMB\n(gồm VAT - không gồm phí)',               // J  9
+    'Hạn mức vay đề xuất',                                    // K  10
+    'Số tiền VTC phải nộp',                                   // L  11
+    'Số tiền VTC đã nộp hiện tại',                           // M  12
+    'Tỷ lệ VTC đã nộp hiện tại',                            // N  13
+    'CSBH áp dụng',                                          // O  14
+    'Hình thức vay\n(Thời gian HTLS)',                       // P  15
+    'Ngày ký HĐMB',                                          // Q  16
+    'Hạn giải ngân',                                         // R  17
+    'Ngân hàng nguyện vọng 1\ncủa KH',                      // S  18
+    'Ngân hàng nguyện vọng 2\ncủa KH',                      // T  19
+    'Ngày gửi thông tin\ncho Ngân hàng',                     // U  20
+    'Ngân hàng',                                             // V  21
+    'Chi nhánh',                                             // W  22
+    'Họ tên',                                                // X  23 CBBH
+    'SĐT',                                                   // Y  24
+    'Email',                                                 // Z  25
+    'Họ tên',                                                // AA 26 CB QL
+    'SĐT',                                                   // AB 27
+    'Email',                                                 // AC 28
+    'Ngày bank cập nhật',                                    // AD 29
+    'Kết quả khai thác hiện tại',                            // AE 30
+    'Chi tiết',                                              // AF 31
+    'Đề xuất hỗ trợ',                                       // AG 32
+    'Hạn mức vay được duyệt vay',                           // AH 33
+    'Ngày giải ngân',                                        // AI 34
+    'Số tiền giải ngân',                                     // AJ 35
+  ];
+  wsData.push(r3);
+
+  // ── ROW 4: Đánh số (1)→(36) ─────────────────────────────
+  var r4 = r3.map(function(_,i){ return '('+String(i+1)+')'; });
+  wsData.push(r4);
+
+  // ── DATA ROWS ────────────────────────────────────────────
+  hsList.forEach(function(h, i) {
+    var cbU = users.find(function(u){return u.id===h.canBoId;})||{};
+    var vtcR = '';
+    if (h.vtcPhaiNop && parseFloat(h.vtcPhaiNop)>0) {
+      vtcR = ((parseFloat(h.vtcDaNop||0)/parseFloat(h.vtcPhaiNop))*100).toFixed(1)+'%';
+    }
+
+    // Weekly reports - dedupe by day, last record each day
+    var wrs = (h.weeklyReports||[])
+      .filter(function(r){return r.type!=='cdt_feedback';})
+      .sort(function(a,b){return new Date(a.time)-new Date(b.time);});
+    var byDay = {};
+    wrs.forEach(function(r){byDay[fmtShort(r.time)]=r;});
+    var dayKeys = Object.keys(byDay).sort(function(a,b){
+      var pa=a.split('/'),pb=b.split('/');
+      return (parseInt(pa[1])*100+parseInt(pa[0]))-(parseInt(pb[1])*100+parseInt(pb[0]));
+    });
+    var lwr = dayKeys.length ? byDay[dayKeys[dayKeys.length-1]] : null;
+
+    var chiTiet = dayKeys.map(function(day){
+      var r=byDay[day];
+      var nd=(r.chiTiet||'').trim();
+      if(!nd) nd=getStatusLabel(r.ketQua);
+      return day+': '+nd;
     }).join('\n');
 
-    // Đề xuất: chỉ các ngày có đề xuất
-    var deXuat = dayKeys.filter(function(day) {
-      return (wrsByDay[day].deXuat||'').trim();
-    }).map(function(day) {
-      return day + ': ' + wrsByDay[day].deXuat.trim();
+    var deXuat = dayKeys.filter(function(day){
+      return (byDay[day].deXuat||'').trim();
+    }).map(function(day){
+      return day+': '+byDay[day].deXuat.trim();
     }).join('\n');
-    wsData.push([i+1,'Prima Bay - Hạ Long',h.maCanHo||'',h.tenKH||'',h.daiLy||'',h.diaChi||'',h.vung||'',h.cccd||'',h.sdt||'',parseInt(h.giaHDMB)||'',parseInt(h.soTienVay)||'',parseInt(h.vtcPhaiNop)||'',parseInt(h.vtcDaNop)||'',vtcR,h.csChinhSach||'',h.hinhThucVay||'',fmtD(h.ngayKyHDMB),fmtD(h.hanGiaiNgan),'BIDV','Tràng Tiền - HN',cbU.name||'',cbU.phone||'',cbU.email||'',cbU.name||'',cbU.phone||'',cbU.email||'',SC_VN[deriveHSStatus(h)]||'',fmtD(h.ngayGiaiNgan),parseInt(h.soTienGiaiNgan)||'',lwr?fmtShort(lwr.time):'',lwr?getStatusLabel(lwr.ketQua):'',chiTiet,deXuat,parseInt(h.hanMucDuocDuyet)||'']);
+
+    wsData.push([
+      i+1,                              // A  STT
+      'Prima Bay - Hạ Long',            // B  Dự án
+      h.maCanHo   || '',                // C  Mã căn
+      h.tenKH     || '',                // D  Tên KH
+      h.daiLy     || '',                // E  Đại lý
+      h.diaChi    || '',                // F  Địa chỉ
+      h.vung      || '',                // G  Vùng
+      h.cccd      || '',                // H  CCCD
+      h.sdt       || '',                // I  SĐT
+      parseInt(h.giaHDMB)    || '',     // J  Giá HĐMB
+      parseInt(h.soTienVay)  || '',     // K  Hạn mức đề xuất
+      parseInt(h.vtcPhaiNop) || '',     // L  VTC phải nộp
+      parseInt(h.vtcDaNop)   || '',     // M  VTC đã nộp
+      vtcR,                             // N  Tỷ lệ VTC
+      h.csChinhSach  || '',             // O  CSBH
+      h.hinhThucVay  || '',             // P  Hình thức vay
+      fmtD(h.ngayKyHDMB),              // Q  Ngày ký HĐMB
+      fmtD(h.hanGiaiNgan),             // R  Hạn GN
+      '',                               // S  NH nguyện vọng 1 (không có dữ liệu)
+      '',                               // T  NH nguyện vọng 2
+      '',                               // U  Ngày gửi TT cho NH
+      'BIDV',                           // V  Ngân hàng
+      'Tràng Tiền - Hà Nội',           // W  Chi nhánh
+      cbU.name  || '',                  // X  CBBH Họ tên
+      cbU.phone || '',                  // Y  SĐT
+      cbU.email || '',                  // Z  Email
+      cbU.name  || '',                  // AA CB QL Họ tên
+      cbU.phone || '',                  // AB SĐT
+      cbU.email || '',                  // AC Email
+      lwr ? fmtShort(lwr.time) : '',   // AD Ngày bank cập nhật
+      lwr ? getStatusLabel(lwr.ketQua) : '', // AE Kết quả
+      chiTiet,                          // AF Chi tiết
+      deXuat,                           // AG Đề xuất hỗ trợ
+      parseInt(h.hanMucDuocDuyet)||'',  // AH Hạn mức được duyệt
+      fmtD(h.ngayGiaiNgan),            // AI Ngày giải ngân
+      parseInt(h.soTienGiaiNgan)||'',  // AJ Số tiền GN
+    ]);
   });
-  var ws=XLSX.utils.aoa_to_sheet(wsData);
-  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:28}},{s:{r:1,c:0},e:{r:3,c:0}},{s:{r:1,c:1},e:{r:2,c:17}},{s:{r:1,c:18},e:{r:1,c:25}},{s:{r:2,c:20},e:{r:2,c:22}},{s:{r:2,c:23},e:{r:2,c:25}},{s:{r:1,c:26},e:{r:1,c:28}},{s:{r:1,c:29},e:{r:2,c:33}}];
-  ws['!cols']=[5,18,10,18,15,20,12,16,14,16,16,16,16,12,12,15,14,14,10,18,18,14,22,18,14,22,16,14,16,14,22,35,35,16].map(function(w){return{wch:w};});
-  ws['!rows']=[{hpt:20},{hpt:30},{hpt:25},{hpt:50}];
-  ws[enc(0,0)]={v:wsData[0][0],s:mkS(FILL.blue,'FFFFFF',true,'left',false)};
-  [[1,0,'STT',S.hB],[1,1,'Thông tin SP-KH',S.hB],[1,18,'Ngân hàng tư vấn KH',S.hT],[1,29,'Cập nhật tiến độ',S.hO]].forEach(function(x){ws[enc(x[0],x[1])]={v:x[2],s:x[3]};});
-  ws[enc(2,20)]={v:'CBBH tư vấn KH',s:S.hT};ws[enc(2,23)]={v:'CB quản lý',s:S.hT};
-  var hS=[];for(var i=0;i<18;i++)hS.push(S.hB);for(var i=0;i<8;i++)hS.push(S.hT);for(var i=0;i<3;i++)hS.push(S.hB);for(var i=0;i<5;i++)hS.push(S.hO);
-  r4.forEach(function(h2,ci){ws[enc(3,ci)]={v:h2,s:hS[ci]||S.hB};});
-  for(var ri=4;ri<wsData.length;ri++){wsData[ri].forEach(function(val,ci){var isN=typeof val==='number'&&ci>0;var isW=ci===31||ci===32;ws[enc(ri,ci)]={v:val===0?'':val,s:isN?S.dR:isW?S.d:S.dC};});}
-  ws['!freeze']={xSplit:3,ySplit:4};
-  XLSX.utils.book_append_sheet(wb,ws,'Báo cáo CĐT');
-  var t2=new Date();
-  XLSX.writeFile(wb,'BaoCao_PrimaBay_CĐT_'+t2.getFullYear()+String(t2.getMonth()+1).padStart(2,'0')+String(t2.getDate()).padStart(2,'0')+'.xlsx');
-  showNotif('✅ Đã xuất báo cáo '+hsList.length+' hồ sơ!');
+
+  // ── Create worksheet ─────────────────────────────────────
+  var ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Merges theo mẫu BIM
+  ws['!merges'] = [
+    {s:{r:0,c:0},  e:{r:2,c:0}},   // A1:A3 STT
+    {s:{r:0,c:1},  e:{r:1,c:20}},  // B1:U2 Thông tin SP-KH
+    {s:{r:0,c:21}, e:{r:0,c:28}},  // V1:AC1 NH tư vấn
+    {s:{r:1,c:23}, e:{r:1,c:25}},  // X2:Z2 CBBH
+    {s:{r:1,c:26}, e:{r:1,c:28}},  // AA2:AC2 CB QL
+    {s:{r:0,c:29}, e:{r:1,c:33}},  // AD1:AH2 Tình trạng
+    {s:{r:0,c:34}, e:{r:1,c:35}},  // AI1:AJ2 Giải ngân
+  ];
+
+  // Col widths theo mẫu BIM
+  var colWidths = [6.7,9.3,12.8,26.6,11.3,39.9,9.3,18.8,15.4,20,12.2,18.3,18.9,11.1,17.6,14,13.7,14.2,10.4,13,11.4,9.1,15.1,21.9,18.9,15.6,23.2,15.1,16.1,11.2,22.9,49.3,32.7,12.7,11.6,13];
+  ws['!cols'] = colWidths.map(function(w){return{wch:w};});
+
+  // Row heights
+  ws['!rows'] = [{hpt:25},{hpt:25},{hpt:52.8},{hpt:41.4}];
+
+  // Apply header styles
+  // Row 1: group labels
+  ws[enc(0,0)] = {v:'STT', s:S.hOrange};
+  ws[enc(0,1)] = {v:'Thông tin sản phẩm - khách hàng vay', s:S.hOrange};
+  ws[enc(0,21)]= {v:'Thông tin Ngân hàng tư vấn KH', s:S.hNavy};
+  ws[enc(0,29)]= {v:'Tình trạng hồ sơ vay', s:S.hStatus};
+  ws[enc(0,34)]= {v:'Thông tin giải ngân', s:S.hPurple};
+
+  // Row 2: sub-group
+  ws[enc(1,23)]= {v:'CBBH tư vấn KH', s:S.hNavy};
+  ws[enc(1,26)]= {v:'CB quản lý trực tiếp', s:S.hNavy};
+
+  // Row 3: column headers
+  var hStyles = [];
+  hStyles.push(S.hOrange); // A
+  for(var i=1;i<=17;i++)  hStyles.push(S.hOrange); // B-R
+  hStyles.push(S.hRed);   // S
+  hStyles.push(S.hRed);   // T
+  hStyles.push(S.hRed);   // U
+  hStyles.push(S.hNavy);  // V
+  hStyles.push(S.hNavy);  // W
+  hStyles.push(S.hNavy);  hStyles.push(S.hNavy); hStyles.push(S.hNavy); // X-Z CBBH
+  hStyles.push(S.hNavy);  hStyles.push(S.hNavy); hStyles.push(S.hNavy); // AA-AC CB QL
+  for(var i=0;i<5;i++) hStyles.push(S.hStatus); // AD-AH
+  hStyles.push(S.hPurple); hStyles.push(S.hPurple); // AI-AJ
+
+  r3.forEach(function(h2,ci){
+    ws[enc(2,ci)] = {v:h2, s:hStyles[ci]||S.hOrange};
+  });
+
+  // Row 4: numbering
+  r4.forEach(function(h2,ci){
+    ws[enc(3,ci)] = {v:h2, s:S.hNum};
+  });
+
+  // Data rows
+  for(var ri=4; ri<wsData.length; ri++){
+    wsData[ri].forEach(function(val,ci){
+      var isNum = typeof val==='number' && ci>0;
+      var isWrap = ci===31||ci===32; // AF, AG
+      ws[enc(ri,ci)] = {v: val===0?'':val, s: isNum?S.dR:(isWrap?S.dWrap:S.dC)};
+    });
+  }
+
+  ws['!freeze'] = {xSplit:3, ySplit:4};
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo CĐT');
+  var t=new Date();
+  XLSX.writeFile(wb, 'BaoCao_PrimaBay_CĐT_'+t.getFullYear()+String(t.getMonth()+1).padStart(2,'0')+String(t.getDate()).padStart(2,'0')+'.xlsx');
+  showNotif('✅ Đã xuất báo cáo '+hsList.length+' hồ sơ theo mẫu BIM!');
 }
+
 </script>
 <script>
 
