@@ -930,18 +930,31 @@ async function dbSaveCIC(h, cic) {
   // Xoá CIC cũ
   try { await sb.from('cic_results').delete().eq('loan_file_id', h.id); } catch(e) {}
 
+  // worst_group = nhóm nợ cao nhất giữa KH chính và vợ/chồng
+  var _khNhom = parseInt(cic.nhomNo)   || 0;
+  var _vcNhom = parseInt(cic.vcNhomNo) || 0;
+  var _worst  = Math.max(_khNhom, _vcNhom);
+  // Nếu không có CIC KH chính nhưng có vợ/chồng → dùng nhóm vợ/chồng
+  // queried_at: ưu tiên ngày KH chính, fallback ngày VC, fallback now
+  var _queriedAt = cic.ngay   ? new Date(cic.ngay).toISOString()
+                : cic.vcNgay  ? new Date(cic.vcNgay).toISOString()
+                : new Date().toISOString();
+
   var data = {
     loan_file_id:  h.id,
+    // Dùng worst_group = nhóm nợ cao nhất (bắt buộc có)
+    worst_group:   'group' + _worst,
+    queried_at:    _queriedAt,
+    // KH chính
     ma_so_cic:     cic.maSoCIC    || null,
-    total_debt:    parseInt(cic.tongDuNo)    || null,
-    du_no_the:     parseInt(cic.duNoThe)     || null,
-    worst_group:   cic.nhomNo ? 'group' + cic.nhomNo : null,
-    queried_at:    cic.ngay ? new Date(cic.ngay).toISOString() : new Date().toISOString(),
+    total_debt:    parseInt(cic.tongDuNo) || null,
+    du_no_the:     parseInt(cic.duNoThe)  || null,
+    // Vợ/chồng
     vc_ma_so_cic:  cic.vcMaSoCIC   || null,
-    vc_tong_du_no: parseInt(cic.vcTongDuNo)  || null,
-    vc_du_no_the:  parseInt(cic.vcDuNoThe)   || null,
-    vc_nhom_no:    parseInt(cic.vcNhomNo)    || null,
-    vc_ngay:       cic.vcNgay      || null
+    vc_tong_du_no: parseInt(cic.vcTongDuNo) || null,
+    vc_du_no_the:  parseInt(cic.vcDuNoThe)  || null,
+    vc_nhom_no:    _vcNhom || null,
+    vc_ngay:       cic.vcNgay || null
   };
 
   var r = await sb.from('cic_results').insert(data);
@@ -2735,7 +2748,11 @@ function saveCIC(){
   var gv=function(id){var el=document.getElementById(id);return el?el.value:'';};
   var nhomNo = parseInt(gv('cic-nn'))||0;
   var vcNhomNo = parseInt(gv('cic-vcnn'))||0;
-  var worstGroup = Math.max(nhomNo, vcNhomNo);
+  // worst = nhóm nợ cao nhất, nếu KH chính không có CIC thì dùng nhóm VC
+  var worstGroup = Math.max(nhomNo||0, vcNhomNo||0);
+  // Cho phép lưu khi chỉ có CIC vợ/chồng (nhomNo=0)
+  var hasCIC = cic.maSoCIC || cic.ngay || cic.vcMaSoCIC || cic.vcNgay || vcNhomNo;
+  if (!hasCIC) { alert('Vui lòng nhập ít nhất 1 thông tin CIC!'); return; }
   var cic = {
     maSoCIC:    gv('cic-masocic'),
     tongDuNo:   gv('cic-dn'),
