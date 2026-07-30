@@ -934,17 +934,17 @@ async function dbSaveCIC(h, cic) {
   var _khNhom = parseInt(cic.nhomNo)   || 0;
   var _vcNhom = parseInt(cic.vcNhomNo) || 0;
   var _worst  = Math.max(_khNhom, _vcNhom);
-  // Nếu không có CIC KH chính nhưng có vợ/chồng → dùng nhóm vợ/chồng
-  // queried_at: ưu tiên ngày KH chính, fallback ngày VC, fallback now
-  var _queriedAt = cic.ngay   ? new Date(cic.ngay).toISOString()
-                : cic.vcNgay  ? new Date(cic.vcNgay).toISOString()
-                : new Date().toISOString();
+  if (_worst < 1) _worst = 1; // Tối thiểu group1 (đủ tiêu chuẩn)
+  // queried_at là kiểu date (YYYY-MM-DD), không phải timestamp
+  var _queriedAt = cic.ngay   ? toISODate(cic.ngay)
+                : cic.vcNgay  ? toISODate(cic.vcNgay)
+                : new Date().toISOString().slice(0,10);
 
   var data = {
     loan_file_id:  h.id,
-    // Dùng worst_group = nhóm nợ cao nhất (bắt buộc có)
     worst_group:   'group' + _worst,
     queried_at:    _queriedAt,
+    queried_by:    (currentUser && currentUser.id) ? currentUser.id : null,
     // KH chính
     ma_so_cic:     cic.maSoCIC    || null,
     total_debt:    parseInt(cic.tongDuNo) || null,
@@ -957,12 +957,14 @@ async function dbSaveCIC(h, cic) {
     vc_ngay:       cic.vcNgay || null
   };
 
+  console.log('[CIC] inserting data:', JSON.stringify(data));
   var r = await sb.from('cic_results').insert(data);
   if (r.error) {
-    console.error('[CIC] insert failed:', r.error.message);
+    console.error('[CIC] insert failed:', r.error.message, r.error.details, r.error.hint, r.error.code);
+    showNotif('❌ Lỗi lưu CIC: ' + r.error.message);
     return false;
   }
-  console.log('[CIC] saved OK');
+  console.log('[CIC] saved OK, data:', JSON.stringify(data));
   return true;
 }
 
@@ -1201,6 +1203,7 @@ async function saveAndSync(saveFn, successMsg) {
     ok = await saveFn();
   } catch(e) {
     console.error('saveAndSync error:', e);
+    ok = false;
   }
   // Dù lỗi hay không → reload để đảm bảo dữ liệu đúng
   await syncFromDB(true);
@@ -2748,11 +2751,7 @@ function saveCIC(){
   var gv=function(id){var el=document.getElementById(id);return el?el.value:'';};
   var nhomNo = parseInt(gv('cic-nn'))||0;
   var vcNhomNo = parseInt(gv('cic-vcnn'))||0;
-  // worst = nhóm nợ cao nhất, nếu KH chính không có CIC thì dùng nhóm VC
   var worstGroup = Math.max(nhomNo||0, vcNhomNo||0);
-  // Cho phép lưu khi chỉ có CIC vợ/chồng (nhomNo=0)
-  var hasCIC = cic.maSoCIC || cic.ngay || cic.vcMaSoCIC || cic.vcNgay || vcNhomNo;
-  if (!hasCIC) { alert('Vui lòng nhập ít nhất 1 thông tin CIC!'); return; }
   var cic = {
     maSoCIC:    gv('cic-masocic'),
     tongDuNo:   gv('cic-dn'),
@@ -2768,6 +2767,10 @@ function saveCIC(){
     vcNgay:     gv('cic-vcngay'),
     vcTctds:    collectCICVCTCTDs()
   };
+  // Validate: phải có ít nhất 1 thông tin CIC
+  // Cho phép lưu khi có bất kỳ thông tin nào: mã CIC, nhóm nợ, hoặc ngày tra
+  var hasCIC = cic.maSoCIC || nhomNo || cic.ngay || vcNhomNo || cic.vcMaSoCIC || cic.vcNgay;
+  if (!hasCIC) { alert('Vui lòng nhập ít nhất 1 thông tin CIC (mã số hoặc nhóm nợ)!'); return; }
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
   hsList[idx].cic=cic;
   hsList[idx].updatedAt=nowStr();
@@ -2789,7 +2792,10 @@ function saveCIC(){
   // Lưu cic vào hsList trước để openHS hiển thị đúng
   if (_cicH) _cicH.cic = cic;
   saveAndSync(function(){
-    return dbSaveCIC(_cicH, cic);
+    return dbSaveCIC(_cicH, cic).then(function(ok){
+      if (!ok) showNotif('⚠️ Lỗi lưu CIC - kiểm tra Console F12');
+      return ok;
+    });
   }, 'CIC đã lưu! Nhóm nợ: '+worstGroup);
 }
 
