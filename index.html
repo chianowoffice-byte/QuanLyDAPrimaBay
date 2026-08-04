@@ -4120,11 +4120,11 @@ async function exportCDTExcel() {
         st = Object.assign({}, S.dR);
         ws[cellRef] = {v: val||0, t:'n', s: st};
       } else if (ci===13) {
-        // Cột N: công thức =M/L (tỷ lệ VTC)
-        var colL = 'L'+(ri+1); // L = index 11
-        var colM = 'M'+(ri+1); // M = index 12
+        // Cột N: công thức =M/J (VTC đã nộp / Giá HĐMB)
+        var colJ = 'J'+(ri+1); // J = index 9 = Giá HĐMB
+        var colM = 'M'+(ri+1); // M = index 12 = VTC đã nộp
         ws[cellRef] = {
-          f: 'IF('+colL+'=0,"",'+colM+'/'+colL+')',
+          f: 'IF('+colJ+'=0,"",'+colM+'/'+colJ+')',
           t: 'n',
           s: Object.assign({}, S.dC, {numFmt: PCT_FMT})
         };
