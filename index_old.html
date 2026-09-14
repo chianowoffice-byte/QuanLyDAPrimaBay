@@ -284,15 +284,7 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
 
 .b-chogn{background:#E8F4FD;color:#1A5276;font-weight:700}
 .b-deadline{padding:2px 8px;border-radius:10px;font-size:11px;white-space:nowrap}
-.b-over{background:#FDECEA;color:#C0392B}.b-warn{background:#FEF9E7;color:#9A7D0A}.b-ok{background:#EAFAF1;color:#1E8449}.bm-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px;margin-bottom:4px}
-.bm-item:hover{background:#F0F4FF}
-.bm-item input{accent-color:var(--blue);width:15px;height:15px}
-#bidv-table-wrap table{width:100%;border-collapse:collapse;font-size:13px}
-#bidv-table-wrap th{background:#1F4E79;color:#fff;padding:8px 10px;text-align:left;position:sticky;top:0}
-#bidv-table-wrap td{padding:7px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle}
-#bidv-table-wrap tr:hover td{background:#F5F7FA}
-#bidv-table-wrap input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer}
-</style>
+.b-over{background:#FDECEA;color:#C0392B}.b-warn{background:#FEF9E7;color:#9A7D0A}.b-ok{background:#EAFAF1;color:#1E8449}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
@@ -331,7 +323,6 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
       <div class="nav-sec">Hồ sơ</div>
       <div class="nav-it" id="ni-hs" onclick="showPage('hs')">📋 Danh sách hồ sơ</div>
       <div class="nav-it hide" id="ni-imp" onclick="showPage('imp')">📥 Nhập từ BIM</div>
-      <div class="nav-it hide" id="ni-bidv" onclick="showPage('bidv')">📁 Hồ sơ BIDV</div>
       <div class="nav-sec hide" id="ns-sys">Hệ thống</div>
       <div class="nav-it hide" id="ni-usr" onclick="showPage('usr')">👥 Người dùng</div>
       <div class="nav-it hide" id="ni-cdt-up" onclick="showPage('cdt-up')">📤 Upload KH mới</div>
@@ -360,37 +351,7 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
 
   <div class="main">
     <!-- DASHBOARD -->
-    <div class="page" id="page-bidv">
-  <div class="page-hd">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div style="font-size:16px;font-weight:700;color:var(--blue)">📁 Hồ sơ BIDV — Xuất hợp đồng</div>
-      <button class="btn btn-primary" onclick="openExportModal()" id="btn-export-modal" style="display:none">
-        📄 Xuất hợp đồng (<span id="export-count">0</span>)
-      </button>
-    </div>
-    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <select id="bidv-filter-st" onchange="renderBIDVTable()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
-        <option value="">Tất cả trạng thái</option>
-        <option value="moi">Mới nhận</option>
-        <option value="dang">Đang xử lý</option>
-        <option value="cho">Chờ phê duyệt</option>
-        <option value="choky">Chờ ký</option>
-        <option value="chogn">Chờ giải ngân</option>
-        <option value="xong">Hoàn thành</option>
-        <option value="tuchoi">Từ chối</option>
-      </select>
-      <select id="bidv-filter-cb" onchange="renderBIDVTable()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
-        <option value="">Tất cả CB</option>
-      </select>
-      <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">
-        <input type="checkbox" onchange="toggleAllBIDV(this.checked)"> Chọn tất cả
-      </label>
-    </div>
-  </div>
-  <div id="bidv-table-wrap" style="overflow-x:auto;margin-top:8px"></div>
-</div>
-
-<div class="page" id="page-db">
+    <div class="page" id="page-db">
       <div class="topbar"><span class="topbar-title">Dashboard tổng quan</span></div>
       <div class="content">
         <div id="db-alerts" style="margin-bottom:14px"></div>
@@ -621,52 +582,6 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
     </div></div>
   </div>
 </div>
-<!-- EXPORT MODAL -->
-<div class="overlay" id="modal-export" onclick="if(event.target===this)closeModal('modal-export')">
-  <div class="modal" style="max-width:540px;width:95%">
-    <div class="mhd">📄 Xuất hồ sơ hợp đồng</div>
-    <div class="mbody" style="padding:16px 20px;max-height:70vh;overflow-y:auto">
-      <div id="export-kh-list" style="background:#F5F7FA;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;max-height:120px;overflow-y:auto"></div>
-      <div style="margin-bottom:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-weight:700;color:#1F4E79;font-size:13px">🔵 Bộ mẫu QLKH</div>
-          <div style="display:flex;gap:6px">
-            <button class="btn" style="font-size:11px;padding:3px 8px" onclick="selectAllBM('qlkh',true)">Chọn tất cả</button>
-            <button class="btn" style="font-size:11px;padding:3px 8px" onclick="selectAllBM('qlkh',false)">Hủy tất cả</button>
-          </div>
-        </div>
-        <label class="bm-item"><input type="checkbox" class="bm-qlkh" value="BM1" checked> BM1 — Báo cáo đề xuất tín dụng</label>
-        <label class="bm-item"><input type="checkbox" class="bm-qlkh" value="BM2" checked> BM2 — Giấy đề nghị vay vốn</label>
-        <label class="bm-item"><input type="checkbox" class="bm-qlkh" value="BM3" checked> BM3 — Biên bản bàn giao QTTD</label>
-        <label class="bm-item"><input type="checkbox" class="bm-qlkh" value="BM4" checked> BM4 — Biên bản giao nhận dữ liệu KH</label>
-      </div>
-      <div id="export-qttd-section" style="display:none;margin-bottom:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-weight:700;color:#7030A0;font-size:13px">🟣 Bộ mẫu QTTD</div>
-          <div style="display:flex;gap:6px">
-            <button class="btn" style="font-size:11px;padding:3px 8px" onclick="selectAllBM('qttd',true)">Chọn tất cả</button>
-            <button class="btn" style="font-size:11px;padding:3px 8px" onclick="selectAllBM('qttd',false)">Hủy tất cả</button>
-          </div>
-        </div>
-        <div style="color:var(--txt3);font-size:12px;font-style:italic;padding:8px">Bộ mẫu QTTD sẽ được bổ sung sau</div>
-      </div>
-      <div style="border-top:1px solid var(--bdr);padding-top:12px">
-        <div style="font-weight:600;font-size:13px;margin-bottom:8px">📦 Định dạng xuất:</div>
-        <label style="display:block;margin-bottom:6px;font-size:13px;cursor:pointer">
-          <input type="radio" name="export-fmt" value="each" checked> Mỗi KH 1 file ZIP (tên: HọTên_CCCD.zip)
-        </label>
-        <label style="display:block;font-size:13px;cursor:pointer">
-          <input type="radio" name="export-fmt" value="all"> Gộp tất cả vào 1 ZIP
-        </label>
-      </div>
-    </div>
-    <div class="mft">
-      <button class="btn" onclick="closeModal('modal-export')">Hủy</button>
-      <button class="btn btn-primary" onclick="doExportContracts()" id="btn-do-export">📥 Tạo & Tải về</button>
-    </div>
-  </div>
-</div>
-
 
 <!-- MODAL: CONFIRM -->
 <div class="overlay" id="modal-conf">
@@ -681,7 +596,6 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
 </div>
 
 <script>
-
 
 
 function toISODate(v) {
@@ -1103,7 +1017,6 @@ async function reloadFromDB() {
     persist();
     renderHSTable();
     renderDB();
-    if (document.getElementById('page-bidv') && document.getElementById('page-bidv').classList.contains('active')) renderBIDVTable();
     showNotif('✅ Đã tải lại dữ liệu mới nhất từ DB');
     if (currentHSId) openHS(currentHSId); // refresh popup nếu đang mở
   } catch(e) {
@@ -1221,7 +1134,6 @@ async function syncFromDB(silent) {
     persist();
     renderHSTable();
     renderDB();
-    if (document.getElementById('page-bidv') && document.getElementById('page-bidv').classList.contains('active')) renderBIDVTable();
     // Nếu popup đang mở → refresh popup
     if (currentHSId) {
       var h = hsList.find(function(x){ return x.id === currentHSId; });
@@ -1722,7 +1634,6 @@ function applyPerms(){
   tog('ni-db',        !isCDT());
   tog('ni-hs',        true);
   tog('ni-cdt-up',    false);
-  tog('ni-bidv', !isCDT() && !isViewer());
   tog('ni-cdt-view',  isCDT());
 }
 
@@ -1741,7 +1652,6 @@ function showPage(p){
   if(p==='usr')      renderUsrTable();
   if(p==='imp')      renderImpCBSel();
   if(p==='cdt-view') renderCDTDash();
-  if(p==='bidv') { _bidvSelected=new Set(); renderBIDVTable(); }
 }
 
 // ==================================================
@@ -2053,7 +1963,6 @@ function buildHSForm(h) {
   html += '<div class="tab active" onclick="swTab(this,\'t-proj\')">🏢 Dự án & Căn hộ</div>';
   html += '<div class="tab" onclick="swTab(this,\'t-docs\')">📋 Hồ sơ & Tài liệu</div>';
   html += '<div class="tab" onclick="swTab(this,\'t-cic\')">🔍 CIC</div>';
-  if (!isCDTUser) html += '<div class="tab" onclick="swTab(this,\'t-hdgn\')">📋 HĐ & GN</div>';
   html += '<div class="tab" onclick="swTab(this,\'t-prog\')">📞 Cập nhật tiến độ</div>';
   if (isQLAdmin) {
     html += '<div class="tab" onclick="swTab(this,\'t-adm\')">⚙️ Phân công</div>';
@@ -2277,43 +2186,6 @@ function buildHSForm(h) {
   // CĐT + CB + QL/Admin đều thấy
   // CB nhập báo cáo | CĐT nhập phản hồi
   // ════════════════════════════════════════════
-  html += '<div id="t-hdgn" style="display:none">';
-  var hdgnDis = (!isCBOwner && !isQLAdmin && !isQTTD()) ? 'disabled' : '';
-  var fmtN = function(v){ return (v||v===0) ? parseInt(v).toLocaleString('en-US').replace(/,/g,',') : ''; };
-  var sugHDTD = (h.cif ? ('01'+h.cif+'/HDTD') : (h.hdtd_code||''));
-  var sugHTLS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTHTLS/PRIMA BAY') : (h.htls_agreement||''));
-  var sugQLTS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTQLTS/PRIMA BAY') : (h.qlts_agreement||''));
-  html += '<div class="info-section"><div class="section-title">📄 Hợp đồng tín dụng</div><div class="fgrid">';
-  html += fld('Mã PCA','f-pca',h.pca_code||'',hdgnDis,'VD: PCA-001');
-  html += fld('Số HĐTD','f-hdtd',h.hdtd_code||sugHDTD,hdgnDis,'01+CIF/HDTD');
-  html += fld('Số HĐ thế chấp','f-mortgage',h.mortgage_code||'',hdgnDis,'');
-  html += '</div></div>';
-  html += '<div class="info-section"><div class="section-title">📝 Thỏa thuận</div><div class="fgrid">';
-  html += fld('Thỏa thuận HTLS','f-htls',h.htls_agreement||sugHTLS,hdgnDis,'');
-  html += fld('Thỏa thuận QLTS','f-qlts',h.qlts_agreement||sugQLTS,hdgnDis,'');
-  html += '</div></div>';
-  html += '<div class="info-section"><div class="section-title">💰 Tài chính giải ngân</div><div class="fgrid">';
-  html += '<div class="fg"><label>Giải ngân lần 1 (VNĐ)</label>'+numInput('f-disb1',h.disbursement_1,hdgnDis)+'</div>';
-  html += '<div class="fg"><label>Vốn tự có (VNĐ) <span style="font-size:11px;color:var(--txt3)">(gợi ý = VTC đã nộp)</span></label>'+numInput('f-equity',h.equity_amount||h.vtcDaNop,hdgnDis)+'</div>';
-  html += '<div class="fg"><label>Giá trị quy đổi 70% (VNĐ) <span style="font-size:11px;color:var(--txt3)">(gợi ý = Giá HĐMB × 70%)</span></label>'+numInput('f-collratio',h.collateral_value_ratio||(h.giaHDMB?Math.round(parseInt(h.giaHDMB)*0.7):''),hdgnDis)+'</div>';
-  html += '<div class="fg"><label>ST 5% căn hộ (VNĐ)</label>'+numInput('f-vtc5pct',h.vtc_5pct,hdgnDis)+'</div>';
-  html += fld('TK thanh toán KH','f-payacct',h.payment_account||'',hdgnDis,'Số tài khoản');
-  html += '<div class="fg"><label>Số tiền duy trì TK TT (VNĐ)</label>'+numInput('f-minbal',h.min_account_balance,hdgnDis)+'</div>';
-  html += '</div></div>';
-  html += '<div class="info-section"><div class="section-title">🏦 Định giá tài sản</div><div class="fgrid">';
-  html += '<div class="fg"><label>Định giá lần 1 (VNĐ)</label>'+numInput('f-val1',h.valuation_1,hdgnDis)+'</div>';
-  html += '<div class="fg"><label>Định giá lần 2 (VNĐ)</label>'+numInput('f-val2',h.valuation_2,hdgnDis)+'</div>';
-  html += '</div></div>';
-  var canExp = ['da_phe_duyet','soan_hs','cho_gn','da_gn'].indexOf(deriveHSStatus(h))!==-1;
-  html += '<div style="padding:12px 0;display:flex;flex-wrap:wrap;gap:8px">';
-  if (isCBOwner||isQLAdmin||isQTTD()) html += '<button class="btn btn-primary" onclick="saveHDGN()">💾 Lưu HĐ & GN</button>';
-  if (canExp) {
-    if (isCBOwner||isQLAdmin) html += '<button class="btn" style="background:#1F4E79;color:#fff" onclick="exportBMQLKH()">📄 Xuất hồ sơ QLKH</button>';
-    if (isQTTD()||isAdmin()) html += '<button class="btn" style="background:#7030A0;color:#fff" onclick="exportBMQTTD()">📋 Xuất hồ sơ QTTD</button>';
-  }
-  html += '</div>';
-  html += '</div>';
-
   html += '<div id="t-prog" style="display:none">';
   if (locked) {
     html += '<div class="lock-banner">🔒 Hồ sơ đã chốt. Không thể cập nhật tiến độ.</div>';
@@ -2397,7 +2269,6 @@ function renderDocsGrid(h, locked) {
   var files = h ? (h.files || {}) : {};
   var html = '<div class="ck-grid">';
   CK_GROUPS.forEach(function(g) {
-    if (!g || !g.id) return;
     var done = g.items.every(function(it) { return ck[it.id]; });
     html += '<div class="ck-card">';
     html += '<div class="ck-hd ' + (done ? 'done' : '') + '">';
@@ -3624,6 +3495,14 @@ function getStatusLabel(val) {
   return CT_STATUS_LABELS_FULL[clean] || DB_STATUS_LABELS[clean] || clean;
 }
 
+function getWhoName(whoVal) {
+  if (!whoVal) return '—';
+  // Nếu là UUID → tìm tên trong users
+  var u = users.find(function(u){ return u.id === whoVal || u.db_id === whoVal; });
+  if (u) return u.name;
+  // Nếu không phải UUID → đã là tên
+  return whoVal;
+}
 
 function buildWeeklyReportForm(h) {
   var reports = h && h.weeklyReports ? h.weeklyReports : [];
@@ -4272,443 +4151,6 @@ async function exportCDTExcel() {
   showNotif('✅ Đã xuất báo cáo '+hsList.length+' hồ sơ theo mẫu BIM!');
 }
 
-var _tplCache = {};var _libsLoaded = false;var GITHUB_BASE = 'https://chianowoffice-byte.github.io/QuanLyDAPrimaBay/templates/';var BM_FILES = {
-  BM1:{file:'BM1_BCDX.docx',name:'BM1_BCDX'},
-  BM2:{file:'BM2_GDNVV.docx',name:'BM2_GiayDNVV'},
-  BM3:{file:'BM3_BBBG.docx',name:'BM3_BBBG_QTTD'},
-  BM4:{file:'BM4_BGNDK.docx',name:'BM4_BanGiaoNDK'}
-};var _bidvSelected = new Set();
-
-
-function isQTTD() { return currentUser && (currentUser.role==='qttd'||currentUser.role==='admin'); }
-
-async function saveHDGN() {
-  var h = hsList.find(function(x){return x.id===currentHSId;});
-  if (!h) { showNotif('Không tìm thấy hồ sơ!'); return; }
-  var pn = function(id){
-    var el=document.getElementById(id); if(!el)return null;
-    var v=(el.value||'').replace(/[.,\s]/g,''); return parseInt(v)||null;
-  };
-  var gv3=function(id){ var el=document.getElementById(id); return el?(el.value.trim()||null):null; };
-  h.pca_code=gv3('f-pca'); h.hdtd_code=gv3('f-hdtd'); h.mortgage_code=gv3('f-mortgage');
-  h.htls_agreement=gv3('f-htls'); h.qlts_agreement=gv3('f-qlts');
-  h.area_usable=pn('f-areausable'); h.area_construction=pn('f-areaconstruct');
-  h.hdmb_value_with_mgt=pn('f-hdmbwithmgt');
-  h.loan_months=pn('f-kh')||pn('f-loanmonths'); h.grace_period_months=pn('f-graceperiod');
-  h.disbursement_1=pn('f-disb1'); h.equity_amount=pn('f-equity');
-  h.collateral_value_ratio=pn('f-collratio'); h.vtc_5pct=pn('f-vtc5pct');
-  h.payment_account=gv3('f-payacct'); h.min_account_balance=pn('f-minbal');
-  h.valuation_1=pn('f-val1'); h.valuation_2=pn('f-val2');
-  h.income_salary=pn('f-inc-salary'); h.income_business=pn('f-inc-biz');
-  h.income_rental=pn('f-inc-rent'); h.income_other=pn('f-inc-other');
-  h.expense_living=pn('f-exp-living'); h.expense_debt=pn('f-exp-debt');
-  var lfu = {
-    pca_code:h.pca_code, hdtd_code:h.hdtd_code, mortgage_code:h.mortgage_code,
-    htls_agreement:h.htls_agreement, qlts_agreement:h.qlts_agreement,
-    payment_account:h.payment_account, min_account_balance:h.min_account_balance,
-    disbursement_amount:h.disbursement_1, equity_amount:h.equity_amount,
-    collateral_value_ratio:h.collateral_value_ratio, vtc_5pct:h.vtc_5pct,
-    valuation_1:h.valuation_1, valuation_2:h.valuation_2,
-    loan_months:h.loan_months, grace_period_months:h.grace_period_months,
-    hdmb_value_with_mgt:h.hdmb_value_with_mgt,
-    income_salary:h.income_salary, income_business:h.income_business,
-    income_rental:h.income_rental, income_other:h.income_other,
-    expense_living:h.expense_living, expense_debt:h.expense_debt,
-    updated_at:new Date().toISOString()
-  };
-  var r=await sb.from('loan_files').update(lfu).eq('id',h.id);
-  if(r.error){showNotif('❌ Lỗi: '+r.error.message);return;}
-  if(h.area_usable||h.area_construction){
-    var aptU={};
-    if(h.area_usable) aptU.area_usable=h.area_usable;
-    if(h.area_construction) aptU.area_construction=h.area_construction;
-    var aptRow=hsList.find(function(x){return x.id===h.id;});
-    if(aptRow&&aptRow.apartmentId) await sb.from('apartments').update(aptU).eq('id',aptRow.apartmentId);
-  }
-  showNotif('✅ Đã lưu Hợp đồng & Giải ngân!');
-}
-
-function exportBMQLKH(){ showNotif('📄 Tính năng đang phát triển - sẽ có trong phiên bản tiếp theo'); }
-
-function exportBMQTTD(){ showNotif('📋 Tính năng đang phát triển - sẽ có trong phiên bản tiếp theo'); }
-
-function numToWords(n) {
-  if (!n) return '';
-  n = parseInt(String(n).replace(/[^0-9]/g,''));
-  if (isNaN(n) || n === 0) return 'Không đồng';
-  var units  = ['','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
-  var teens  = ['mười','mười một','mười hai','mười ba','mười bốn','mười lăm','mười sáu','mười bảy','mười tám','mười chín'];
-  var tens   = ['','','hai mươi','ba mươi','bốn mươi','năm mươi','sáu mươi','bảy mươi','tám mươi','chín mươi'];
-  var groups = ['','nghìn','triệu','tỷ'];
-
-  function readGroup(num) {
-    if (num === 0) return '';
-    var h = Math.floor(num/100);
-    var t = Math.floor((num%100)/10);
-    var u = num%10;
-    var result = '';
-    if (h > 0) result += units[h] + ' trăm ';
-    if (t === 1) result += teens[u] + ' ';
-    else if (t > 1) { result += tens[t] + ' '; if(u>0) result += (u===5?'lăm':units[u]) + ' '; }
-    else if (u > 0 && h > 0) result += 'linh ' + units[u] + ' ';
-    else if (u > 0) result += units[u] + ' ';
-    return result;
-  }
-
-  var parts = [];
-  var i = 0;
-  while (n > 0) {
-    var g = n % 1000;
-    if (g > 0) parts.unshift(readGroup(g) + (groups[i] ? groups[i] + ' ' : ''));
-    n = Math.floor(n/1000);
-    i++;
-  }
-  var result = parts.join('').trim();
-  // In hoa chữ đầu
-  result = result.charAt(0).toUpperCase() + result.slice(1);
-  return result + ' đồng';
-}
-
-
-
-
-async function fillTemplate(key, data) {
-  console.log('[Fill] START:', key);
-  var ab = await loadTemplate(key);
-  var zip2 = new PizZip(ab);
-
-  var hasCo = !!(data['22 - Họ và tên người 2'] && data['22 - Họ và tên người 2'].trim());
-
-  function normKey(k){ return k.replace(/^[\s']+|[\s']+$/g,'').trim(); }
-  var dataMap = {};
-  Object.keys(data).forEach(function(k){ dataMap[normKey(k)] = data[k]; });
-
-  function findVal(raw) {
-    var k = normKey(raw);
-    if (dataMap.hasOwnProperty(k)) return dataMap[k];
-    var numM = k.match(/^(\d+)/);
-    if (numM) {
-      var num = numM[1]; var found = null;
-      Object.keys(dataMap).forEach(function(dk){
-        if (!found && dk.match(new RegExp('^'+num+'[\\s\\-]'))) found = dataMap[dk];
-      });
-      return found;
-    }
-    return null;
-  }
-
-  var CO_S  = '<< CO_BORROWER_START >>';
-  var CO_E  = '<< CO_BORROWER_END >>';
-  var CO_IS = '<< CO_BORROWER_INLINE_START >>';
-  var CO_IE = '<< CO_BORROWER_INLINE_END >>';
-  var PH_RE = /<<\s*'?\s*(.+?)\s*'?\s*>>/g;
-  var W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-
-  function getParaText(para) {
-    var texts = [], wts = para.getElementsByTagNameNS(W,'t');
-    for (var i=0;i<wts.length;i++) texts.push(wts[i].textContent||'');
-    return texts.join('');
-  }
-
-  function fillParaDom(para) {
-    var full = getParaText(para);
-    if (!full) return;
-
-    // Xử lý CO_BORROWER inline
-    if (full.indexOf(CO_IS) !== -1) {
-      if (!hasCo) {
-        var re_inline = new RegExp(escRe(CO_IS)+'[\\s\\S]*?'+escRe(CO_IE));
-        full = full.replace(re_inline, '');
-      } else {
-        full = full.replace(new RegExp(escRe(CO_IS),'g'),'').replace(new RegExp(escRe(CO_IE),'g'),'');
-      }
-    }
-    // Xóa block markers còn sót
-    full = full.replace(new RegExp(escRe(CO_S),'g'),'').replace(new RegExp(escRe(CO_E),'g'),'');
-
-    if (full.indexOf('<<') === -1 && full === getParaText(para)) return;
-
-    // Replace placeholders
-    PH_RE.lastIndex = 0;
-    var newText = full.replace(PH_RE, function(m,k){
-      var val = findVal(k);
-      return (val !== null && val !== undefined) ? String(val) : '';
-    });
-
-    // Lấy pPr và rPr tốt nhất
-    var pPr = para.getElementsByTagNameNS(W,'pPr')[0] || null;
-    var bestRPr = null, bestLen = 0;
-    var runs = para.getElementsByTagNameNS(W,'r');
-    for (var i=0;i<runs.length;i++){
-      var rpr = runs[i].getElementsByTagNameNS(W,'rPr')[0];
-      if (rpr){
-        var s = new XMLSerializer().serializeToString(rpr);
-        if (s.length > bestLen){ bestLen=s.length; bestRPr=rpr; }
-      }
-    }
-
-    // Xóa tất cả children trừ pPr
-    Array.from(para.childNodes).forEach(function(ch){
-      if (!pPr || ch !== pPr) para.removeChild(ch);
-    });
-
-    // Tạo run mới
-    var doc = para.ownerDocument;
-    var newR = doc.createElementNS(W,'w:r');
-    if (bestRPr) newR.appendChild(bestRPr.cloneNode(true));
-    var newT = doc.createElementNS(W,'w:t');
-    newT.textContent = newText;
-    if (newText && (newText[0]===' ' || newText[newText.length-1]===' '))
-      newT.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');
-    newR.appendChild(newT);
-    para.appendChild(newR);
-  }
-
-  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
-
-  function processXmlDom(xmlStr) {
-    var parser = new DOMParser();
-    var xmlDoc = parser.parseFromString(xmlStr,'application/xml');
-    var paras = Array.from(xmlDoc.getElementsByTagNameNS(W,'p'));
-    var toDelete = [], inCo = false;
-    paras.forEach(function(para){
-      var text = getParaText(para).trim();
-      if (text === CO_S){ inCo=true; toDelete.push(para); return; }
-      if (text === CO_E){ inCo=false; toDelete.push(para); return; }
-      if (inCo && !hasCo){ toDelete.push(para); return; }
-      fillParaDom(para);
-    });
-    toDelete.forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); });
-    return new XMLSerializer().serializeToString(xmlDoc);
-  }
-
-  ['word/document.xml','word/header1.xml','word/footer1.xml'].forEach(function(fname){
-    if (!zip2.files[fname]) return;
-    var xml2 = processXmlDom(zip2.files[fname].asText());
-    zip2.file(fname, xml2);
-    console.log('[Fill]', fname, 'done');
-  });
-
-  var output = zip2.generate({type:'arraybuffer',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-  console.log('[Fill] DONE:', key, output.byteLength, 'bytes');
-  return output;
-}
-
-
-async function loadExportLibs(){
-  if(_libsLoaded)return;
-  var libs=[
-    'https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js',
-    'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
-    'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
-  ];
-  for(var i=0;i<libs.length;i++){
-    await new Promise(function(resolve,reject){
-      var s=document.createElement('script');s.src=libs[i];s.onload=resolve;s.onerror=reject;
-      document.head.appendChild(s);
-    });
-  }
-  _libsLoaded=true;
-}
-
-async function loadTemplate(key){
-  if(_tplCache[key]){console.log('[Template] cache:',key);return _tplCache[key];}
-  var url=GITHUB_BASE+BM_FILES[key].file;
-  console.log('[Template] fetch:',url);
-  var res=await fetch(url);
-  if(!res.ok)throw new Error('Không tải được '+key+' (HTTP '+res.status+')');
-  var ab=await res.arrayBuffer();
-  console.log('[Template] loaded:',key,ab.byteLength,'bytes');
-  _tplCache[key]=ab;
-  return ab;
-}
-
-function buildDocData(h){
-  var fD=function(v){return fmtDateVN(v)||'';};
-  return {
-    '1 - Danh xưng người 1':h.salutation||'',
-    '2 - Họ và tên người 1':h.tenKH||'',
-    '3 - Email người 1':h.email||'',
-    '4- Mã CIF người 1':h.cif||'',
-    '5 - Ngày tháng năm sinh người 1':fD(h.ngaySinh),
-    '7 - Số CCCD/CC người 1':h.cccd||'',
-    '8- Nơi cấp CCCD/CC người 1':h.id_issue_place||'',
-    '9- Ngày cấp CCCD/CC người 1':fD(h.id_issue_date),
-    '10- Địa chỉ thường trú người 1':h.permanent_address||'',
-    '11 - Địa chỉ liên hệ người 1':h.diaChi||'',
-    '12 - ĐT liên hệ người 1':h.sdt||'',
-    '13-Đơn vị công tác 1 người 1':h.workplace||'',
-    '14-Địa chỉ công tác 1 người 1':h.workplace_address||'',
-    '15-Số điện thoại - nơi công tác 1 người 1':h.workplace_phone||'',
-    '16- Chức vụ 1 người 1':h.job_title||'',
-    '17-Đơn vị công tác 2 người 1':h.workplace2||'',
-    '18-Địa chỉ công tác 2 người 1':h.workplace2_address||'',
-    '19-Số điện thoại - nơi công tác 2 người 1':h.workplace2_phone||'',
-    '20- Chức vụ 2 người 1':h.job_title2||'',
-    '21 - Danh xưng người 2':h.co_salutation||'',
-    '22 - Họ và tên người 2':h.tenVC||'',
-    '23 - Email người 2':h.emailVC||'',
-    '24 - mã CIF người 2':h.cifVC||'',
-    '25 - Ngày sinh người 2':fD(h.ngaySinhVC),
-    '27 - Số CCCD/CC người 2':h.cccdVC||'',
-    '28- Nơi cấp CCCD/CC người 2':h.co_id_issue_place||'',
-    '29- Ngày cấp CCCD/CC người 2':fD(h.co_id_issue_date),
-    '30 - Địa chỉ thường trú người 2':h.co_permanent_address||'',
-    '31 - Địa chỉ liên hệ người 2':h.sdtVC||'',
-    '32 - ĐT liên hệ người 2':h.sdtVC||'',
-    '33-Đơn vị công tác 1 người 2':h.co_workplace||'',
-    '34-Địa chỉ công tác 1 người 2':h.co_workplace_address||'',
-    '35-Số điện thoại - nơi công tác 1 người 2':h.co_workplace_phone||'',
-    '36- Chức vụ 1 người 2':h.co_job_title||'',
-    '37-Đơn vị công tác 2 người 2':h.co_workplace2||'',
-    '38-Địa chỉ công tác 2 người 2':h.co_workplace2_address||'',
-    '39-Số điện thoại - nơi công tác 2 người 2':h.co_workplace2_phone||'',
-    '40- Chức vụ 2 người 2':h.co_job_title2||'',
-    '41 - Số hợp đồng mua bán căn hộ':h.soHDMB||'',
-    '42 - Ngày ký hợp đồng mua bán căn hộ':fD(h.ngayKyHDMB),
-    '43 - số Căn hộ số':h.maCanHo||'',
-    '44- Tầng căn hộ':h.tang||'',
-    '45 - Diện tích sử dụng căn hộ':String(h.area_usable||h.dienTich||''),
-    '46 - Diện tích sàn Xây dựng căn hộ':String(h.area_construction||''),
-    '49 - Trị giá HDMB căn hộ (Không bao gồm kinh phí bảo trì)':fmt(h.giaHDMB),
-    '51 - Giá trị đã quy đổi theo hệ số (70%) căn hộ':fmt(h.collateral_value_ratio),
-    '52 - Số tiền/ Hạn mức vay':fmt(h.soTienVay),
-    '53 - Bằng Chữ Số tiền/ Hạn mức vay':numToWords(h.soTienVay),
-    '53- ST 5% Căn hộ số':fmt(h.vtc_5pct),
-    '54 - CDT HTLS + NH GN lần 1':fmt(h.disbursement_1),
-    '57 - Số tiền duy trì TK TT':fmt(h.min_account_balance),
-    '58 - Thời gian vay':h.hinhThucVay||'',
-    '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop)
-  };
-}
-
-async function doExportContracts(){
-  var btn=document.getElementById('btn-do-export');
-  btn.disabled=true;btn.textContent='⏳ Đang tải thư viện...';
-  try{await loadExportLibs();}catch(e){showNotif('❌ Lỗi tải thư viện: '+e.message);btn.disabled=false;btn.textContent='📥 Tạo & Tải về';return;}
-  btn.textContent='⏳ Đang tạo file...';
-  var selectedBM=[];
-  document.querySelectorAll('.bm-qlkh:checked').forEach(function(el){selectedBM.push({key:el.value,type:'qlkh'});});
-  if(isQTTD()||isAdmin())document.querySelectorAll('.bm-qttd:checked').forEach(function(el){selectedBM.push({key:el.value,type:'qttd'});});
-  if(selectedBM.length===0){showNotif('Vui lòng chọn ít nhất 1 mẫu!');btn.disabled=false;btn.textContent='📥 Tạo & Tải về';return;}
-  var fmtVal=document.querySelector('input[name="export-fmt"]:checked').value;
-  var hsList_=Array.from(_bidvSelected).map(function(id){return hsList.find(function(x){return x.id===id;});}).filter(Boolean);
-  try{
-    if(fmtVal==='each'){
-      for(var i=0;i<hsList_.length;i++){
-        var h=hsList_[i];btn.textContent='⏳ ('+(i+1)+'/'+hsList_.length+')...';
-        var zip=new JSZip();
-        var dd=buildDocData(h);
-        var fn=(h.tenKH||'KH').replace(/\s+/g,'_')+'_'+(h.cccd||'');
-        for(var j=0;j<selectedBM.length;j++){
-          try{var ab=await fillTemplate(selectedBM[j].key,dd);zip.file(BM_FILES[selectedBM[j].key].name+'_'+fn.replace(/\s+/g,'_')+'.docx',ab);}
-          catch(e){console.error(e);showNotif('⚠️ Lỗi '+selectedBM[j].key+': '+e.message);}
-        }
-        saveAs(await zip.generateAsync({type:'blob'}),fn+'.zip');
-        await new Promise(function(r){setTimeout(r,300);});
-      }
-    }else{
-      var zip=new JSZip();
-      for(var i=0;i<hsList_.length;i++){
-        var h=hsList_[i];btn.textContent='⏳ ('+(i+1)+'/'+hsList_.length+')...';
-        var dd=buildDocData(h);
-        var fn=(h.tenKH||'KH').replace(/\s+/g,'_')+'_'+(h.cccd||'');
-        for(var j=0;j<selectedBM.length;j++){
-          try{var ab=await fillTemplate(selectedBM[j].key,dd);zip.file(fn+'/'+BM_FILES[selectedBM[j].key].name+'.docx',ab);}
-          catch(e){console.error(e);}
-        }
-      }
-      var today=new Date();
-      saveAs(await zip.generateAsync({type:'blob'}),'HoSo_PrimaBay_'+today.getFullYear()+String(today.getMonth()+1).padStart(2,'0')+String(today.getDate()).padStart(2,'0')+'.zip');
-    }
-    showNotif('✅ Đã xuất '+hsList_.length+' hồ sơ!');
-    closeModal('modal-export');
-  }catch(e){showNotif('❌ Lỗi: '+e.message);console.error(e);}
-  btn.disabled=false;btn.textContent='📥 Tạo & Tải về';
-}
-
-function getWhoName(id){
-  if(!id)return'';
-  var u=(typeof users!=='undefined'?users:[]).find(function(u){return u.id===id;});
-  return u?(u.name||u.full_name||u.email||''):'';
-}
-
-function renderBIDVTable(){
-  var wrap=document.getElementById('bidv-table-wrap');
-  if(!wrap)return;
-  var stFilter=(document.getElementById('bidv-filter-st')||{}).value||'';
-  var cbFilter=(document.getElementById('bidv-filter-cb')||{}).value||'';
-  var list=(hsList||[]).filter(function(h){
-    if(!h)return false;
-    if(!isQL()&&!isQTTD()&&!isAdmin()&&!isCDT()){if(h.canBoId!==currentUser.id)return false;}
-    if(stFilter){
-      var stMap={moi:'no_answer',dang:'contacted',cho:'docs_complete',choky:'approved_loan',chogn:'appointment',xong:'da_gn',tuchoi:'rejected_kh'};
-      var st=deriveHSStatus(h);
-      if(st!==stMap[stFilter]&&st!==stFilter)return false;
-    }
-    if(cbFilter&&h.canBoId!==cbFilter)return false;
-    return true;
-  });
-  var cbSel=document.getElementById('bidv-filter-cb');
-  if(cbSel&&cbSel.options.length<=1){
-    var cbIds=[];
-    list.forEach(function(h){if(h.canBoId&&cbIds.indexOf(h.canBoId)===-1)cbIds.push(h.canBoId);});
-    cbIds.forEach(function(id){
-      var u=(users||[]).find(function(u){return u.id===id;});
-      if(u){var opt=document.createElement('option');opt.value=id;opt.textContent=u.name||u.full_name||u.email;cbSel.appendChild(opt);}
-    });
-  }
-  if(!list.length){wrap.innerHTML='<div style="padding:32px;text-align:center;color:var(--txt3)">Không có hồ sơ nào</div>';updateExportBtn();return;}
-  var html='<table><thead><tr><th style="width:36px"><input type="checkbox" onchange="toggleAllBIDV(this.checked)"></th><th>STT</th><th>Mã căn</th><th>Họ tên KH</th><th>CCCD</th><th>Hạn mức vay</th><th>CB phụ trách</th><th>Trạng thái</th></tr></thead><tbody>';
-  list.forEach(function(h,i){
-    var chk=_bidvSelected.has(h.id)?'checked':'';
-    var stKey=deriveHSStatus(h);
-    var st=SC_VN[stKey]||(stKey||'');
-    var stColor=stKey==='da_gn'?'color:#166534;font-weight:600':['rejected_kh','rejected_income'].indexOf(stKey)!==-1?'color:#991B1B':['approved_loan','appointment','rejected_cic'].indexOf(stKey)!==-1?'color:#92400E;font-weight:600':'';
-    html+='<tr><td><input type="checkbox" class="bidv-chk" data-id="'+h.id+'" '+chk+' onchange="onBIDVChk(this)"></td><td style="text-align:center">'+(i+1)+'</td><td><b style="color:var(--blue)">'+(h.maCanHo||'')+'</b></td><td>'+(h.tenKH||'')+'</td><td style="font-size:12px;color:var(--txt3)">'+(h.cccd||'')+'</td><td style="text-align:right">'+(h.soTienVay?fmt(h.soTienVay):'')+'</td><td>'+(getWhoName(h.canBoId)||'—')+'</td><td style="'+stColor+'">'+st+'</td></tr>';
-  });
-  html+='</tbody></table>';
-  wrap.innerHTML=html;
-  updateExportBtn();
-}
-
-function onBIDVChk(el){
-  var id=el.dataset.id;
-  if(el.checked)_bidvSelected.add(id);else _bidvSelected.delete(id);
-  updateExportBtn();
-}
-function toggleAllBIDV(checked){
-  document.querySelectorAll('.bidv-chk').forEach(function(el){
-    el.checked=checked;
-    if(checked)_bidvSelected.add(el.dataset.id);else _bidvSelected.delete(el.dataset.id);
-  });
-  updateExportBtn();
-}
-function updateExportBtn(){
-  var n=_bidvSelected.size;
-  var btn=document.getElementById('btn-export-modal');
-  if(btn){btn.style.display=n>0?'':'none';var ec=document.getElementById('export-count');if(ec)ec.textContent=n;}
-}
-function openExportModal(){
-  if(_bidvSelected.size===0){showNotif('Vui lòng chọn ít nhất 1 hồ sơ!');return;}
-  var qttdSec=document.getElementById('export-qttd-section');
-  if(qttdSec)qttdSec.style.display=(isQTTD()||isAdmin())?'':'none';
-  var khList=Array.from(_bidvSelected).map(function(id){
-    var h=hsList.find(function(x){return x.id===id;});
-    return h?'• '+h.tenKH+' — '+h.maCanHo:'';
-  }).join('<br>');
-  var kl=document.getElementById('export-kh-list');
-  if(kl)kl.innerHTML='<b>Đã chọn '+_bidvSelected.size+' hồ sơ:</b><br>'+khList;
-  var mel=document.getElementById('modal-export');
-  if(mel)mel.setAttribute('style','display:flex !important;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto');
-}
-function closeModal(id){
-  var el=document.getElementById(id);
-  if(el){el.removeAttribute('style');el.classList.remove('open');}
-}
-function selectAllBM(group,checked){
-  document.querySelectorAll('.bm-'+group).forEach(function(el){el.checked=checked;});
-}
 </script>
 <script>
 
