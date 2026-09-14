@@ -3396,7 +3396,9 @@ function daysUntil(iso){
 }
 function hsAlertLevel(h){
   if(!h) return 'ok';
-  if(h.status==='xong'||h.status==='tuchoi'||h.status==='disbursed'||h.status==='rejected') return 'done';
+  // Dùng deriveHSStatus để lấy trạng thái thực (bao gồm từ weekly reports)
+  var _st = deriveHSStatus(h);
+  if(_st==='xong'||_st==='tuchoi'||h.status==='disbursed'||h.status==='rejected'||h.status==='cancelled') return 'done';
   if(ckProgress(h).pct===100) return 'done';
   var dGN = h.ngayGiaiNgan ? daysUntil(h.ngayGiaiNgan) : null;
   if(dGN !== null && dGN <= 3) return 'over';
