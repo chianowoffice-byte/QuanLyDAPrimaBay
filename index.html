@@ -4462,9 +4462,10 @@ async function fillTemplate(key, data) {
   }
 
   function processXmlDom(xmlStr) {
+    console.log('[processXml] called, xmlStr length:', xmlStr ? xmlStr.length : 'NULL');
     var parser = new DOMParser();
     var xmlDoc = parser.parseFromString(xmlStr,'application/xml');
-    var W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    // W, CO_S, CO_E, hasCo, fillParaDom etc. từ scope fillTemplate
 
     // ── 1. Xử lý paragraphs NGOÀI table (body-level) ──
     var body = xmlDoc.getElementsByTagNameNS(W,'body')[0];
@@ -4484,8 +4485,10 @@ async function fillTemplate(key, data) {
     });
     toDelete.forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); });
 
+    console.log('[processXml] bodyParas:', bodyParas.length, 'body children');
     // ── 2. Xử lý paragraphs TRONG table: iterate unique tc ──
     var allTcs = Array.from(xmlDoc.getElementsByTagNameNS(W,'tc'));
+    console.log('[processXml] bodyParas:', bodyParas.length, 'allTcs:', allTcs.length);
     var seenTc = [];
     allTcs.forEach(function(tc){
       if (seenTc.indexOf(tc) !== -1) return;
@@ -4505,6 +4508,13 @@ async function fillTemplate(key, data) {
 
     return new XMLSerializer().serializeToString(xmlDoc);
   }
+
+  // Áp dụng fill vào các file XML trong docx
+  ['word/document.xml','word/header1.xml','word/footer1.xml'].forEach(function(fname){
+    if (!zip2.files[fname]) return;
+    var xml2 = processXmlDom(zip2.files[fname].asText());
+    zip2.file(fname, xml2);
+  });
 
   var output = zip2.generate({type:'arraybuffer',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
   console.log('[Fill] DONE:', key, output.byteLength, 'bytes');
