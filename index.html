@@ -1218,6 +1218,12 @@ async function syncFromDB(silent) {
     var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
     if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
     if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
+    // Normalize số tiền từ string VN → integer
+    hsList = hsList.map(function(h){
+      var numFields = ['giaHDMB','soTienVay','vtcPhaiNop','vtcDaNop','hanMucDuocDuyet','soTienGiaiNgan'];
+      numFields.forEach(function(f){ if(h[f]) h[f] = parseVND(h[f]) || h[f]; });
+      return h;
+    });
     persist();
     renderHSTable();
     renderDB();
@@ -1607,19 +1613,19 @@ function mapDbHS(lf) {
     maCanHo:       apt.code       || '',
     tang:          apt.floor      || '',
     dienTich:      apt.area_m2    || '',
-    giaHDMB:       lf.sale_price  || 0,
+    giaHDMB:       parseVND(lf.sale_price) || 0,
     soHDMB:        lf.hdmb_code   || '',
     ngayKyHDMB:    toISODate(lf.hdmb_date)   || '',
     hanGiaiNgan:   toISODate(lf.max_disbursement_date) || '',
-    vtcPhaiNop:    lf.vtc_required || apt.vtc_required || 0,
-    vtcDaNop:      lf.vtc_paid    || 0,
-    soTienVay:     lf.loan_amount_requested || 0,
+    vtcPhaiNop:    parseVND(lf.vtc_required) || parseVND(apt.vtc_required) || 0,
+    vtcDaNop:      parseVND(lf.vtc_paid) || 0,
+    soTienVay:     parseVND(lf.loan_amount_requested) || 0,
     kyHan:         lf.loan_term_months || '',
     hinhThucVay:   lf.loan_form   || '30 tháng HTLS',
     csChinhSach:   lf.loan_policy_ref || '',
-    hanMucDuocDuyet: lf.loan_amount_approved || 0,
+    hanMucDuocDuyet: parseVND(lf.loan_amount_approved) || 0,
     ngayGiaiNgan:  toISODate(lf.disbursement_date) || '',
-    soTienGiaiNgan:lf.disbursement_amount || 0,
+    soTienGiaiNgan:parseVND(lf.disbursement_amount) || 0,
     canBoId:       lf.officer_id  || '',
     cbBIMName:     off.full_name  || '',
     locked:        lf.is_locked   || false,
@@ -1981,14 +1987,27 @@ function collectCK(){
 // ================================================
 function fmt(val) {
   if (val === '' || val === null || val === undefined) return '';
-  var n = Number(String(val).replace(/,/g,''));
+  var s = String(val).trim();
+  // Strip dấu chấm (VN) và dấu phẩy rồi parse
+  var cleaned = s.replace(/\./g,'').replace(/,/g,'');
+  var n = parseInt(cleaned);
   if (isNaN(n)) return val;
-  return n.toLocaleString('vi-VN');
+  // Format dùng dấu PHẨY ngăn cách hàng nghìn: 123,000,000
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// Parse số VN về integer (bỏ dấu chấm/phẩy)
+function parseVND(val) {
+  if (!val && val !== 0) return null;
+  var s = String(val).trim().replace(/\./g,'').replace(/,/g,'');
+  var n = parseInt(s);
+  return isNaN(n) ? null : n;
 }
 // Parse lại khi lưu — bỏ dấu phẩy
 function unFmt(val) {
-  if (!val) return '';
-  return String(val).replace(/\./g,'').replace(/,/g,'.');
+  if (!val && val !== 0) return '';
+  // Bỏ dấu chấm/phẩy VN, trả về số nguyên dạng string
+  return String(val).replace(/\./g,'').replace(/,/g,'');
 }
 // Cho input number dạng text với dấu phẩy
 function numInput(id, val, dis, extra) {
@@ -1996,7 +2015,9 @@ function numInput(id, val, dis, extra) {
   var d = dis ? ' ' + dis : '';
   var x = extra ? ' ' + extra : '';
   return '<input type="text" inputmode="numeric" id="' + id + '" value="' + v + '"' + d + x
-       + ' onInput="this.value=fmt(this.value.replace(/[^0-9]/g,\'\'))"'
+       + ' onFocus="this.value=this.value.replace(/,/g,\'\')"'
+       + ' onBlur="this.value=fmt(this.value.replace(/[^0-9]/g,\'\'))"'
+       + ' onInput="this.value=this.value.replace(/[^0-9]/g,\'\')"'
        + ' style="font-variant-numeric:tabular-nums">';
 }
 
