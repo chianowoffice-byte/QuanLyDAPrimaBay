@@ -4382,7 +4382,6 @@ async function fillTemplate(key, data) {
   function normKey(k){ return k.replace(/^[\s']+|[\s']+$/g,'').trim(); }
   var dataMap = {};
   Object.keys(data).forEach(function(k){ dataMap[normKey(k)] = data[k]; });
-
   function findVal(raw) {
     var k = normKey(raw);
     if (dataMap.hasOwnProperty(k)) return dataMap[k];
@@ -4404,90 +4403,108 @@ async function fillTemplate(key, data) {
   var PH_RE = /<<\s*'?\s*(.+?)\s*'?\s*>>/g;
   var W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
+  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
   function getParaText(para) {
     var texts = [], wts = para.getElementsByTagNameNS(W,'t');
     for (var i=0;i<wts.length;i++) texts.push(wts[i].textContent||'');
     return texts.join('');
   }
 
-  function fillParaDom(para) {
+  function fillParaDom(para, inCo) {
     var full = getParaText(para);
-    if (!full) return;
-
-    // Xử lý CO_BORROWER inline
+    // Xử lý inline CO_BORROWER
     if (full.indexOf(CO_IS) !== -1) {
       if (!hasCo) {
-        var re_inline = new RegExp(escRe(CO_IS)+'[\\s\\S]*?'+escRe(CO_IE));
-        full = full.replace(re_inline, '');
+        full = full.replace(new RegExp(escRe(CO_IS)+'[\\s\\S]*?'+escRe(CO_IE)), '');
       } else {
         full = full.replace(new RegExp(escRe(CO_IS),'g'),'').replace(new RegExp(escRe(CO_IE),'g'),'');
       }
     }
-    // Xóa block markers còn sót
     full = full.replace(new RegExp(escRe(CO_S),'g'),'').replace(new RegExp(escRe(CO_E),'g'),'');
 
-    if (full.indexOf('<<') === -1 && full === getParaText(para)) return;
+    // Trong CO block và không có VC
+    if (inCo && !hasCo) {
+      var phCount = (full.match(/<<[^>]+>>/g)||[]).length;
+      var cleanText = full.replace(/<<[^>]+>>/g,'').trim();
+      if (phCount > 0 && !cleanText) {
+        // 🔵 SINGLE: chỉ có placeholder → để trống
+        full = '';
+      }
+      // 🟡 MIXED: có text + placeholder → fill bình thường (value VC = '')
+    }
 
-    // Replace placeholders
+    // Fill placeholders
     PH_RE.lastIndex = 0;
     var newText = full.replace(PH_RE, function(m,k){
       var val = findVal(k);
       return (val !== null && val !== undefined) ? String(val) : '';
     });
 
-    // Lấy pPr và rPr tốt nhất
+    // Update paragraph DOM
     var pPr = para.getElementsByTagNameNS(W,'pPr')[0] || null;
     var bestRPr = null, bestLen = 0;
     var runs = para.getElementsByTagNameNS(W,'r');
     for (var i=0;i<runs.length;i++){
       var rpr = runs[i].getElementsByTagNameNS(W,'rPr')[0];
-      if (rpr){
-        var s = new XMLSerializer().serializeToString(rpr);
-        if (s.length > bestLen){ bestLen=s.length; bestRPr=rpr; }
-      }
+      if (rpr){ var s=new XMLSerializer().serializeToString(rpr); if(s.length>bestLen){bestLen=s.length;bestRPr=rpr;} }
     }
-
-    // Xóa tất cả children trừ pPr
-    Array.from(para.childNodes).forEach(function(ch){
-      if (!pPr || ch !== pPr) para.removeChild(ch);
-    });
-
-    // Tạo run mới
-    var doc = para.ownerDocument;
-    var newR = doc.createElementNS(W,'w:r');
+    Array.from(para.childNodes).forEach(function(ch){ if(!pPr||ch!==pPr) para.removeChild(ch); });
+    var doc2 = para.ownerDocument;
+    var newR = doc2.createElementNS(W,'w:r');
     if (bestRPr) newR.appendChild(bestRPr.cloneNode(true));
-    var newT = doc.createElementNS(W,'w:t');
+    var newT = doc2.createElementNS(W,'w:t');
     newT.textContent = newText;
-    if (newText && (newText[0]===' ' || newText[newText.length-1]===' '))
+    if (newText && (newText[0]===' '||newText[newText.length-1]===' '))
       newT.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');
     newR.appendChild(newT);
     para.appendChild(newR);
   }
 
-  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
-
   function processXmlDom(xmlStr) {
     var parser = new DOMParser();
     var xmlDoc = parser.parseFromString(xmlStr,'application/xml');
-    var paras = Array.from(xmlDoc.getElementsByTagNameNS(W,'p'));
+    var W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+
+    // ── 1. Xử lý paragraphs NGOÀI table (body-level) ──
+    var body = xmlDoc.getElementsByTagNameNS(W,'body')[0];
+    var bodyParas = [];
+    if (body) {
+      Array.from(body.childNodes).forEach(function(node){
+        if (node.localName === 'p') bodyParas.push(node);
+      });
+    }
     var toDelete = [], inCo = false;
-    paras.forEach(function(para){
+    bodyParas.forEach(function(para){
       var text = getParaText(para).trim();
       if (text === CO_S){ inCo=true; toDelete.push(para); return; }
       if (text === CO_E){ inCo=false; toDelete.push(para); return; }
-      if (inCo && !hasCo){ toDelete.push(para); return; }
-      fillParaDom(para);
+      if (inCo && !hasCo) { toDelete.push(para); }
+      else { fillParaDom(para, inCo); }
     });
     toDelete.forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); });
+
+    // ── 2. Xử lý paragraphs TRONG table: iterate unique tc ──
+    var allTcs = Array.from(xmlDoc.getElementsByTagNameNS(W,'tc'));
+    var seenTc = [];
+    allTcs.forEach(function(tc){
+      if (seenTc.indexOf(tc) !== -1) return;
+      seenTc.push(tc);
+      // Lấy TẤT CẢ w:p trong tc này (kể cả nested)
+      var tcParas = Array.from(tc.getElementsByTagNameNS(W,'p'));
+      var tcToDel = [], inCoCell = false;
+      tcParas.forEach(function(para){
+        var text = getParaText(para).trim();
+        if (text === CO_S){ inCoCell=true; tcToDel.push(para); return; }
+        if (text === CO_E){ inCoCell=false; tcToDel.push(para); return; }
+        // Trong cell: SINGLE placeholder → để trống, MIXED → fill bình thường
+        fillParaDom(para, inCoCell);
+      });
+      tcToDel.forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); });
+    });
+
     return new XMLSerializer().serializeToString(xmlDoc);
   }
-
-  ['word/document.xml','word/header1.xml','word/footer1.xml'].forEach(function(fname){
-    if (!zip2.files[fname]) return;
-    var xml2 = processXmlDom(zip2.files[fname].asText());
-    zip2.file(fname, xml2);
-    console.log('[Fill]', fname, 'done');
-  });
 
   var output = zip2.generate({type:'arraybuffer',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
   console.log('[Fill] DONE:', key, output.byteLength, 'bytes');
