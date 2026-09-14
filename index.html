@@ -594,7 +594,7 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
             <option value="ql">CB Quản lý</option>
             <option value="cdt">CĐT (BIM)</option>
             <option value="admin">Admin</option>
-          <option value="viewer">Lãnh đạo / Kiểm tra</option></select>
+          <option value="viewer">Lãnh đạo / Kiểm tra</option><option value="qttd">QTTD</option></select>
         </div>
       </div>
     </div>
@@ -1366,7 +1366,8 @@ function todayStr(){
 }
 function getUserName(id){ var u=users.find(function(x){return x.id===id;}); return u?u.name:'—'; }
 function isAdmin(){ return currentUser && currentUser.role==='admin'; }
-function isViewer(){ return currentUser && currentUser.role==='viewer'; }
+function isViewer(){ return currentUser && (currentUser.role==='viewer' || currentUser.role==='qttd'); }
+function isQTTD(){ return currentUser && currentUser.role==='qttd'; }
 function isQL(){ return currentUser && (currentUser.role==='admin' || currentUser.role==='ql'); }
 function isCDT(){ return currentUser && (currentUser.role==='cdt'||currentUser.role==='cdt_view'||currentUser.role==='cdt_admin'); }
 function canSetGiaiNgan(){ return isQL() || (currentUser && currentUser.canSetGiaiNgan===true); }
@@ -1398,8 +1399,8 @@ function sBadge(s){
   var c = SC[s] || SC.moi;
   return '<span class="badge ' + c.c + '">' + (SC_VN[s]||s) + '</span>';
 }
-var ROLE_LBL = {admin:'Admin', ql:'CB Quản lý', viewer:'Lãnh đạo / Kiểm tra', cb:'Cán bộ BIDV', cdt:'CĐT (BIM)'};
-var ROLE_CLS = {admin:'rb-admin', viewer:'rb-ql', ql:'rb-ql', cb:'rb-cb', cdt:'rb-cdt'};
+var ROLE_LBL = {admin:'Admin', ql:'CB Quản lý', viewer:'Lãnh đạo / Kiểm tra', cb:'Cán bộ BIDV', cdt:'CĐT (BIM)', qttd:'QTTD'};
+var ROLE_CLS = {admin:'rb-admin', viewer:'rb-ql', ql:'rb-ql', cb:'rb-cb', cdt:'rb-cdt', qttd:'rb-ql'};
 function rBadge(r){ return '<span class="rb ' + (ROLE_CLS[r]||'rb-cb') + '">' + (ROLE_LBL[r]||r) + '</span>'; }
 
 // ==================================================
@@ -1504,6 +1505,7 @@ async function doLogin(){
       role: dbUser.role==='officer' ? 'cb' :
             dbUser.role==='manager' ? 'ql' :
             dbUser.role==='admin'   ? 'admin' :
+            dbUser.role==='qttd'    ? 'qttd'  :
             (dbUser.role==='cdt_view'||dbUser.role==='cdt_admin') ? 'cdt' : dbUser.role,
       db_role: dbUser.role,
       pgd: dbUser.pgd||'', phone: dbUser.phone||'',
@@ -1716,13 +1718,15 @@ function applyPerms(){
   tog('ni-imp',       isQL());
   tog('ns-sys',       isAdmin());
   tog('ni-usr',       isAdmin());
+  tog('ni-qttd',      isQTTD());
+  tog('ni-bidv',       isQL() || isViewer());
   tog('btn-new-hs',   isQL() && !isCDT() && !isViewer());
   tog('s-cb',         isQL() || isViewer());
   tog('panel-cbload', isQL() || isViewer());
   tog('ni-db',        !isCDT());
   tog('ni-hs',        true);
   tog('ni-cdt-up',    false);
-  tog('ni-bidv', !isCDT() && !isViewer());
+  tog('ni-bidv', !isCDT());
   tog('ni-cdt-view',  isCDT());
 }
 
@@ -2055,7 +2059,7 @@ function buildHSForm(h) {
   html += '<div class="tab" onclick="swTab(this,\'t-cic\')">🔍 CIC</div>';
   if (!isCDTUser) html += '<div class="tab" onclick="swTab(this,\'t-hdgn\')">📋 HĐ & GN</div>';
   html += '<div class="tab" onclick="swTab(this,\'t-prog\')">📞 Cập nhật tiến độ</div>';
-  if (isQLAdmin) {
+  if (isQLAdmin || isQTTD()) {
     html += '<div class="tab" onclick="swTab(this,\'t-adm\')">⚙️ Phân công</div>';
   }
   html += '</div>';
@@ -2329,7 +2333,7 @@ function buildHSForm(h) {
   // ════════════════════════════════════════════
   // TAB 5: PHÂN CÔNG — chỉ QL/Admin
   // ════════════════════════════════════════════
-  if (isQLAdmin) {
+  if (isQLAdmin || isQTTD()) {
     html += '<div id="t-adm" style="display:none">';
     var cbOpts = '<option value="">-- Chọn cán bộ --</option>';
     users.filter(function(u){return u.active&&(u.role==='officer'||u.role==='manager'||u.role==='cb'||u.role==='ql');})
@@ -2337,8 +2341,9 @@ function buildHSForm(h) {
         cbOpts+='<option value="'+u.id+'"'+(h&&h.canBoId===u.id?' selected':'')+'>'+u.name+'</option>';
       });
     html += '<div class="fgrid" style="gap:12px">';
-    html += '<div class="fg ffull"><label>Cán bộ phụ trách</label><select id="f-cbid">'+cbOpts+'</select></div>';
-    html += '<div class="fg ffull"><label>Ghi chú nội bộ</label><textarea id="f-gc">'+dv('ghiChu')+'</textarea></div>';
+    var cbDis = isQTTD() ? 'disabled' : '';
+    html += '<div class="fg ffull"><label>Cán bộ phụ trách</label><select id="f-cbid" '+cbDis+'>'+cbOpts+'</select></div>';
+    html += '<div class="fg ffull"><label>Ghi chú nội bộ</label><textarea id="f-gc" '+cbDis+'>'+dv('ghiChu')+'</textarea></div>';
     html += '</div>';
     if (h) {
       html += '<div class="divider"></div>';
@@ -2346,7 +2351,7 @@ function buildHSForm(h) {
       if (h.lockedBy) html += ' · Chốt: <b>'+h.lockedBy+'</b> lúc '+(h.lockedAt||'');
       html += '</div>';
     }
-    html += '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveAdm()">💾 Lưu phân công</button></div>';
+    if (isQLAdmin) html += '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveAdm()">💾 Lưu phân công</button></div>';
     html += '</div>';
   }
 
@@ -3280,7 +3285,8 @@ async function saveUser(){
                role === 'ql'    ? 'manager' :
                role === 'admin' ? 'admin'   :
                role === 'cdt'   ? 'cdt_view':
-               role === 'viewer'? 'viewer'  : role;
+               role === 'viewer'? 'viewer'  :
+               role === 'qttd'  ? 'qttd'   : role;
 
   var saveBtn = document.querySelector('#modal-usr .btn-primary');
   if(saveBtn){ saveBtn.textContent='⏳ Đang lưu...'; saveBtn.disabled=true; }
