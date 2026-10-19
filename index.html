@@ -648,7 +648,17 @@ input[type=checkbox]:checked{accent-color:var(--blue)}
             <button class="btn" style="font-size:11px;padding:3px 8px" onclick="selectAllBM('qttd',false)">Hủy tất cả</button>
           </div>
         </div>
-        <div style="color:var(--txt3);font-size:12px;font-style:italic;padding:8px">Bộ mẫu QTTD sẽ được bổ sung sau</div>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM2_HTD" checked> BM2 — Hợp đồng tín dụng (QTTD)</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM3_TTHTLS" checked> BM3 — Thỏa thuận hỗ trợ lãi suất</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM4_TTQLTS" checked> BM4 — Thỏa thuận quản lý tài sản</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM5_GDDB" checked> BM5 — Giấy đăng ký đảm bảo</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM6_UNC"> BM6 — Ủy nhiệm chi (lần 1)</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM7_BBKTSDVV"> BM7 — BB kiểm tra sử dụng vốn vay</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM9_BBGN" checked> BM9 — BB giao nhận giấy tờ TSĐB</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM10_BBDG_L1"> BM10 — BB định giá QTSĐB (Lần 1)</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM11_BBDG_L2"> BM11 — BB định giá QTSĐB (Lần 2)</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM12_BBBG" checked> BM12 — BB bàn giao LS (QTTD → QLKH)</label>
+        <label class="bm-item"><input type="checkbox" class="bm-qttd" value="Q_BM13B_TCQTS" checked> BM13B — Hợp đồng thế chấp QTSĐB</label>
       </div>
       <div style="border-top:1px solid var(--bdr);padding-top:12px">
         <div style="font-weight:600;font-size:13px;margin-bottom:8px">📦 Định dạng xuất:</div>
@@ -4302,10 +4312,21 @@ async function exportCDTExcel() {
 }
 
 var _tplCache = {};var _libsLoaded = false;var GITHUB_BASE = 'https://chianowoffice-byte.github.io/QuanLyDAPrimaBay/templates/';var BM_FILES = {
-  BM1:{file:'BM1_BCDX.docx',name:'BM1_BCDX'},
-  BM2:{file:'BM2_GDNVV.docx',name:'BM2_GiayDNVV'},
-  BM3:{file:'BM3_BBBG.docx',name:'BM3_BBBG_QTTD'},
-  BM4:{file:'BM4_BGNDK.docx',name:'BM4_BanGiaoNDK'}
+  BM1:{file:'BM1_preprocessed.docx',name:'BM1_BCDX'},
+  BM2:{file:'BM2_preprocessed.docx',name:'BM2_GiayDNVV'},
+  BM3:{file:'BM3_preprocessed.docx',name:'BM3_BBBG_QTTD'},
+  BM4:{file:'BM4_preprocessed.docx',name:'BM4_BanGiaoNDK'},
+  Q_BM2_HTD:{file:'BM2_HTD_QTTD_preprocessed.docx',name:'BM2_HopDongTinDung'},
+  Q_BM3_TTHTLS:{file:'BM3_TTHTLS_preprocessed.docx',name:'BM3_ThoaThuanHTLS'},
+  Q_BM4_TTQLTS:{file:'BM4_TTQLTS_preprocessed.docx',name:'BM4_ThoaThuanQLTS'},
+  Q_BM5_GDDB:{file:'BM5_GDDB_preprocessed.docx',name:'BM5_GiayDangKyDB'},
+  Q_BM6_UNC:{file:'BM6_UNC_1_preprocessed.docx',name:'BM6_UyNhiemChi_L1'},
+  Q_BM7_BBKTSDVV:{file:'BM7_BBKTSDVV_preprocessed.docx',name:'BM7_BB_KiemTraSDVV'},
+  Q_BM9_BBGN:{file:'BM9_BBGN_preprocessed.docx',name:'BM9_BB_GiaoNhanGiayTo'},
+  Q_BM10_BBDG_L1:{file:'BM10_BBDG_L1_preprocessed.docx',name:'BM10_BB_DinhGia_L1'},
+  Q_BM11_BBDG_L2:{file:'BM11_BBDG_L2_preprocessed.docx',name:'BM11_BB_DinhGia_L2'},
+  Q_BM12_BBBG:{file:'BM12_BBBG_preprocessed.docx',name:'BM12_BB_BanGiao_LS'},
+  Q_BM13B_TCQTS:{file:'BM13B_TCQTS_preprocessed.docx',name:'BM13B_HopDong_TheChap'}
 };var _bidvSelected = new Set();
 
 
@@ -4632,9 +4653,19 @@ function buildDocData(h){
     '53 - Bằng Chữ Số tiền/ Hạn mức vay':numToWords(h.soTienVay),
     '53- ST 5% Căn hộ số':fmt(h.vtc_5pct),
     '54 - CDT HTLS + NH GN lần 1':fmt(h.disbursement_1),
+    '55 - Bằng chữ NH GN lần 1':numToWords(h.disbursement_1),
     '57 - Số tiền duy trì TK TT':fmt(h.min_account_balance),
     '58 - Thời gian vay':h.hinhThucVay||'',
-    '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop)
+    '59 - Số hợp đồng thế chấp':h.mortgage_code||'',
+    '60 - Số hợp đồng tín dụng':h.hdtd_code||'',
+    '61 - Thỏa thuận HTLS':h.htls_agreement||'',
+    '62 - Thỏa thuận QLTS':h.qlts_agreement||'',
+    '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop),
+    '48 - Bằng chữ Giá trị HDMB căn':numToWords(h.giaHDMB),
+    '50 - Bằng chữ Giá trị HDMB căn hộ (Không bao gồm kinh phí bảo trì)':numToWords(h.hdmb_value_with_mgt||h.giaHDMB),
+    '67 - Bằng chữ - VTC/ định gíá lần 1':numToWords(h.equity_amount||h.vtcDaNop),
+    '70 - Định giá lần 2':fmt(h.valuation_2),
+    '71 - Bằng chữ -Định giá lần 2':numToWords(h.valuation_2)
   };
 }
 
