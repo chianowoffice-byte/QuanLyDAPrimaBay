@@ -4462,6 +4462,10 @@ async function fillTemplate(key, data) {
   }
 
   function fillParaDom(para, inCo) {
+    // Bỏ qua paragraph có drawing/image (logo, hình ảnh nhúng)
+    var WD = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing';
+    if (para.getElementsByTagNameNS(WD,'inline').length > 0 ||
+        para.getElementsByTagNameNS(WD,'anchor').length > 0) return;
     var full = getParaText(para);
     // Xử lý inline CO_BORROWER
     if (full.indexOf(CO_IS) !== -1) {
