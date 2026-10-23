@@ -4466,8 +4466,35 @@ async function fillTemplate(key, data) {
     var WD = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing';
     if (para.getElementsByTagNameNS(WD,'inline').length > 0 ||
         para.getElementsByTagNameNS(WD,'anchor').length > 0) return;
-    var full = getParaText(para);
-    // Xử lý inline CO_BORROWER
+
+    var doc2 = para.ownerDocument;
+    var runs = Array.from(para.getElementsByTagNameNS(W,'r'));
+
+    // ── Kiểm tra nhanh: paragraph có placeholder không? ──
+    var paraText = getParaText(para);
+
+    // Xử lý CO_BORROWER marker ở cấp paragraph (marker nằm trong run riêng)
+    // CO_S / CO_E / CO_IS / CO_IE chỉ là text markers, không ảnh hưởng formatting
+    var hasCOMarker = paraText.indexOf(CO_S) !== -1 || paraText.indexOf(CO_E) !== -1 ||
+                      paraText.indexOf(CO_IS) !== -1 || paraText.indexOf(CO_IE) !== -1;
+    var hasPlaceholder = PH_RE.test(paraText);
+    PH_RE.lastIndex = 0;
+
+    if (!hasPlaceholder && !hasCOMarker) return; // Không có gì để xử lý
+
+    // ── Chiến lược: xử lý TỪNG RUN riêng lẻ, giữ nguyên rPr của từng run ──
+    // Không gộp tất cả thành 1 run → tránh áp sai formatting
+
+    // Thu thập tất cả runs cùng text của chúng
+    var runData = runs.map(function(r) {
+      var wts = r.getElementsByTagNameNS(W,'t');
+      var txt = '';
+      for (var i=0;i<wts.length;i++) txt += (wts[i].textContent||'');
+      return { el: r, txt: txt };
+    });
+
+    // Ghép text toàn paragraph để xử lý CO_BORROWER inline
+    var full = paraText;
     if (full.indexOf(CO_IS) !== -1) {
       if (!hasCo) {
         full = full.replace(new RegExp(escRe(CO_IS)+'[\\s\\S]*?'+escRe(CO_IE)), '');
@@ -4477,61 +4504,88 @@ async function fillTemplate(key, data) {
     }
     full = full.replace(new RegExp(escRe(CO_S),'g'),'').replace(new RegExp(escRe(CO_E),'g'),'');
 
-    // Trong CO block và không có VC
+    // Trong CO block và không có người vay thứ 2
     if (inCo && !hasCo) {
       var phCount = (full.match(/<<[^>]+>>/g)||[]).length;
       var cleanText = full.replace(/<<[^>]+>>/g,'').trim();
-      if (phCount > 0 && !cleanText) {
-        // 🔵 SINGLE: chỉ có placeholder → để trống
-        full = '';
-      }
-      // 🟡 MIXED: có text + placeholder → fill bình thường (value VC = '')
+      if (phCount > 0 && !cleanText) { full = ''; }
     }
 
-    // Fill placeholders
+    // Fill placeholders trong full text
     PH_RE.lastIndex = 0;
-    var newText = full.replace(PH_RE, function(m,k){
+    var filledFull = full.replace(PH_RE, function(m,k){
       var val = findVal(k);
       return (val !== null && val !== undefined) ? String(val) : '';
     });
 
-    // Update paragraph DOM
+    // ── Nếu toàn bộ paragraph trống sau fill → xóa hết runs, để paragraph rỗng ──
+    if (filledFull === '') {
+      var pPr0 = para.getElementsByTagNameNS(W,'pPr')[0] || null;
+      Array.from(para.childNodes).forEach(function(ch){ if(!pPr0||ch!==pPr0) para.removeChild(ch); });
+      return;
+    }
+
+    // ── Xử lý từng run: thay text placeholder, giữ nguyên rPr ──
+    // Cách tiếp cận: phân bổ filledFull vào các runs theo vị trí placeholder
+    // Đơn giản hơn: với mỗi run, nếu text của run chứa placeholder thì fill vào run đó
+    // Nếu run chứa CO marker thì xóa run đó
+
     var pPr = para.getElementsByTagNameNS(W,'pPr')[0] || null;
-    // Lấy rPr từ run đầu tiên có text thường (không phải placeholder)
-    // Ưu tiên: run có text không chứa << >> ; fallback: run đầu tiên bất kỳ
-    // Sau đó strip các thuộc tính gây lỗi hiển thị: highlight, shd, color
-    var bestRPr = null;
-    var runs = para.getElementsByTagNameNS(W,'r');
-    var firstRPr = null;
-    for (var i=0;i<runs.length;i++){
-      var rtxt = '';
-      var wts2 = runs[i].getElementsByTagNameNS(W,'t');
-      for(var j=0;j<wts2.length;j++) rtxt += (wts2[j].textContent||'');
-      var rpr = runs[i].getElementsByTagNameNS(W,'rPr')[0];
-      if (rpr && !firstRPr) firstRPr = rpr;
-      // Ưu tiên run có text thường (không phải placeholder thuần túy)
-      if (rpr && rtxt && rtxt.indexOf('<<') === -1 && !bestRPr) { bestRPr = rpr; break; }
-    }
-    if (!bestRPr) bestRPr = firstRPr;
+    // Xóa tất cả child nodes trừ pPr
     Array.from(para.childNodes).forEach(function(ch){ if(!pPr||ch!==pPr) para.removeChild(ch); });
-    var doc2 = para.ownerDocument;
-    var newR = doc2.createElementNS(W,'w:r');
-    if (bestRPr) {
-      var rprClone = bestRPr.cloneNode(true);
-      // Xóa các thuộc tính gây bôi đen/highlight/màu nền bất thường
-      var stripTags = ['highlight','shd','color','rHighlight'];
-      stripTags.forEach(function(tag){
-        var el = rprClone.getElementsByTagNameNS(W, tag)[0];
-        if (el) rprClone.removeChild(el);
+
+    // Tái tạo paragraph từ runData đã xử lý
+    // Logic: mỗi run xử lý text của chính nó
+    runData.forEach(function(rd) {
+      var txt = rd.txt;
+
+      // Bỏ CO markers khỏi text của run này
+      txt = txt.replace(new RegExp(escRe(CO_S),'g'),'')
+               .replace(new RegExp(escRe(CO_E),'g'),'');
+
+      // Xử lý inline CO_IS/CO_IE: nếu toàn bộ text nằm trong CO section và không có người vay 2
+      if (txt.indexOf(CO_IS) !== -1 || txt.indexOf(CO_IE) !== -1) {
+        if (!hasCo) {
+          txt = txt.replace(new RegExp(escRe(CO_IS)+'[\\s\\S]*?'+escRe(CO_IE)), '');
+          txt = txt.replace(new RegExp(escRe(CO_IS),'g'),'').replace(new RegExp(escRe(CO_IE),'g'),'');
+        } else {
+          txt = txt.replace(new RegExp(escRe(CO_IS),'g'),'').replace(new RegExp(escRe(CO_IE),'g'),'');
+        }
+      }
+
+      // Trong CO block và không có người vay 2: nếu run chỉ có placeholder thì bỏ qua
+      if (inCo && !hasCo) {
+        var rtxtClean = txt.replace(/<<[^>]+>>/g,'').trim();
+        var rPhCount = (txt.match(/<<[^>]+>>/g)||[]).length;
+        if (rPhCount > 0 && !rtxtClean) { return; } // bỏ run này
+      }
+
+      // Fill placeholder trong run này
+      PH_RE.lastIndex = 0;
+      txt = txt.replace(PH_RE, function(m,k){
+        var val = findVal(k);
+        return (val !== null && val !== undefined) ? String(val) : '';
       });
-      newR.appendChild(rprClone);
-    }
-    var newT = doc2.createElementNS(W,'w:t');
-    newT.textContent = newText;
-    if (newText && (newText[0]===' '||newText[newText.length-1]===' '))
-      newT.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');
-    newR.appendChild(newT);
-    para.appendChild(newR);
+
+      // Tạo run mới với rPr gốc của run đó (giữ nguyên formatting)
+      var newR = doc2.createElementNS(W,'w:r');
+      var origRPr = rd.el.getElementsByTagNameNS(W,'rPr')[0];
+      if (origRPr) {
+        var rprClone = origRPr.cloneNode(true);
+        // Chỉ strip highlight/shd để tránh bôi đen, GIỮ LẠI bold/italic/font size
+        ['highlight','shd','rHighlight'].forEach(function(tag){
+          var el = rprClone.getElementsByTagNameNS(W, tag)[0];
+          if (el) rprClone.removeChild(el);
+        });
+        newR.appendChild(rprClone);
+      }
+      var newT = doc2.createElementNS(W,'w:t');
+      newT.textContent = txt;
+      if (txt && (txt[0]===' '||txt[txt.length-1]===' '))
+        newT.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');
+      newR.appendChild(newT);
+      para.appendChild(newR);
+    });
   }
 
   function processXmlDom(xmlStr) {
