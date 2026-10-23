@@ -4497,16 +4497,35 @@ async function fillTemplate(key, data) {
 
     // Update paragraph DOM
     var pPr = para.getElementsByTagNameNS(W,'pPr')[0] || null;
-    var bestRPr = null, bestLen = 0;
+    // Lấy rPr từ run đầu tiên có text thường (không phải placeholder)
+    // Ưu tiên: run có text không chứa << >> ; fallback: run đầu tiên bất kỳ
+    // Sau đó strip các thuộc tính gây lỗi hiển thị: highlight, shd, color
+    var bestRPr = null;
     var runs = para.getElementsByTagNameNS(W,'r');
+    var firstRPr = null;
     for (var i=0;i<runs.length;i++){
+      var rtxt = '';
+      var wts2 = runs[i].getElementsByTagNameNS(W,'t');
+      for(var j=0;j<wts2.length;j++) rtxt += (wts2[j].textContent||'');
       var rpr = runs[i].getElementsByTagNameNS(W,'rPr')[0];
-      if (rpr){ var s=new XMLSerializer().serializeToString(rpr); if(s.length>bestLen){bestLen=s.length;bestRPr=rpr;} }
+      if (rpr && !firstRPr) firstRPr = rpr;
+      // Ưu tiên run có text thường (không phải placeholder thuần túy)
+      if (rpr && rtxt && rtxt.indexOf('<<') === -1 && !bestRPr) { bestRPr = rpr; break; }
     }
+    if (!bestRPr) bestRPr = firstRPr;
     Array.from(para.childNodes).forEach(function(ch){ if(!pPr||ch!==pPr) para.removeChild(ch); });
     var doc2 = para.ownerDocument;
     var newR = doc2.createElementNS(W,'w:r');
-    if (bestRPr) newR.appendChild(bestRPr.cloneNode(true));
+    if (bestRPr) {
+      var rprClone = bestRPr.cloneNode(true);
+      // Xóa các thuộc tính gây bôi đen/highlight/màu nền bất thường
+      var stripTags = ['highlight','shd','color','rHighlight'];
+      stripTags.forEach(function(tag){
+        var el = rprClone.getElementsByTagNameNS(W, tag)[0];
+        if (el) rprClone.removeChild(el);
+      });
+      newR.appendChild(rprClone);
+    }
     var newT = doc2.createElementNS(W,'w:t');
     newT.textContent = newText;
     if (newText && (newText[0]===' '||newText[newText.length-1]===' '))
