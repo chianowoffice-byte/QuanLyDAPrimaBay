@@ -1811,7 +1811,7 @@ function renderDB(){
       uHtml += '<tr style="border-bottom:1px solid var(--bdr)">';
       uHtml += '<td style="padding:7px 0;font-weight:500">'+h.tenKH+'</td>';
       uHtml += '<td style="padding:7px 8px;color:var(--txt2)">'+( h.maCanHo||'—')+'</td>';
-      uHtml += '<td style="padding:7px 8px;color:var(--purple);font-weight:600">'+h.ngayHen+'</td>';
+      uHtml += '<td style="padding:7px 8px;color:var(--purple);font-weight:600">'+fmtDateVN(h.ngayHen)+'</td>';
       uHtml += '<td data-id="'+h.id+'" ><button class="btn btn-sm" onclick="openHS(this.dataset.id)">Mở</button></td></tr>';
     });
     uHtml += '</table>';
@@ -2379,8 +2379,8 @@ function buildHSForm(h) {
     html += '</div>';
     if (h) {
       html += '<div class="divider"></div>';
-      html += '<div class="text-sm" style="line-height:2">Tạo: <b>'+(h.createdAt||'')+'</b>';
-      if (h.lockedBy) html += ' · Chốt: <b>'+h.lockedBy+'</b> lúc '+(h.lockedAt||'');
+      html += '<div class="text-sm" style="line-height:2">Tạo: <b>'+(fmtDateVN(h.createdAt)||h.createdAt||'')+'</b>';
+      if (h.lockedBy) html += ' · Chốt: <b>'+h.lockedBy+'</b> lúc '+(fmtDateVN(h.lockedAt)||h.lockedAt||'');
       html += '</div>';
     }
     if (isQLAdmin) html += '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveAdm()">💾 Lưu phân công</button></div>';
@@ -2533,7 +2533,7 @@ function buildProgTab(h) {
   if (h && (h.hanMucDuocDuyet || h.ngayGiaiNgan || h.soTienGiaiNgan)) {
     html2 += '<div style="background:var(--purple-l);border:1px solid #C9BEEE;border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap">';
     if (h.hanMucDuocDuyet) html2 += '<div><div class="text-sm">Han muc duoc duyet</div><div style="font-weight:600;color:var(--purple)">' + Number(h.hanMucDuocDuyet).toLocaleString('vi-VN') + ' tr.d</div></div>';
-    if (h.ngayGiaiNgan) html2 += '<div><div class="text-sm">Ngay giai ngan</div><div style="font-weight:600;color:var(--purple)">' + h.ngayGiaiNgan + '</div></div>';
+    if (h.ngayGiaiNgan) html2 += '<div><div class="text-sm">Ngay giai ngan</div><div style="font-weight:600;color:var(--purple)">' + (fmtDateVN(h.ngayGiaiNgan)||h.ngayGiaiNgan) + '</div></div>';
     if (h.soTienGiaiNgan) html2 += '<div><div class="text-sm">So tien GN</div><div style="font-weight:600;color:var(--green)">' + Number(h.soTienGiaiNgan).toLocaleString('vi-VN') + ' tr.d</div></div>';
     html2 += '</div>';
   }
@@ -3050,11 +3050,11 @@ function exportHS(){
     '=== NGAN HANG TMCP DAU TU VA PHAT TRIEN VIET NAM ===',
     '=== CHI NHANH TRANG TIEN – HA NOI ===',
     '=== HO SO VAY VON – DU AN PRIMABAY HA LONG ===',
-    'Ma ho so : '+h.id+'   Tao: '+(h.createdAt||'')+'   CB: '+getUserName(h.canBoId),
+    'Ma ho so : '+h.id+'   Tao: '+(fmtDateVN(h.createdAt)||h.createdAt||'')+'   CB: '+getUserName(h.canBoId),
     '',
     '--- KHACH HANG ---',
     'Ho ten   : '+(h.tenKH||'')+'   CCCD: '+(h.cccd||''),
-    'SDT      : '+(h.sdt||'')+'   Ngay sinh: '+(h.ngaySinh||''),
+    'SDT      : '+(h.sdt||'')+'   Ngay sinh: '+(fmtDateVN(h.ngaySinh)||h.ngaySinh||''),
     'Dia chi  : '+(h.diaChi||''),
     'Nghe nghiep: '+(h.ngheNghiep||'')+'   Thu nhap: '+(h.thuNhap||'')+'tr/thang',
     '',
@@ -3239,7 +3239,7 @@ function renderCDTTable(){
       html+='<span style="font-size:12px;font-weight:600;color:'+(prog.pct===100?'var(--green)':'var(--blue)')+'">'+prog.pct+'%</span></div></td>';
       html+='<td>'+gnBadge(h)+'</td>';
       html+='<td>'+(h.outcome?(outMap[h.outcome]||h.outcome):'<span style="color:var(--txt3);font-size:12px">Chưa có</span>')+'</td>';
-      html+='<td style="font-size:11px;color:var(--txt3)">'+(h.updatedAt||h.createdAt||'—')+'</td>';
+      html+='<td style="font-size:11px;color:var(--txt3)">'+(fmtDateVN(h.updatedAt||h.createdAt)||h.updatedAt||h.createdAt||'—')+'</td>';
       html+='</tr>';
     });
   }
