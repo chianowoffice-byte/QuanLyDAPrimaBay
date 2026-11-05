@@ -866,6 +866,18 @@ function mapHSToLF(h) {
     disbursement_amount:parseInt(h.soTienGiaiNgan)||null,
     is_locked:h.locked||false, is_kh_locked:h.kLocked||false, locked_by:h.lockedBy||null,
     notes:h.ghiChu||null, drive_folder_url:h.drive_folder_url||null,
+    // Hợp đồng & Giải ngân
+    pca_code:h.pca_code||null, hdtd_code:h.hdtd_code||null, mortgage_code:h.mortgage_code||null,
+    htls_agreement:h.htls_agreement||null, qlts_agreement:h.qlts_agreement||null,
+    disbursement_1:h.disbursement_1||null, equity_amount:h.equity_amount||null,
+    collateral_value_ratio:h.collateral_value_ratio||null, vtc_5pct:h.vtc_5pct||null,
+    payment_account:h.payment_account||null, min_account_balance:h.min_account_balance||null,
+    valuation_1:h.valuation_1||null, valuation_2:h.valuation_2||null,
+    area_usable:h.area_usable||null, area_construction:h.area_construction||null,
+    hdmb_value_with_mgt:h.hdmb_value_with_mgt||null, grace_period_months:h.grace_period_months||null,
+    income_salary:h.income_salary||null, income_business:h.income_business||null,
+    income_rental:h.income_rental||null, income_other:h.income_other||null,
+    expense_living:h.expense_living||null, expense_debt:h.expense_debt||null,
     updated_at:new Date().toISOString()
   };
 }
@@ -1692,6 +1704,30 @@ function mapDbHS(lf) {
       });
       return ckObj;
     })(),
+    // Hợp đồng & Giải ngân (tab HĐ & GN)
+    pca_code:              lf.pca_code              || '',
+    hdtd_code:             lf.hdtd_code             || '',
+    mortgage_code:         lf.mortgage_code         || '',
+    htls_agreement:        lf.htls_agreement        || '',
+    qlts_agreement:        lf.qlts_agreement        || '',
+    disbursement_1:        lf.disbursement_1        || null,
+    equity_amount:         lf.equity_amount         || null,
+    collateral_value_ratio:lf.collateral_value_ratio|| null,
+    vtc_5pct:              lf.vtc_5pct              || null,
+    payment_account:       lf.payment_account       || '',
+    min_account_balance:   lf.min_account_balance   || null,
+    valuation_1:           lf.valuation_1           || null,
+    valuation_2:           lf.valuation_2           || null,
+    area_usable:           lf.area_usable           || null,
+    area_construction:     lf.area_construction     || null,
+    hdmb_value_with_mgt:   lf.hdmb_value_with_mgt  || null,
+    grace_period_months:   lf.grace_period_months   || null,
+    income_salary:         lf.income_salary         || null,
+    income_business:       lf.income_business       || null,
+    income_rental:         lf.income_rental         || null,
+    income_other:          lf.income_other          || null,
+    expense_living:        lf.expense_living        || null,
+    expense_debt:          lf.expense_debt          || null,
     files: {},
     contacts: [],
     createdAt: lf.created_at || '',
@@ -4380,6 +4416,8 @@ async function saveHDGN() {
     expense_living:h.expense_living, expense_debt:h.expense_debt,
     updated_at:new Date().toISOString()
   };
+  h.updatedAt = nowStr();
+  persist(); renderHSTable();
   var r=await sb.from('loan_files').update(lfu).eq('id',h.id);
   if(r.error){showNotif('❌ Lỗi: '+r.error.message);return;}
   if(h.area_usable||h.area_construction){
