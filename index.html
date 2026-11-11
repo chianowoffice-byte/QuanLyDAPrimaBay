@@ -886,14 +886,28 @@ function mapHSToLF(h) {
 // Map app KH object → customers columns
 function mapHSToCust(h) {
   return {
-    full_name:h.tenKH||null, id_number:h.cccd||null, phone:h.sdt||null,
-    email:h.email||null, address:h.diaChi||null, dob:h.ngaySinh||null,
+    full_name:h.tenKH||null, id_number:h.cccd||null,
+    id_issue_place:h.id_issue_place||null, id_issue_date:h.id_issue_date||null,
+    phone:h.sdt||null, email:h.email||null,
+    address:h.diaChi||null, permanent_address:h.permanent_address||null,
+    dob:h.ngaySinh||null,
     occupation:h.ngheNghiep||null, monthly_income:parseFloat(h.thuNhap)||null,
     cif:h.cif||null, agent:h.daiLy||null,
     has_co_borrower:h.coVoChong||false, co_name:h.tenVC||null,
-    co_id_number:h.cccdVC||null, co_phone:h.sdtVC||null, co_dob:h.ngaySinhVC||null,
+    co_id_number:h.cccdVC||null,
+    co_id_issue_place:h.co_id_issue_place||null, co_id_issue_date:h.co_id_issue_date||null,
+    co_phone:h.sdtVC||null, co_dob:h.ngaySinhVC||null,
     co_occupation:h.ngheNghiepVC||null, co_monthly_income:parseFloat(h.thuNhapVC)||null,
     email_co_borrower:h.emailVC||null, cif_co_borrower:h.cifVC||null,
+    co_address:h.diaChiVC||null, co_permanent_address:h.co_permanent_address||null,
+    workplace:h.workplace||null, workplace_address:h.workplace_address||null,
+    workplace_phone:h.workplace_phone||null, job_title:h.job_title||null,
+    workplace2:h.workplace2||null, workplace2_address:h.workplace2_address||null,
+    workplace2_phone:h.workplace2_phone||null, job_title2:h.job_title2||null,
+    co_workplace:h.co_workplace||null, co_workplace_address:h.co_workplace_address||null,
+    co_workplace_phone:h.co_workplace_phone||null, co_job_title:h.co_job_title||null,
+    co_workplace2:h.co_workplace2||null, co_workplace2_address:h.co_workplace2_address||null,
+    co_workplace2_phone:h.co_workplace2_phone||null, co_job_title2:h.co_job_title2||null,
     updated_at:new Date().toISOString()
   };
 }
@@ -1614,20 +1628,43 @@ function mapDbHS(lf) {
       };
       return dbToApp[lf.status] || 'moi';
     })(), // NOTE: deriveHSStatus() sẽ override khi render bảng
-    tenKH:         cust.full_name || '',
-    cccd:          cust.id_number || '',
-    sdt:           cust.phone     || '',
-    email:         cust.email     || '',
-    cif:           cust.cif       || '',
-    diaChi:        cust.address   || '',
-    vung:          cust.region    || '',
-    daiLy:         cust.agent     || '',
-    coVoChong:     cust.has_co_borrower || false,
-    tenVC:         cust.co_name   || '',
-    cccdVC:        cust.co_id_number || '',
-    sdtVC:         cust.co_phone        || '',
-    emailVC:       cust.email_co_borrower || '',
-    cifVC:         cust.cif_co_borrower   || '',
+    tenKH:              cust.full_name        || '',
+    cccd:               cust.id_number        || '',
+    id_issue_place:     cust.id_issue_place   || '',
+    id_issue_date:      toISODate(cust.id_issue_date) || '',
+    sdt:                cust.phone            || '',
+    email:              cust.email            || '',
+    cif:                cust.cif              || '',
+    permanent_address:  cust.permanent_address|| '',
+    diaChi:             cust.address          || '',
+    vung:               cust.region           || '',
+    daiLy:              cust.agent            || '',
+    coVoChong:          cust.has_co_borrower  || false,
+    tenVC:              cust.co_name          || '',
+    cccdVC:             cust.co_id_number     || '',
+    co_id_issue_place:  cust.co_id_issue_place|| '',
+    co_id_issue_date:   toISODate(cust.co_id_issue_date) || '',
+    sdtVC:              cust.co_phone         || '',
+    emailVC:            cust.email_co_borrower|| '',
+    cifVC:              cust.cif_co_borrower  || '',
+    diaChiVC:           cust.co_address       || '',
+    co_permanent_address: cust.co_permanent_address || '',
+    workplace:            cust.workplace            || '',
+    workplace_address:    cust.workplace_address    || '',
+    workplace_phone:      cust.workplace_phone      || '',
+    job_title:            cust.job_title            || '',
+    workplace2:           cust.workplace2           || '',
+    workplace2_address:   cust.workplace2_address   || '',
+    workplace2_phone:     cust.workplace2_phone     || '',
+    job_title2:           cust.job_title2           || '',
+    co_workplace:         cust.co_workplace         || '',
+    co_workplace_address: cust.co_workplace_address || '',
+    co_workplace_phone:   cust.co_workplace_phone   || '',
+    co_job_title:         cust.co_job_title         || '',
+    co_workplace2:        cust.co_workplace2        || '',
+    co_workplace2_address:cust.co_workplace2_address|| '',
+    co_workplace2_phone:  cust.co_workplace2_phone  || '',
+    co_job_title2:        cust.co_job_title2        || '',
     ngaySinh:      toISODate(cust.dob)               || '',
     ngheNghiep:    cust.occupation        || '',
     thuNhap:       cust.monthly_income    || '',
@@ -2153,13 +2190,34 @@ function buildHSForm(h) {
   html += '<div class="fgrid">';
   html += fld('Họ và tên *','f-tenKH',dv('tenKH'),khDim,'Nguyễn Văn A');
   html += fld('CCCD / CMND','f-cccd',dv('cccd'),khDim);
+  html += fld('Nơi cấp CCCD','f-idplace',dv('id_issue_place'),khDim,'VD: Cục CS ĐKQL cư trú và DLQG về dân cư');
+  html += fld('Ngày cấp CCCD','f-iddate',dv('id_issue_date'),khDim,'','date');
   html += fld('Số điện thoại','f-sdt',dv('sdt'),khDim);
   html += fld('Email','f-email',dv('email'),khDim,'vd: nguyenvana@gmail.com');
   html += fld('Số CIF','f-cif',dv('cif'),khDim,'VD: 1234567890');
   html += fld('Ngày sinh','f-ns',dv('ngaySinh'),khDim,'','date');
-  html += fld('Địa chỉ thường trú','f-dc',dv('diaChi'),khDim,'','','ffull');
+  html += fld('Địa chỉ thường trú','f-permaddr',dv('permanent_address'),khDim,'','','ffull');
+  html += fld('Địa chỉ liên hệ','f-dc',dv('diaChi'),khDim,'','','ffull');
   html += fld('Nghề nghiệp','f-nn',dv('ngheNghiep'),khDim);
   html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tn',dv('thuNhap'),khDim) + '</div>';
+  html += '</div></div>';
+
+  // ── Nơi công tác người 1 ──
+  html += '<div class="fsec ' + khDimClass + '">';
+  html += '<div class="fsec-title">Nơi công tác — Người vay 1</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px;margin-top:4px">Nơi công tác 1</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-wk1',dv('workplace'),khDim,'VD: Công ty TNHH ABC','','ffull');
+  html += fld('Địa chỉ','f-wk1addr',dv('workplace_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-wk1phone',dv('workplace_phone'),khDim);
+  html += fld('Chức vụ','f-wk1title',dv('job_title'),khDim,'VD: Trưởng phòng');
+  html += '</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px;margin-top:10px">Nơi công tác 2 (nếu có)</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-wk2',dv('workplace2'),khDim,'','','ffull');
+  html += fld('Địa chỉ','f-wk2addr',dv('workplace2_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-wk2phone',dv('workplace2_phone'),khDim);
+  html += fld('Chức vụ','f-wk2title',dv('job_title2'),khDim);
   html += '</div></div>';
 
   // ── Vợ/chồng ──
@@ -2178,12 +2236,31 @@ function buildHSForm(h) {
   html += '<div class="fgrid">';
   html += fld('Họ và tên','f-tenVC',dv('tenVC'),khDim);
   html += fld('CCCD / CMND','f-cccdVC',dv('cccdVC'),khDim);
+  html += fld('Nơi cấp CCCD','f-idplaceVC',dv('co_id_issue_place'),khDim,'VD: Cục CS ĐKQL cư trú và DLQG về dân cư');
+  html += fld('Ngày cấp CCCD','f-iddateVC',dv('co_id_issue_date'),khDim,'','date');
   html += fld('Số điện thoại','f-sdtVC',dv('sdtVC'),khDim);
   html += fld('Email','f-emailVC',dv('emailVC'),khDim,'vd: email@gmail.com');
   html += fld('Số CIF','f-cifVC',dv('cifVC'),khDim,'VD: 1234567890');
   html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),khDim,'','date');
+  html += fld('Địa chỉ thường trú','f-permaddrVC',dv('co_permanent_address'),khDim,'','','ffull');
+  html += fld('Địa chỉ liên hệ','f-dcVC',dv('diaChiVC'),khDim,'VD: 123 Nguyễn Trãi, Hà Nội','','ffull');
   html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),khDim);
   html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),khDim) + '</div>';
+  html += '</div>';
+  // Nơi công tác người 2
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin:12px 0 6px">Nơi công tác 1</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-cowk1',dv('co_workplace'),khDim,'','','ffull');
+  html += fld('Địa chỉ','f-cowk1addr',dv('co_workplace_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-cowk1phone',dv('co_workplace_phone'),khDim);
+  html += fld('Chức vụ','f-cowk1title',dv('co_job_title'),khDim);
+  html += '</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin:10px 0 6px">Nơi công tác 2 (nếu có)</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-cowk2',dv('co_workplace2'),khDim,'','','ffull');
+  html += fld('Địa chỉ','f-cowk2addr',dv('co_workplace2_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-cowk2phone',dv('co_workplace2_phone'),khDim);
+  html += fld('Chức vụ','f-cowk2title',dv('co_job_title2'),khDim);
   html += '</div></div></div></div>';
 
   // ── Căn hộ & HĐMB ──
@@ -2196,8 +2273,10 @@ function buildHSForm(h) {
   html += fld('Mã căn hộ','f-mach',dv('maCanHo'),hdmbDim);
   html += fld('Đại lý','f-daily',dv('daiLy'),hdmbDim,'VD: An Việt Homes');
   html += fld('Tầng','f-tang',dv('tang'),hdmbDim);
-  html += fld('Diện tích (m²)','f-dt',dv('dienTich'),hdmbDim);
-  html += '<div class="fg"><label>Giá HĐMB (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hdmbDim) + '</div>';
+  html += fld('Diện tích sử dụng (m²)','f-dt',dv('dienTich'),hdmbDim);
+  html += fld('Diện tích sàn XD (m²)','f-areaconstruct',dv('area_construction'),hdmbDim);
+  html += '<div class="fg"><label>Giá HĐMB không KPBT (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hdmbDim) + '</div>';
+  html += '<div class="fg"><label>Giá HĐMB có KPBT (VNĐ)</label>' + numInput('f-hdmbwithmgt',dv('hdmb_value_with_mgt'),hdmbDim) + '</div>';
   html += fld('Số HĐMB','f-sohdmb',dv('soHDMB'),hdmbDim);
   html += fld('Ngày ký HĐMB','f-ngayky',dv('ngayKyHDMB'),hdmbDim,'','date','','onchange="onNgayKyChange()"');
   html += '</div></div>';
@@ -2681,18 +2760,33 @@ function saveProj() {
 
   if (!gv('f-tenKH').trim()) { alert('Vui lòng nhập họ tên KH!'); return; }
   var data = {
-    tenKH: gv('f-tenKH'), cccd: gv('f-cccd'), sdt: gv('f-sdt'),
-    ngaySinh: gv('f-ns'), diaChi: gv('f-dc'),
+    tenKH: gv('f-tenKH'), cccd: gv('f-cccd'),
+    id_issue_place: gv('f-idplace'), id_issue_date: gv('f-iddate'),
+    sdt: gv('f-sdt'), ngaySinh: gv('f-ns'),
+    permanent_address: gv('f-permaddr'), diaChi: gv('f-dc'),
     email: gv('f-email'),
     cif:   gv('f-cif'),
     ngheNghiep: gv('f-nn'), thuNhap: gv('f-tn'),
+    workplace: gv('f-wk1'), workplace_address: gv('f-wk1addr'),
+    workplace_phone: gv('f-wk1phone'), job_title: gv('f-wk1title'),
+    workplace2: gv('f-wk2'), workplace2_address: gv('f-wk2addr'),
+    workplace2_phone: gv('f-wk2phone'), job_title2: gv('f-wk2title'),
     coVoChong: document.getElementById('f-coVC')?document.getElementById('f-coVC').checked:false,
-    tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'), ngaySinhVC: gv('f-nsVC'),
-    sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), cifVC: gv('f-cifVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
+    tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'),
+    co_id_issue_place: gv('f-idplaceVC'), co_id_issue_date: gv('f-iddateVC'),
+    ngaySinhVC: gv('f-nsVC'),
+    co_permanent_address: gv('f-permaddrVC'),
+    sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), cifVC: gv('f-cifVC'), diaChiVC: gv('f-dcVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
+    co_workplace: gv('f-cowk1'), co_workplace_address: gv('f-cowk1addr'),
+    co_workplace_phone: gv('f-cowk1phone'), co_job_title: gv('f-cowk1title'),
+    co_workplace2: gv('f-cowk2'), co_workplace2_address: gv('f-cowk2addr'),
+    co_workplace2_phone: gv('f-cowk2phone'), co_job_title2: gv('f-cowk2title'),
     // Căn hộ & HĐMB (CB Owner được sửa)
     maCanHo: gv('f-mach'), daiLy: gv('f-daily'),
     tang: gv('f-tang'), dienTich: gv('f-dt'),
-    giaHDMB: gvn('f-giahdmb'), soHDMB: gv('f-sohdmb'),
+    area_construction: gvn('f-areaconstruct'),
+    giaHDMB: gvn('f-giahdmb'), hdmb_value_with_mgt: gvn('f-hdmbwithmgt'),
+    soHDMB: gv('f-sohdmb'),
     ngayKyHDMB: gv('f-ngayky'),
     hanGiaiNgan: (function(){ var el=document.getElementById('f-hangn'); return el&&el.value?el.value:calcHanGN(gv('f-ngayky')); })(),
     // VTC & Nhu cầu vay (CB Owner được sửa)
@@ -2727,10 +2821,12 @@ function saveProjQL() {
   hsList[idx].maCanHo    = gv('f-mach');
   hsList[idx].daiLy      = gv('f-daily');
   hsList[idx].tang        = gv('f-tang');
-  hsList[idx].dienTich    = gv('f-dt');
-  hsList[idx].giaHDMB     = gvn('f-giahdmb');
-  hsList[idx].soHDMB      = gv('f-sohdmb');
-  hsList[idx].ngayKyHDMB  = gv('f-ngayky');
+  hsList[idx].dienTich           = gv('f-dt');
+  hsList[idx].area_construction  = gvn('f-areaconstruct');
+  hsList[idx].giaHDMB            = gvn('f-giahdmb');
+  hsList[idx].hdmb_value_with_mgt= gvn('f-hdmbwithmgt');
+  hsList[idx].soHDMB             = gv('f-sohdmb');
+  hsList[idx].ngayKyHDMB         = gv('f-ngayky');
   var hanGNEl = document.getElementById('f-hangn');
   hsList[idx].hanGiaiNgan = hanGNEl && hanGNEl.value ? hanGNEl.value : calcHanGN(gv('f-ngayky'));
   // VTC & Nhu cầu vay
@@ -2755,9 +2851,11 @@ function saveProjCDT() {
   hsList[idx].maCanHo    = gv('f-mach');
   hsList[idx].daiLy      = gv('f-daily');
   hsList[idx].tang        = gv('f-tang');
-  hsList[idx].dienTich    = gv('f-dt');
-  hsList[idx].giaHDMB     = gv('f-giahdmb');
-  hsList[idx].soHDMB      = gv('f-sohdmb');
+  hsList[idx].dienTich           = gv('f-dt');
+  hsList[idx].area_construction  = gvn('f-areaconstruct');
+  hsList[idx].giaHDMB            = gvn('f-giahdmb');
+  hsList[idx].hdmb_value_with_mgt= gvn('f-hdmbwithmgt');
+  hsList[idx].soHDMB             = gv('f-sohdmb');
   hsList[idx].ngayKyHDMB  = gv('f-ngayky');
   var hanGNInput = document.getElementById('f-hangn');
   hsList[idx].hanGiaiNgan = hanGNInput && hanGNInput.value ? hanGNInput.value : calcHanGN(gv('f-ngayky'));
@@ -4768,7 +4866,7 @@ function buildDocData(h){
     '28- Nơi cấp CCCD/CC người 2':h.co_id_issue_place||'',
     '29- Ngày cấp CCCD/CC người 2':fD(h.co_id_issue_date),
     '30 - Địa chỉ thường trú người 2':h.co_permanent_address||'',
-    '31 - Địa chỉ liên hệ người 2':h.sdtVC||'',
+    '31 - Địa chỉ liên hệ người 2':h.diaChiVC||'',
     '32 - ĐT liên hệ người 2':h.sdtVC||'',
     '33-Đơn vị công tác 1 người 2':h.co_workplace||'',
     '34-Địa chỉ công tác 1 người 2':h.co_workplace_address||'',
