@@ -2461,7 +2461,7 @@ function buildHSForm(h) {
   if (isCBOwner||isQLAdmin||isQTTD()) html += '<button class="btn btn-primary" onclick="saveHDGN()">💾 Lưu HĐ & GN</button>';
   if (canExp) {
     if (isCBOwner||isQLAdmin) html += '<button class="btn" style="background:#1F4E79;color:#fff" onclick="exportBMQLKH()">📄 Xuất hồ sơ QLKH</button>';
-    if (isQTTD()||isAdmin()) html += '<button class="btn" style="background:#7030A0;color:#fff" onclick="exportBMQTTD()">📋 Xuất hồ sơ QTTD</button>';
+    if (isQTTD()||isAdmin()||isCBOwner) html += '<button class="btn" style="background:#7030A0;color:#fff" onclick="exportBMQTTD()">📋 Xuất hồ sơ QTTD</button>';
   }
   html += '</div>';
   html += '</div>';
@@ -4916,7 +4916,7 @@ async function doExportContracts(){
   btn.textContent='⏳ Đang tạo file...';
   var selectedBM=[];
   document.querySelectorAll('.bm-qlkh:checked').forEach(function(el){selectedBM.push({key:el.value,type:'qlkh'});});
-  if(isQTTD()||isAdmin())document.querySelectorAll('.bm-qttd:checked').forEach(function(el){selectedBM.push({key:el.value,type:'qttd'});});
+  if(isQTTD()||isAdmin()||currentUser&&currentUser.role==='cb')document.querySelectorAll('.bm-qttd:checked').forEach(function(el){selectedBM.push({key:el.value,type:'qttd'});});
   if(selectedBM.length===0){showNotif('Vui lòng chọn ít nhất 1 mẫu!');btn.disabled=false;btn.textContent='📥 Tạo & Tải về';return;}
   var fmtVal=document.querySelector('input[name="export-fmt"]:checked').value;
   var hsList_=Array.from(_bidvSelected).map(function(id){return hsList.find(function(x){return x.id===id;});}).filter(Boolean);
@@ -5020,7 +5020,7 @@ function updateExportBtn(){
 function openExportModal(){
   if(_bidvSelected.size===0){showNotif('Vui lòng chọn ít nhất 1 hồ sơ!');return;}
   var qttdSec=document.getElementById('export-qttd-section');
-  if(qttdSec)qttdSec.style.display=(isQTTD()||isAdmin())?'':'none';
+  if(qttdSec)qttdSec.style.display=(isQTTD()||isAdmin()||isCBOwner)?'':'none';
   var khList=Array.from(_bidvSelected).map(function(id){
     var h=hsList.find(function(x){return x.id===id;});
     return h?'• '+h.tenKH+' — '+h.maCanHo:'';
