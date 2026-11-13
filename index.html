@@ -5020,7 +5020,7 @@ function updateExportBtn(){
 function openExportModal(){
   if(_bidvSelected.size===0){showNotif('Vui lòng chọn ít nhất 1 hồ sơ!');return;}
   var qttdSec=document.getElementById('export-qttd-section');
-  if(qttdSec)qttdSec.style.display=(isQTTD()||isAdmin()||isCBOwner)?'':'none';
+  if(qttdSec)qttdSec.style.display=(isQTTD()||isAdmin()||(currentUser&&currentUser.role==='cb'))?'':'none';
   var khList=Array.from(_bidvSelected).map(function(id){
     var h=hsList.find(function(x){return x.id===id;});
     return h?'• '+h.tenKH+' — '+h.maCanHo:'';
