@@ -2681,17 +2681,25 @@ function saveProj() {
 function saveProjQL() {
   if (!isQL() || !currentHSId) return;
   var gv=function(id){var el=document.getElementById(id);return el?el.value:'';};
+  var gvn=function(id){var el=document.getElementById(id);return el?(el.value.replace(/\./g,'').replace(/,/g,'')):''};
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
-  hsList[idx].maCanHo   = gv('f-mach');
-  hsList[idx].tang       = gv('f-tang');
-  hsList[idx].dienTich   = gv('f-dt');
-  hsList[idx].giaHDMB    = gv('f-giahdmb');
-  hsList[idx].soHDMB     = gv('f-sohdmb');
-  hsList[idx].ngayKyHDMB = gv('f-ngayky');
-  var _vtcPhai = document.getElementById('f-vtcphai');
-  if (_vtcPhai) hsList[idx].vtcPhaiNop = _vtcPhai.value.replace(/\./g,'').replace(/,/g,'');
+  // Dự án & Căn hộ
+  hsList[idx].maCanHo    = gv('f-mach');
+  hsList[idx].daiLy      = gv('f-daily');
+  hsList[idx].tang        = gv('f-tang');
+  hsList[idx].dienTich    = gv('f-dt');
+  hsList[idx].giaHDMB     = gvn('f-giahdmb');
+  hsList[idx].soHDMB      = gv('f-sohdmb');
+  hsList[idx].ngayKyHDMB  = gv('f-ngayky');
   var hanGNEl = document.getElementById('f-hangn');
   hsList[idx].hanGiaiNgan = hanGNEl && hanGNEl.value ? hanGNEl.value : calcHanGN(gv('f-ngayky'));
+  // VTC & Nhu cầu vay
+  if (document.getElementById('f-vtcphai'))  hsList[idx].vtcPhaiNop  = gvn('f-vtcphai');
+  if (document.getElementById('f-vtcdanop')) hsList[idx].vtcDaNop    = gvn('f-vtcdanop');
+  if (document.getElementById('f-stv'))      hsList[idx].soTienVay   = gvn('f-stv');
+  if (document.getElementById('f-htls'))     hsList[idx].hinhThucVay = gv('f-htls');
+  if (document.getElementById('f-csbh'))     hsList[idx].csChinhSach = gv('f-csbh');
+  if (document.getElementById('f-kh'))       hsList[idx].kyHan       = gv('f-kh');
   hsList[idx].updatedAt  = nowStr();
   addLog('Cập nhật Căn hộ & HĐMB: '+hsList[idx].tenKH,'amber',currentHSId);
   persist(); renderHSTable();
