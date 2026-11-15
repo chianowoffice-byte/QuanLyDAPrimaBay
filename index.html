@@ -900,6 +900,14 @@ function mapHSToCust(h) {
     co_occupation:h.ngheNghiepVC||null, co_monthly_income:parseFloat(h.thuNhapVC)||null,
     email_co_borrower:h.emailVC||null, cif_co_borrower:h.cifVC||null,
     co_address:h.diaChiVC||null, co_permanent_address:h.co_permanent_address||null,
+    workplace:h.workplace||null, workplace_address:h.workplace_address||null,
+    workplace_phone:h.workplace_phone||null, job_title:h.job_title||null,
+    workplace2:h.workplace2||null, workplace2_address:h.workplace2_address||null,
+    workplace2_phone:h.workplace2_phone||null, job_title2:h.job_title2||null,
+    co_workplace:h.co_workplace||null, co_workplace_address:h.co_workplace_address||null,
+    co_workplace_phone:h.co_workplace_phone||null, co_job_title:h.co_job_title||null,
+    co_workplace2:h.co_workplace2||null, co_workplace2_address:h.co_workplace2_address||null,
+    co_workplace2_phone:h.co_workplace2_phone||null, co_job_title2:h.co_job_title2||null,
     updated_at:new Date().toISOString()
   };
 }
@@ -1641,6 +1649,22 @@ function mapDbHS(lf) {
     cifVC:              cust.cif_co_borrower  || '',
     diaChiVC:           cust.co_address       || '',
     co_permanent_address: cust.co_permanent_address || '',
+    workplace:            cust.workplace            || '',
+    workplace_address:    cust.workplace_address    || '',
+    workplace_phone:      cust.workplace_phone      || '',
+    job_title:            cust.job_title            || '',
+    workplace2:           cust.workplace2           || '',
+    workplace2_address:   cust.workplace2_address   || '',
+    workplace2_phone:     cust.workplace2_phone     || '',
+    job_title2:           cust.job_title2           || '',
+    co_workplace:         cust.co_workplace         || '',
+    co_workplace_address: cust.co_workplace_address || '',
+    co_workplace_phone:   cust.co_workplace_phone   || '',
+    co_job_title:         cust.co_job_title         || '',
+    co_workplace2:        cust.co_workplace2        || '',
+    co_workplace2_address:cust.co_workplace2_address|| '',
+    co_workplace2_phone:  cust.co_workplace2_phone  || '',
+    co_job_title2:        cust.co_job_title2        || '',
     ngaySinh:      toISODate(cust.dob)               || '',
     ngheNghiep:    cust.occupation        || '',
     thuNhap:       cust.monthly_income    || '',
@@ -2178,6 +2202,24 @@ function buildHSForm(h) {
   html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tn',dv('thuNhap'),khDim) + '</div>';
   html += '</div></div>';
 
+  // ── Nơi công tác người 1 ──
+  html += '<div class="fsec ' + khDimClass + '">';
+  html += '<div class="fsec-title">Nơi công tác — Người vay 1</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px;margin-top:4px">Nơi công tác 1</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-wk1',dv('workplace'),khDim,'VD: Công ty TNHH ABC','','ffull');
+  html += fld('Địa chỉ','f-wk1addr',dv('workplace_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-wk1phone',dv('workplace_phone'),khDim);
+  html += fld('Chức vụ','f-wk1title',dv('job_title'),khDim,'VD: Trưởng phòng');
+  html += '</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px;margin-top:10px">Nơi công tác 2 (nếu có)</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-wk2',dv('workplace2'),khDim,'','','ffull');
+  html += fld('Địa chỉ','f-wk2addr',dv('workplace2_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-wk2phone',dv('workplace2_phone'),khDim);
+  html += fld('Chức vụ','f-wk2title',dv('job_title2'),khDim);
+  html += '</div></div>';
+
   // ── Vợ/chồng ──
   var hasVC = h && h.coVoChong;
   html += '<div class="fsec ' + khDimClass + '">';
@@ -2204,6 +2246,21 @@ function buildHSForm(h) {
   html += fld('Địa chỉ liên hệ','f-dcVC',dv('diaChiVC'),khDim,'VD: 123 Nguyễn Trãi, Hà Nội','','ffull');
   html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),khDim);
   html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),khDim) + '</div>';
+  html += '</div>';
+  // Nơi công tác người 2
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin:12px 0 6px">Nơi công tác 1</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-cowk1',dv('co_workplace'),khDim,'','','ffull');
+  html += fld('Địa chỉ','f-cowk1addr',dv('co_workplace_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-cowk1phone',dv('co_workplace_phone'),khDim);
+  html += fld('Chức vụ','f-cowk1title',dv('co_job_title'),khDim);
+  html += '</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin:10px 0 6px">Nơi công tác 2 (nếu có)</div>';
+  html += '<div class="fgrid">';
+  html += fld('Đơn vị công tác','f-cowk2',dv('co_workplace2'),khDim,'','','ffull');
+  html += fld('Địa chỉ','f-cowk2addr',dv('co_workplace2_address'),khDim,'','','ffull');
+  html += fld('Số điện thoại','f-cowk2phone',dv('co_workplace2_phone'),khDim);
+  html += fld('Chức vụ','f-cowk2title',dv('co_job_title2'),khDim);
   html += '</div></div></div></div>';
 
   // ── Căn hộ & HĐMB ──
@@ -2710,12 +2767,20 @@ function saveProj() {
     email: gv('f-email'),
     cif:   gv('f-cif'),
     ngheNghiep: gv('f-nn'), thuNhap: gv('f-tn'),
+    workplace: gv('f-wk1'), workplace_address: gv('f-wk1addr'),
+    workplace_phone: gv('f-wk1phone'), job_title: gv('f-wk1title'),
+    workplace2: gv('f-wk2'), workplace2_address: gv('f-wk2addr'),
+    workplace2_phone: gv('f-wk2phone'), job_title2: gv('f-wk2title'),
     coVoChong: document.getElementById('f-coVC')?document.getElementById('f-coVC').checked:false,
     tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'),
     co_id_issue_place: gv('f-idplaceVC'), co_id_issue_date: gv('f-iddateVC'),
     ngaySinhVC: gv('f-nsVC'),
     co_permanent_address: gv('f-permaddrVC'),
     sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), cifVC: gv('f-cifVC'), diaChiVC: gv('f-dcVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
+    co_workplace: gv('f-cowk1'), co_workplace_address: gv('f-cowk1addr'),
+    co_workplace_phone: gv('f-cowk1phone'), co_job_title: gv('f-cowk1title'),
+    co_workplace2: gv('f-cowk2'), co_workplace2_address: gv('f-cowk2addr'),
+    co_workplace2_phone: gv('f-cowk2phone'), co_job_title2: gv('f-cowk2title'),
     // Căn hộ & HĐMB (CB Owner được sửa)
     maCanHo: gv('f-mach'), daiLy: gv('f-daily'),
     tang: gv('f-tang'), dienTich: gv('f-dt'),
