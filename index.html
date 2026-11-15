@@ -894,6 +894,7 @@ function mapHSToCust(h) {
     co_id_number:h.cccdVC||null, co_phone:h.sdtVC||null, co_dob:h.ngaySinhVC||null,
     co_occupation:h.ngheNghiepVC||null, co_monthly_income:parseFloat(h.thuNhapVC)||null,
     email_co_borrower:h.emailVC||null, cif_co_borrower:h.cifVC||null,
+    co_address:h.diaChiVC||null,
     updated_at:new Date().toISOString()
   };
 }
@@ -1628,6 +1629,7 @@ function mapDbHS(lf) {
     sdtVC:         cust.co_phone        || '',
     emailVC:       cust.email_co_borrower || '',
     cifVC:         cust.cif_co_borrower   || '',
+    diaChiVC:      cust.co_address        || '',
     ngaySinh:      toISODate(cust.dob)               || '',
     ngheNghiep:    cust.occupation        || '',
     thuNhap:       cust.monthly_income    || '',
@@ -2182,6 +2184,7 @@ function buildHSForm(h) {
   html += fld('Email','f-emailVC',dv('emailVC'),khDim,'vd: email@gmail.com');
   html += fld('Số CIF','f-cifVC',dv('cifVC'),khDim,'VD: 1234567890');
   html += fld('Ngày sinh','f-nsVC',dv('ngaySinhVC'),khDim,'','date');
+  html += fld('Địa chỉ liên hệ','f-dcVC',dv('diaChiVC'),khDim,'VD: 123 Nguyễn Trãi, Hà Nội');
   html += fld('Nghề nghiệp','f-nnVC',dv('ngheNghiepVC'),khDim);
   html += '<div class="fg"><label>Thu nhập/tháng (tr.đ)</label>' + numInput('f-tnVC',dv('thuNhapVC'),khDim) + '</div>';
   html += '</div></div></div></div>';
@@ -2690,7 +2693,7 @@ function saveProj() {
     ngheNghiep: gv('f-nn'), thuNhap: gv('f-tn'),
     coVoChong: document.getElementById('f-coVC')?document.getElementById('f-coVC').checked:false,
     tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'), ngaySinhVC: gv('f-nsVC'),
-    sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), cifVC: gv('f-cifVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
+    sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), cifVC: gv('f-cifVC'), diaChiVC: gv('f-dcVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
     // Căn hộ & HĐMB (CB Owner được sửa)
     maCanHo: gv('f-mach'), daiLy: gv('f-daily'),
     tang: gv('f-tang'), dienTich: gv('f-dt'),
@@ -4776,7 +4779,7 @@ function buildDocData(h){
     '28- Nơi cấp CCCD/CC người 2':h.co_id_issue_place||'',
     '29- Ngày cấp CCCD/CC người 2':fD(h.co_id_issue_date),
     '30 - Địa chỉ thường trú người 2':h.co_permanent_address||'',
-    '31 - Địa chỉ liên hệ người 2':h.sdtVC||'',
+    '31 - Địa chỉ liên hệ người 2':h.diaChiVC||'',
     '32 - ĐT liên hệ người 2':h.sdtVC||'',
     '33-Đơn vị công tác 1 người 2':h.co_workplace||'',
     '34-Địa chỉ công tác 1 người 2':h.co_workplace_address||'',
