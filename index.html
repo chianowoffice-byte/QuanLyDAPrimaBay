@@ -2150,9 +2150,9 @@ function buildHSForm(h) {
   html += '</div></div></div></div>';
 
   // ── Căn hộ & HĐMB ──
-  // CĐT admin / QL / Admin sửa | CB + CĐT view xem (dim)
-  var hdmbDim = (isQLAdmin || isCDTAdmin) ? (locked ? 'disabled' : '') : 'disabled';
-  var hdmbDimClass = (!isQLAdmin && !isCDTAdmin) ? 'cdt-section-dim' : '';
+  // CĐT admin / QL / Admin / CB (hồ sơ của mình) sửa
+  var hdmbDim = (isQLAdmin || isCDTAdmin || isCBOwner) ? (locked ? 'disabled' : '') : 'disabled';
+  var hdmbDimClass = (!isQLAdmin && !isCDTAdmin && !isCBOwner) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + hdmbDimClass + '">';
   html += '<div class="fsec-title">Căn hộ & Hợp đồng mua bán</div>';
   html += '<div class="fgrid fgrid3">';
@@ -2167,8 +2167,8 @@ function buildHSForm(h) {
 
   // ── VTC & Nhu cầu vay ──
   // CĐT / QL / Admin sửa | CB xem (dim)
-  var vtcDim = (isQLAdmin || isCDTAdmin) ? (locked ? 'disabled' : '') : 'disabled';
-  var vtcDimClass = (!isQLAdmin && !isCDTAdmin) ? 'cdt-section-dim' : '';
+  var vtcDim = (isQLAdmin || isCDTAdmin || isCBOwner) ? (locked ? 'disabled' : '') : 'disabled';
+  var vtcDimClass = (!isQLAdmin && !isCDTAdmin && !isCBOwner) ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + vtcDimClass + '">';
   html += '<div class="fsec-title">Vốn tự có (VTC) & Nhu cầu vay</div>';
   html += '<div class="fgrid fgrid3">';
@@ -2620,21 +2620,17 @@ function saveAll() {
     if (document.getElementById('f-tenKH')) saveProj();
   }
 
-  // 2. Lưu căn hộ & HĐMB (CĐT / QL / Admin)
+  // 2. Lưu căn hộ & HĐMB (CĐT / QL / Admin / CB hồ sơ của mình)
   if (isCDT()) {
     saveProjCDT();
     return;
   }
   if (isQL()) saveProjQL();
+  // CB Owner: saveProj() ở trên đã lưu cả HĐMB & VTC rồi — không cần gọi thêm
 
   // 3. Lưu phê duyệt & GN (CB phân công / QL / Admin)
   if (document.getElementById('f-hmduyet') && !document.getElementById('f-hmduyet').disabled) {
     saveGiaiNganInfo();
-  }
-
-  if (!isCDT() && !isQL()) {
-    // CB thường — chỉ lưu KH (đã gọi saveProj ở trên)
-    return;
   }
 }
 
@@ -2656,7 +2652,14 @@ function saveProj() {
     coVoChong: document.getElementById('f-coVC')?document.getElementById('f-coVC').checked:false,
     tenVC: gv('f-tenVC'), cccdVC: gv('f-cccdVC'), ngaySinhVC: gv('f-nsVC'),
     sdtVC: gv('f-sdtVC'), emailVC: gv('f-emailVC'), cifVC: gv('f-cifVC'), ngheNghiepVC: gv('f-nnVC'), thuNhapVC: gv('f-tnVC'),
-    vtcDaNop: gvn('f-vtcdanop'),
+    // Căn hộ & HĐMB (CB Owner được sửa)
+    maCanHo: gv('f-mach'), daiLy: gv('f-daily'),
+    tang: gv('f-tang'), dienTich: gv('f-dt'),
+    giaHDMB: gvn('f-giahdmb'), soHDMB: gv('f-sohdmb'),
+    ngayKyHDMB: gv('f-ngayky'),
+    hanGiaiNgan: (function(){ var el=document.getElementById('f-hangn'); return el&&el.value?el.value:calcHanGN(gv('f-ngayky')); })(),
+    // VTC & Nhu cầu vay (CB Owner được sửa)
+    vtcPhaiNop: gvn('f-vtcphai'), vtcDaNop: gvn('f-vtcdanop'),
     soTienVay: gvn('f-stv'), kyHan: gv('f-kh'),
     hinhThucVay: gv('f-hthucvay'), csChinhSach: gv('f-csbh'),
     updatedAt: nowStr()
