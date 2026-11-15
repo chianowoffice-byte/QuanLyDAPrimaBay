@@ -2196,8 +2196,10 @@ function buildHSForm(h) {
   html += fld('Mã căn hộ','f-mach',dv('maCanHo'),hdmbDim);
   html += fld('Đại lý','f-daily',dv('daiLy'),hdmbDim,'VD: An Việt Homes');
   html += fld('Tầng','f-tang',dv('tang'),hdmbDim);
-  html += fld('Diện tích (m²)','f-dt',dv('dienTich'),hdmbDim);
-  html += '<div class="fg"><label>Giá HĐMB (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hdmbDim) + '</div>';
+  html += fld('Diện tích sử dụng (m²)','f-dt',dv('dienTich'),hdmbDim);
+  html += fld('Diện tích sàn XD (m²)','f-areaconstruct',dv('area_construction'),hdmbDim);
+  html += '<div class="fg"><label>Giá HĐMB không KPBT (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hdmbDim) + '</div>';
+  html += '<div class="fg"><label>Giá HĐMB có KPBT (VNĐ)</label>' + numInput('f-hdmbwithmgt',dv('hdmb_value_with_mgt'),hdmbDim) + '</div>';
   html += fld('Số HĐMB','f-sohdmb',dv('soHDMB'),hdmbDim);
   html += fld('Ngày ký HĐMB','f-ngayky',dv('ngayKyHDMB'),hdmbDim,'','date','','onchange="onNgayKyChange()"');
   html += '</div></div>';
@@ -2692,7 +2694,9 @@ function saveProj() {
     // Căn hộ & HĐMB (CB Owner được sửa)
     maCanHo: gv('f-mach'), daiLy: gv('f-daily'),
     tang: gv('f-tang'), dienTich: gv('f-dt'),
-    giaHDMB: gvn('f-giahdmb'), soHDMB: gv('f-sohdmb'),
+    area_construction: gvn('f-areaconstruct'),
+    giaHDMB: gvn('f-giahdmb'), hdmb_value_with_mgt: gvn('f-hdmbwithmgt'),
+    soHDMB: gv('f-sohdmb'),
     ngayKyHDMB: gv('f-ngayky'),
     hanGiaiNgan: (function(){ var el=document.getElementById('f-hangn'); return el&&el.value?el.value:calcHanGN(gv('f-ngayky')); })(),
     // VTC & Nhu cầu vay (CB Owner được sửa)
@@ -2727,10 +2731,12 @@ function saveProjQL() {
   hsList[idx].maCanHo    = gv('f-mach');
   hsList[idx].daiLy      = gv('f-daily');
   hsList[idx].tang        = gv('f-tang');
-  hsList[idx].dienTich    = gv('f-dt');
-  hsList[idx].giaHDMB     = gvn('f-giahdmb');
-  hsList[idx].soHDMB      = gv('f-sohdmb');
-  hsList[idx].ngayKyHDMB  = gv('f-ngayky');
+  hsList[idx].dienTich           = gv('f-dt');
+  hsList[idx].area_construction  = gvn('f-areaconstruct');
+  hsList[idx].giaHDMB            = gvn('f-giahdmb');
+  hsList[idx].hdmb_value_with_mgt= gvn('f-hdmbwithmgt');
+  hsList[idx].soHDMB             = gv('f-sohdmb');
+  hsList[idx].ngayKyHDMB         = gv('f-ngayky');
   var hanGNEl = document.getElementById('f-hangn');
   hsList[idx].hanGiaiNgan = hanGNEl && hanGNEl.value ? hanGNEl.value : calcHanGN(gv('f-ngayky'));
   // VTC & Nhu cầu vay
@@ -2755,9 +2761,11 @@ function saveProjCDT() {
   hsList[idx].maCanHo    = gv('f-mach');
   hsList[idx].daiLy      = gv('f-daily');
   hsList[idx].tang        = gv('f-tang');
-  hsList[idx].dienTich    = gv('f-dt');
-  hsList[idx].giaHDMB     = gv('f-giahdmb');
-  hsList[idx].soHDMB      = gv('f-sohdmb');
+  hsList[idx].dienTich           = gv('f-dt');
+  hsList[idx].area_construction  = gvn('f-areaconstruct');
+  hsList[idx].giaHDMB            = gvn('f-giahdmb');
+  hsList[idx].hdmb_value_with_mgt= gvn('f-hdmbwithmgt');
+  hsList[idx].soHDMB             = gv('f-sohdmb');
   hsList[idx].ngayKyHDMB  = gv('f-ngayky');
   var hanGNInput = document.getElementById('f-hangn');
   hsList[idx].hanGiaiNgan = hanGNInput && hanGNInput.value ? hanGNInput.value : calcHanGN(gv('f-ngayky'));
