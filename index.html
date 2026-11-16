@@ -745,18 +745,15 @@ var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // sbLogin: không dùng Supabase Auth (phương án 2)
 
-// Lấy danh sách hồ sơ từ DB (chỉ kéo cột cần cho list view — KHÔNG kéo weekly_reports/checklist/cic)
+// Lấy danh sách hồ sơ từ DB — kéo tất cả cột loan_files + customers + apartments
+// KHÔNG kéo weekly_reports/checklist_items/cic_results (lazy load khi mở chi tiết)
 async function sbLoadHS() {
   var { data, error } = await sb
     .from('loan_files')
     .select(`
-      id, bim_seq, status, is_locked, is_kh_locked, officer_id,
-      customer_id, apartment_id, so_hdmb, ngay_ky_hdmb, han_giai_ngan,
-      vtc_phai_nop, vtc_da_nop, so_tien_vay, hinh_thuc_vay, cs_chinh_sach, ky_han,
-      ma_can_ho, dai_ly, tang, dien_tich, area_construction, gia_hdmb,
-      hdmb_value_with_mgt, min_account_balance, created_at, updated_at,
-      customers(id, full_name, phone, cccd, salutation, co_name, co_salutation, co_cccd, income_type, monthly_income, loan_account, payment_account, co_payment_account),
-      apartments(id, ma_can_ho, tang, dien_tich, gia_hdmb),
+      *,
+      customers(*),
+      apartments(*),
       users!loan_files_officer_id_fkey(id, full_name, email, pgd)
     `)
     .order('bim_seq', { ascending: true });
