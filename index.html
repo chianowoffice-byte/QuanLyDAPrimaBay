@@ -1729,15 +1729,17 @@ function mapDbHS(lf) {
     outcome:       lf.outcome     || '',
     outcomeNote:   lf.outcome_note || '',
     lastContactAt: (function(){
+      // Ưu tiên: cột last_contact_date trong loan_files (được cập nhật mỗi lần save weekly report)
+      if(lf.last_contact_date) return lf.last_contact_date;
       var wrs = lf.weekly_reports || [];
       if(wrs.length) {
         var sorted = wrs.slice().sort(function(a,b){
           return new Date(b.created_at||b.report_date) - new Date(a.created_at||a.report_date);
         });
-        return sorted[0].created_at || sorted[0].report_date || lf.created_at || '';
+        return sorted[0].created_at || sorted[0].report_date || '';
       }
-      // Chưa có báo cáo nào → dùng ngày tạo hồ sơ (ngày upload đầu tiên)
-      return lf.created_at || '';
+      // Không có báo cáo nào → null (badge sẽ hiện "Chưa cập nhật", không tính từ ngày tạo HS)
+      return null;
     })(),
     weeklyReports: (lf.weekly_reports || []).map(function(wr){
       var _d = wr.detail || '';
@@ -4088,8 +4090,16 @@ function saveWeeklyReport() {
   // Reset form + save DB + reload
   if(kq) kq.value=''; if(ct) ct.value=''; if(dx) dx.value='';
   var _wrH = hsList[idx];
+  var _now = new Date().toISOString();
   saveAndSync(
-    function(){ return dbSaveWeeklyReport(_wrH, entry); },
+    async function(){
+      var ok = await dbSaveWeeklyReport(_wrH, entry);
+      // Cập nhật last_contact_date vào loan_files để sbLoadHS() có thể đọc mà không cần join weekly_reports
+      if (ok && sb && _wrH.id) {
+        await sb.from('loan_files').update({ last_contact_date: _now }).eq('id', _wrH.id);
+      }
+      return ok;
+    },
     'Đã lưu báo cáo!'
   ).then(function(){
     setTimeout(function(){
