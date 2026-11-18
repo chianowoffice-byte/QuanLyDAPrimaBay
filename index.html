@@ -4269,6 +4269,39 @@ async function exportCDTExcel() {
     });
   }
 
+  // Load weekly_reports cho tất cả hồ sơ (cần để xuất cột AD, AE, AF, AG)
+  var wrMap = {}; // loan_file_id → [weekly_reports]
+  if (sb) {
+    try {
+      var { data: allWR, error: wrErr } = await sb
+        .from('weekly_reports')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (!wrErr && allWR) {
+        allWR.forEach(function(wr) {
+          if (!wrMap[wr.loan_file_id]) wrMap[wr.loan_file_id] = [];
+          wrMap[wr.loan_file_id].push({
+            dbId:    wr.id,
+            time:    wr.created_at || wr.report_date || '',
+            ketQua:  wr.contact_status || '',
+            chiTiet: wr.detail || '',
+            deXuat:  wr.support_request || '',
+            who:     wr.officer_id || '',
+            type:    wr.type || 'report'
+          });
+        });
+      }
+    } catch(e) { console.warn('exportCDT: load weekly_reports error', e); }
+  }
+  // Merge vào hsList (ưu tiên data fresh từ DB, fallback sang cache)
+  hsList.forEach(function(h) {
+    if (wrMap[h.id] && wrMap[h.id].length) {
+      h._exportWR = wrMap[h.id];
+    } else {
+      h._exportWR = h.weeklyReports || [];
+    }
+  });
+
   function toISO(v){return toISODate(v)||'';}
   function fmtD(v){var iso=toISO(v);if(!iso)return '';var p=iso.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
   function fmtShort(v){
@@ -4400,7 +4433,8 @@ async function exportCDTExcel() {
     }
 
     // Weekly reports - dedupe by day, last record each day
-    var wrs = (h.weeklyReports||[])
+    // Dùng _exportWR (đã load fresh từ DB khi export, bao gồm cả hồ sơ chưa mở)
+    var wrs = (h._exportWR||h.weeklyReports||[])
       .filter(function(r){return r.type!=='cdt_feedback';})
       .sort(function(a,b){return new Date(a.time)-new Date(b.time);});
     var byDay = {};
