@@ -1349,9 +1349,15 @@ async function saveAndSync(saveFn, successMsg) {
     console.error('saveAndSync error:', e);
     ok = false;
   }
-  // Dù lỗi hay không → reload để đảm bảo dữ liệu đúng
-  await syncFromDB(true);
-  showNotif(ok !== false ? ('✅ ' + (successMsg||'Đã lưu!')) : '⚠️ Lỗi lưu DB, đã reload dữ liệu.');
+  if (ok !== false) {
+    // Lưu DB thành công → sync lại để lấy dữ liệu mới nhất từ server
+    await syncFromDB(true);
+    showNotif('✅ ' + (successMsg||'Đã lưu!'));
+  } else {
+    // Lưu DB thất bại → KHÔNG sync lại (tránh ghi đè localStorage bằng data cũ từ DB)
+    // Dữ liệu trong localStorage đã được persist() ghi đúng
+    showNotif('⚠️ Lỗi đồng bộ DB — đã lưu tạm locally, kiểm tra kết nối.');
+  }
 }
 
 // Alias để backward compatible
