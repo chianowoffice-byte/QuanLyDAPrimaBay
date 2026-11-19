@@ -2528,6 +2528,18 @@ function buildHSForm(h) {
   html += '<div class="fg"><label>Định giá lần 1 (VNĐ)</label>'+numInput('f-val1',h.valuation_1,hdgnDis)+'</div>';
   html += '<div class="fg"><label>Định giá lần 2 (VNĐ)</label>'+numInput('f-val2',h.valuation_2,hdgnDis)+'</div>';
   html += '</div></div>';
+  html += '<div class="info-section"><div class="section-title">📋 Kỳ hạn vay & Ân hạn</div><div class="fgrid">';
+  html += '<div class="fg"><label>Kỳ hạn vay (tháng)</label>'+numInput('f-loanmonths',h.kyHan||h.loan_term_months,hdgnDis)+'</div>';
+  html += '<div class="fg"><label>Thời gian ân hạn (tháng)</label>'+numInput('f-graceperiod',h.grace_period_months,hdgnDis)+'</div>';
+  html += '</div></div>';
+  html += '<div class="info-section"><div class="section-title">💼 Thu nhập & Chi phí (thẩm định)</div><div class="fgrid">';
+  html += '<div class="fg"><label>Thu nhập lương (VNĐ/tháng)</label>'+numInput('f-inc-salary',h.income_salary,hdgnDis)+'</div>';
+  html += '<div class="fg"><label>Thu nhập kinh doanh (VNĐ/tháng)</label>'+numInput('f-inc-biz',h.income_business,hdgnDis)+'</div>';
+  html += '<div class="fg"><label>Thu nhập cho thuê (VNĐ/tháng)</label>'+numInput('f-inc-rent',h.income_rental,hdgnDis)+'</div>';
+  html += '<div class="fg"><label>Thu nhập khác (VNĐ/tháng)</label>'+numInput('f-inc-other',h.income_other,hdgnDis)+'</div>';
+  html += '<div class="fg"><label>Chi phí sinh hoạt (VNĐ/tháng)</label>'+numInput('f-exp-living',h.expense_living,hdgnDis)+'</div>';
+  html += '<div class="fg"><label>Nghĩa vụ nợ hiện tại (VNĐ/tháng)</label>'+numInput('f-exp-debt',h.expense_debt,hdgnDis)+'</div>';
+  html += '</div></div>';
   var canExp = ['da_phe_duyet','soan_hs','cho_gn','da_gn','da_thong_bao'].indexOf(deriveHSStatus(h))!==-1;
   html += '<div style="padding:12px 0;display:flex;flex-wrap:wrap;gap:8px">';
   if (isCBOwner||isQLAdmin||isQTTD()) html += '<button class="btn btn-primary" onclick="saveHDGN()">💾 Lưu HĐ & GN</button>';
@@ -2878,6 +2890,10 @@ function saveProj() {
     vtcPhaiNop: gvn('f-vtcphai'), vtcDaNop: gvn('f-vtcdanop'),
     soTienVay: gvn('f-stv'), kyHan: gv('f-kh'),
     hinhThucVay: gv('f-hthucvay'), csChinhSach: gv('f-csbh'),
+    // Phê duyệt & Giải ngân (CB khi checklist đủ)
+    hanMucDuocDuyet: (function(){ var el=document.getElementById('f-hmduyet'); return el&&!el.disabled?gvn('f-hmduyet'):''; })(),
+    ngayGiaiNgan: (function(){ var el=document.getElementById('f-ngaygn'); return el&&!el.disabled?el.value:''; })(),
+    soTienGiaiNgan: (function(){ var el=document.getElementById('f-stgn'); return el&&!el.disabled?gvn('f-stgn'):''; })(),
     updatedAt: nowStr()
   };
   if (currentHSId) {
@@ -4111,16 +4127,25 @@ function saveWeeklyReport() {
 
 function saveGiaiNganInfo() {
   if (!canSetGiaiNgan() || !currentHSId) return;
-  var hm = document.getElementById('wr-hanmuc');
-  var ng = document.getElementById('wr-ngaygn');
-  var st = document.getElementById('wr-sotien');
+  var hm = document.getElementById('f-hmduyet');
+  var ng = document.getElementById('f-ngaygn');
+  var st = document.getElementById('f-stgn');
   var idx = hsList.findIndex(function(x) { return x.id === currentHSId; });
   if (hm) hsList[idx].hanMucDuocDuyet = parseFloat(hm.value) || 0;
   if (ng) hsList[idx].ngayGiaiNgan = ng.value || '';
   if (st) hsList[idx].soTienGiaiNgan = parseFloat(st.value) || 0;
   hsList[idx].updatedAt = nowStr();
   addLog('Cap nhat thong tin giai ngan: ' + hsList[idx].tenKH, 'green', currentHSId);
-  persist(); renderHSTable(); alert('Da luu thong tin giai ngan!');
+  persist(); renderHSTable();
+  var _gnH = hsList[idx];
+  saveAndSync(function() {
+    return sb.from('loan_files').update({
+      loan_amount_approved: parseInt(_gnH.hanMucDuocDuyet) || null,
+      disbursement_date: _gnH.ngayGiaiNgan || null,
+      disbursement_amount: parseInt(_gnH.soTienGiaiNgan) || null,
+      updated_at: new Date().toISOString()
+    }).eq('id', _gnH.id).then(function(r) { return !r.error; });
+  }, 'Đã lưu thông tin giải ngân!');
 }
 
 function getWeekNum() {
@@ -4635,7 +4660,7 @@ async function saveHDGN() {
   h.htls_agreement=gv3('f-htls'); h.qlts_agreement=gv3('f-qlts');
   h.area_construction=pn('f-areaconstruct');
   h.hdmb_value_with_mgt=pn('f-hdmbwithmgt');
-  h.loan_months=pn('f-kh')||pn('f-loanmonths'); h.grace_period_months=pn('f-graceperiod');
+  h.kyHan=pn('f-loanmonths')||pn('f-kh')||h.kyHan; h.grace_period_months=pn('f-graceperiod');
   h.disbursement_1=pn('f-disb1'); h.equity_amount=pn('f-equity');
   h.collateral_value_ratio=pn('f-collratio'); h.vtc_5pct=pn('f-vtc5pct');
   h.payment_account=gv3('f-payacct'); h.min_account_balance=pn('f-minbal');
@@ -4647,10 +4672,10 @@ async function saveHDGN() {
     pca_code:h.pca_code, hdtd_code:h.hdtd_code, mortgage_code:h.mortgage_code,
     htls_agreement:h.htls_agreement, qlts_agreement:h.qlts_agreement,
     payment_account:h.payment_account, min_account_balance:h.min_account_balance,
-    disbursement_amount:h.disbursement_1, equity_amount:h.equity_amount,
+    disbursement_1:h.disbursement_1, equity_amount:h.equity_amount,
     collateral_value_ratio:h.collateral_value_ratio, vtc_5pct:h.vtc_5pct,
     valuation_1:h.valuation_1, valuation_2:h.valuation_2,
-    loan_months:h.loan_months, grace_period_months:h.grace_period_months,
+    loan_term_months:parseInt(h.kyHan)||null, grace_period_months:h.grace_period_months,
     hdmb_value_with_mgt:h.hdmb_value_with_mgt,
     income_salary:h.income_salary, income_business:h.income_business,
     income_rental:h.income_rental, income_other:h.income_other,
