@@ -2499,16 +2499,16 @@ function buildHSForm(h) {
   var hdgnDis = (!isCBOwner && !isQLAdmin && !isQTTD()) ? 'disabled' : '';
   var fmtN = function(v){ return (v||v===0) ? parseInt(v).toLocaleString('en-US').replace(/,/g,',') : ''; };
   var sugHDTD = (h.cif ? ('01'+h.cif+'/HDTD') : (h.hdtd_code||''));
-  var sugHTLS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTHTLS/PRIMA BAY') : (h.htls_agreement||''));
-  var sugQLTS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTQLTS/PRIMA BAY') : (h.qlts_agreement||''));
+  var sugHTLS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTHTLS/PRIMA BAY') : 'số HĐMB/2026/mã căn/01/TTHTLS/PRIMA BAY');
+  var sugQLTS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTQLTS/PRIMA BAY') : 'số HĐMB/2026/mã căn/01/TTQLTS/PRIMA BAY');
   html += '<div class="info-section"><div class="section-title">📄 Hợp đồng tín dụng</div><div class="fgrid">';
   html += fld('Mã PCA','f-pca',h.pca_code||'',hdgnDis,'VD: PCA-001');
   html += fld('Số HĐTD','f-hdtd',h.hdtd_code||sugHDTD,hdgnDis,'01+CIF/HDTD');
   html += fld('Số HĐ thế chấp','f-mortgage',h.mortgage_code||'',hdgnDis,'');
   html += '</div></div>';
   html += '<div class="info-section"><div class="section-title">📝 Thỏa thuận</div><div class="fgrid">';
-  html += fld('Thỏa thuận HTLS','f-htls',h.htls_agreement||sugHTLS,hdgnDis,'');
-  html += fld('Thỏa thuận QLTS','f-qlts',h.qlts_agreement||sugQLTS,hdgnDis,'');
+  html += fld('Thỏa thuận HTLS','f-htls',h.htls_agreement||'',hdgnDis,sugHTLS);
+  html += fld('Thỏa thuận QLTS','f-qlts',h.qlts_agreement||'',hdgnDis,sugQLTS);
   html += '</div></div>';
   html += '<div class="info-section"><div class="section-title">💰 Tài chính giải ngân</div><div class="fgrid">';
   html += '<div class="fg"><label>Giải ngân lần 1 (VNĐ)</label>'+numInput('f-disb1',h.disbursement_1,hdgnDis)+'</div>';
@@ -4659,7 +4659,9 @@ async function saveHDGN() {
   };
   var gv3=function(id){ var el=document.getElementById(id); return el?(el.value.trim()||null):null; };
   h.pca_code=gv3('f-pca'); h.hdtd_code=gv3('f-hdtd'); h.mortgage_code=gv3('f-mortgage');
-  h.htls_agreement=gv3('f-htls'); h.qlts_agreement=gv3('f-qlts');
+  var htlsEl=document.getElementById('f-htls'), qltsEl=document.getElementById('f-qlts');
+  h.htls_agreement = gv3('f-htls') || (htlsEl ? htlsEl.placeholder : null) || null;
+  h.qlts_agreement = gv3('f-qlts') || (qltsEl ? qltsEl.placeholder : null) || null;
   h.area_construction=pn('f-areaconstruct');
   h.hdmb_value_with_mgt=pn('f-hdmbwithmgt');
   h.kyHan=pn('f-loanmonths')||pn('f-kh')||h.kyHan; h.grace_period_months=pn('f-graceperiod');
@@ -4938,8 +4940,8 @@ function buildDocData(h){
     '58 - Thời gian vay':h.hinhThucVay||'',
     '59 - Số hợp đồng thế chấp':h.mortgage_code||'',
     '60 - Số hợp đồng tín dụng':h.hdtd_code||'',
-    '61 - Thỏa thuận HTLS':h.htls_agreement||'',
-    '62 - Thỏa thuận QLTS':h.qlts_agreement||'',
+    '61 - Thỏa thuận HTLS':h.htls_agreement||(h.soHDMB?h.soHDMB+'/2026/'+h.maCanHo+'/01/TTHTLS/PRIMA BAY':''),
+    '62 - Thỏa thuận QLTS':h.qlts_agreement||(h.soHDMB?h.soHDMB+'/2026/'+h.maCanHo+'/01/TTQLTS/PRIMA BAY':''),
     '64- Lịch trả nợ từ kì 31 đến kỳ n-1':(function(){
       var stv=parseInt(h.soTienVay)||0, kh=parseInt(h.kyHan)||0;
       if(!stv||kh<=31) return '';
