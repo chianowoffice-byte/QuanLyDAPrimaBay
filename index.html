@@ -2865,24 +2865,36 @@ function saveProj() {
     co_workplace_phone: gv('f-cowk1phone'), co_job_title: gv('f-cowk1title'),
     co_workplace2: gv('f-cowk2'), co_workplace2_address: gv('f-cowk2addr'),
     co_workplace2_phone: gv('f-cowk2phone'), co_job_title2: gv('f-cowk2title'),
-    // Căn hộ & HĐMB (CB Owner được sửa)
-    maCanHo: gv('f-mach'), daiLy: gv('f-daily'),
-    tang: gv('f-tang'), dienTich: gv('f-dt'),
-    area_construction: gvn('f-areaconstruct'),
-    giaHDMB: gvn('f-giahdmb'), hdmb_value_with_mgt: gvn('f-hdmbwithmgt'),
-    soHDMB: gv('f-sohdmb'),
-    ngayKyHDMB: gv('f-ngayky'),
-    hanGiaiNgan: (function(){ var el=document.getElementById('f-hangn'); return el&&el.value?el.value:calcHanGN(gv('f-ngayky')); })(),
-    // VTC & Nhu cầu vay (CB Owner được sửa)
-    vtcPhaiNop: gvn('f-vtcphai'), vtcDaNop: gvn('f-vtcdanop'),
-    soTienVay: gvn('f-stv'), kyHan: gv('f-kh'),
-    hinhThucVay: gv('f-hthucvay'), csChinhSach: gv('f-csbh'),
-    // Phê duyệt & Giải ngân (CB khi checklist đủ)
-    hanMucDuocDuyet: (function(){ var el=document.getElementById('f-hmduyet'); return el&&!el.disabled?gvn('f-hmduyet'):''; })(),
-    ngayGiaiNgan: (function(){ var el=document.getElementById('f-ngaygn'); return el&&!el.disabled?el.value:''; })(),
-    soTienGiaiNgan: (function(){ var el=document.getElementById('f-stgn'); return el&&!el.disabled?gvn('f-stgn'):''; })(),
     updatedAt: nowStr()
   };
+  // Căn hộ & HĐMB — chỉ ghi khi field không bị disabled
+  var dtEl = document.getElementById('f-dt');
+  if (dtEl && !dtEl.disabled) {
+    data.maCanHo = gv('f-mach'); data.daiLy = gv('f-daily'); data.tang = gv('f-tang');
+    data.dienTich = gv('f-dt'); data.area_construction = gvn('f-areaconstruct');
+    data.giaHDMB = gvn('f-giahdmb'); data.hdmb_value_with_mgt = gvn('f-hdmbwithmgt');
+  }
+  // Số HĐMB / ngày ký
+  var soHDMBEl = document.getElementById('f-sohdmb');
+  if (soHDMBEl && !soHDMBEl.disabled) {
+    data.soHDMB = gv('f-sohdmb'); data.ngayKyHDMB = gv('f-ngayky');
+    var hanGNEl2 = document.getElementById('f-hangn');
+    data.hanGiaiNgan = hanGNEl2 && hanGNEl2.value ? hanGNEl2.value : calcHanGN(gv('f-ngayky'));
+  }
+  // VTC & Nhu cầu vay
+  var vtcEl = document.getElementById('f-vtcphai');
+  if (vtcEl && !vtcEl.disabled) {
+    data.vtcPhaiNop = gvn('f-vtcphai'); data.vtcDaNop = gvn('f-vtcdanop');
+    data.soTienVay = gvn('f-stv'); data.kyHan = gv('f-kh');
+    data.hinhThucVay = gv('f-hthucvay'); data.csChinhSach = gv('f-csbh');
+  }
+  // Phê duyệt & Giải ngân: chỉ ghi nếu field KHÔNG bị disabled
+  var hmEl = document.getElementById('f-hmduyet');
+  if (hmEl && !hmEl.disabled) data.hanMucDuocDuyet = gvn('f-hmduyet');
+  var gnEl = document.getElementById('f-ngaygn');
+  if (gnEl && !gnEl.disabled) data.ngayGiaiNgan = gnEl.value;
+  var stgnEl = document.getElementById('f-stgn');
+  if (stgnEl && !stgnEl.disabled) data.soTienGiaiNgan = gvn('f-stgn');
   if (currentHSId) {
     var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
     Object.assign(hsList[idx], data);
