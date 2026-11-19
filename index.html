@@ -4766,189 +4766,51 @@ async function fillTemplate(key, data) {
   var CO_IS = 'CO_BORROWER_INLINE_START';
   var CO_IE = 'CO_BORROWER_INLINE_END';
   var PH_RE = /<<\s*'?\s*(.+?)\s*'?\s*>>/g;
-  var W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
-  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
-
-  function getParaText(para) {
-    var texts = [], wts = para.getElementsByTagNameNS(W,'t');
-    for (var i=0;i<wts.length;i++) texts.push(wts[i].textContent||'');
-    return texts.join('');
+  // ── Escape value để an toàn trong XML ──
+  function escXml(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&apos;');
   }
 
-  function fillParaDom(para, inCo) {
-    // Bỏ qua paragraph có drawing/image (logo, hình ảnh nhúng)
-    var WD = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing';
-    if (para.getElementsByTagNameNS(WD,'inline').length > 0 ||
-        para.getElementsByTagNameNS(WD,'anchor').length > 0) return;
+  // ── Xử lý XML bằng regex trực tiếp — không dùng DOMParser/XMLSerializer
+  //    để tránh namespace/declaration issues làm hỏng file Word ──
+  function processXmlStr(xmlStr) {
+    if (!xmlStr) return xmlStr;
 
-    var doc2 = para.ownerDocument;
-    var runs = Array.from(para.getElementsByTagNameNS(W,'r'));
-
-    // ── Kiểm tra nhanh: paragraph có placeholder không? ──
-    var paraText = getParaText(para);
-
-    // CO_S / CO_E / CO_IS / CO_IE chỉ là text markers, không ảnh hưởng formatting
-    var hasCOMarker = paraText.indexOf(CO_S) !== -1 || paraText.indexOf(CO_E) !== -1 ||
-                      paraText.indexOf(CO_IS) !== -1 || paraText.indexOf(CO_IE) !== -1;
-    var hasPlaceholder = PH_RE.test(paraText);
-    PH_RE.lastIndex = 0;
-
-    if (!hasPlaceholder && !hasCOMarker) return; // Không có gì để xử lý
-
-    // ── Chiến lược: xử lý TỪNG RUN riêng lẻ, giữ nguyên rPr của từng run ──
-    // Không gộp tất cả thành 1 run → tránh áp sai formatting
-
-    // Thu thập tất cả runs cùng text của chúng
-    var runData = runs.map(function(r) {
-      var wts = r.getElementsByTagNameNS(W,'t');
-      var txt = '';
-      for (var i=0;i<wts.length;i++) txt += (wts[i].textContent||'');
-      return { el: r, txt: txt };
-    });
-
-    // Ghép text toàn paragraph để xử lý CO_BORROWER inline
-    var full = paraText;
-    if (full.indexOf(CO_IS) !== -1) {
-      if (!hasCo) {
-        full = full.replace(new RegExp(escRe(CO_IS)+'[\\s\\S]*?'+escRe(CO_IE)), '');
-      } else {
-        full = full.replace(new RegExp(escRe(CO_IS),'g'),'').replace(new RegExp(escRe(CO_IE),'g'),'');
-      }
-    }
-    full = full.replace(new RegExp(escRe(CO_S),'g'),'').replace(new RegExp(escRe(CO_E),'g'),'');
-
-    // Trong CO block và không có người vay thứ 2
-    if (inCo && !hasCo) {
-      var phCount = (full.match(/<<[^>]+>>/g)||[]).length;
-      var cleanText = full.replace(/<<[^>]+>>/g,'').trim();
-      if (phCount > 0 && !cleanText) { full = ''; }
+    // 1. Xử lý CO_BORROWER block-level: xóa toàn bộ <w:p> chứa CO_S/CO_E
+    //    Nếu không có người vay 2: xóa tất cả w:p giữa CO_S và CO_E (kể cả marker)
+    if (!hasCo) {
+      // Xóa block CO: từ <w:p ...>CO_BORROWER_START</w:p> đến <w:p ...>CO_BORROWER_END</w:p>
+      xmlStr = xmlStr.replace(/<w:p[ >][\s\S]*?CO_BORROWER_START[\s\S]*?<\/w:p>/g, '');
+      xmlStr = xmlStr.replace(/<w:p[ >][\s\S]*?CO_BORROWER_END[\s\S]*?<\/w:p>/g, '');
+      // Xóa toàn bộ content giữa CO_BORROWER_INLINE_START và CO_BORROWER_INLINE_END
+      xmlStr = xmlStr.replace(/CO_BORROWER_INLINE_START[\s\S]*?CO_BORROWER_INLINE_END/g, '');
+    } else {
+      // Giữ content, chỉ xóa marker text
+      xmlStr = xmlStr.replace(/CO_BORROWER_START/g,'').replace(/CO_BORROWER_END/g,'');
+      xmlStr = xmlStr.replace(/CO_BORROWER_INLINE_START/g,'').replace(/CO_BORROWER_INLINE_END/g,'');
     }
 
-    // Fill placeholders trong full text
+    // 2. Fill placeholders: thay <<KEY>> bằng giá trị (đã escape XML)
     PH_RE.lastIndex = 0;
-    var filledFull = full.replace(PH_RE, function(m,k){
+    xmlStr = xmlStr.replace(PH_RE, function(m, k) {
       var val = findVal(k);
-      return (val !== null && val !== undefined) ? String(val) : '';
+      return (val !== null && val !== undefined) ? escXml(String(val)) : '';
     });
 
-    // ── Nếu toàn bộ paragraph trống sau fill → xóa hết runs, để paragraph rỗng ──
-    if (filledFull === '') {
-      var pPr0 = para.getElementsByTagNameNS(W,'pPr')[0] || null;
-      Array.from(para.childNodes).forEach(function(ch){ if(!pPr0||ch!==pPr0) para.removeChild(ch); });
-      return;
-    }
-
-    // ── Xử lý từng run: thay text placeholder, giữ nguyên rPr ──
-    var pPr = para.getElementsByTagNameNS(W,'pPr')[0] || null;
-    // Xóa tất cả child nodes trừ pPr
-    Array.from(para.childNodes).forEach(function(ch){ if(!pPr||ch!==pPr) para.removeChild(ch); });
-
-    // Tái tạo paragraph từ runData đã xử lý
-    runData.forEach(function(rd) {
-      var txt = rd.txt;
-
-      // Bỏ CO markers khỏi text của run này
-      txt = txt.replace(new RegExp(escRe(CO_S),'g'),'')
-               .replace(new RegExp(escRe(CO_E),'g'),'');
-
-      // Xử lý inline CO_IS/CO_IE
-      if (txt.indexOf(CO_IS) !== -1 || txt.indexOf(CO_IE) !== -1) {
-        if (!hasCo) {
-          txt = txt.replace(new RegExp(escRe(CO_IS)+'[\\s\\S]*?'+escRe(CO_IE)), '');
-          txt = txt.replace(new RegExp(escRe(CO_IS),'g'),'').replace(new RegExp(escRe(CO_IE),'g'),'');
-        } else {
-          txt = txt.replace(new RegExp(escRe(CO_IS),'g'),'').replace(new RegExp(escRe(CO_IE),'g'),'');
-        }
-      }
-
-      // Trong CO block và không có người vay 2: nếu run chỉ có placeholder thì bỏ qua
-      if (inCo && !hasCo) {
-        var rtxtClean = txt.replace(/<<[^>]+>>/g,'').trim();
-        var rPhCount = (txt.match(/<<[^>]+>>/g)||[]).length;
-        if (rPhCount > 0 && !rtxtClean) { return; } // bỏ run này
-      }
-
-      // Fill placeholder trong run này
-      PH_RE.lastIndex = 0;
-      txt = txt.replace(PH_RE, function(m,k){
-        var val = findVal(k);
-        return (val !== null && val !== undefined) ? String(val) : '';
-      });
-
-      // Tạo run mới với rPr gốc của run đó (giữ nguyên formatting)
-      var newR = doc2.createElementNS(W,'w:r');
-      var origRPr = rd.el.getElementsByTagNameNS(W,'rPr')[0];
-      if (origRPr) {
-        var rprClone = origRPr.cloneNode(true);
-        // Chỉ strip highlight/shd để tránh bôi đen, GIỮ LẠI bold/italic/font size
-        ['highlight','shd','rHighlight'].forEach(function(tag){
-          var el = rprClone.getElementsByTagNameNS(W, tag)[0];
-          if (el) rprClone.removeChild(el);
-        });
-        newR.appendChild(rprClone);
-      }
-      var newT = doc2.createElementNS(W,'w:t');
-      newT.textContent = txt;
-      if (txt && (txt[0]===' '||txt[txt.length-1]===' '))
-        newT.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');
-      newR.appendChild(newT);
-      para.appendChild(newR);
-    });
-  }
-
-  function processXmlDom(xmlStr) {
-    console.log('[processXml] called, xmlStr length:', xmlStr ? xmlStr.length : 'NULL');
-    var parser = new DOMParser();
-    var xmlDoc = parser.parseFromString(xmlStr,'application/xml');
-    // W, CO_S, CO_E, hasCo, fillParaDom etc. từ scope fillTemplate
-
-    // ── 1. Xử lý paragraphs NGOÀI table (body-level) ──
-    var body = xmlDoc.getElementsByTagNameNS(W,'body')[0];
-    var bodyParas = [];
-    if (body) {
-      Array.from(body.childNodes).forEach(function(node){
-        if (node.localName === 'p') bodyParas.push(node);
-      });
-    }
-    var toDelete = [], inCo = false;
-    bodyParas.forEach(function(para){
-      var text = getParaText(para).trim();
-      if (text === CO_S){ inCo=true; toDelete.push(para); return; }
-      if (text === CO_E){ inCo=false; toDelete.push(para); return; }
-      if (inCo && !hasCo) { toDelete.push(para); }
-      else { fillParaDom(para, inCo); }
-    });
-    toDelete.forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); });
-
-    console.log('[processXml] bodyParas:', bodyParas.length, 'body children');
-    // ── 2. Xử lý paragraphs TRONG table: iterate unique tc ──
-    var allTcs = Array.from(xmlDoc.getElementsByTagNameNS(W,'tc'));
-    console.log('[processXml] bodyParas:', bodyParas.length, 'allTcs:', allTcs.length);
-    var seenTc = [];
-    allTcs.forEach(function(tc){
-      if (seenTc.indexOf(tc) !== -1) return;
-      seenTc.push(tc);
-      // Lấy TẤT CẢ w:p trong tc này (kể cả nested)
-      var tcParas = Array.from(tc.getElementsByTagNameNS(W,'p'));
-      var tcToDel = [], inCoCell = false;
-      tcParas.forEach(function(para){
-        var text = getParaText(para).trim();
-        if (text === CO_S){ inCoCell=true; tcToDel.push(para); return; }
-        if (text === CO_E){ inCoCell=false; tcToDel.push(para); return; }
-        if (inCoCell && !hasCo) { tcToDel.push(para); }
-        else { fillParaDom(para, inCoCell); }
-      });
-      tcToDel.forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); });
-    });
-
-    return new XMLSerializer().serializeToString(xmlDoc);
+    return xmlStr;
   }
 
   // Áp dụng fill vào các file XML trong docx
-  ['word/document.xml','word/header1.xml','word/footer1.xml'].forEach(function(fname){
+  ['word/document.xml','word/header1.xml','word/footer1.xml','word/header2.xml','word/footer2.xml'].forEach(function(fname){
     if (!zip2.files[fname]) return;
-    var xml2 = processXmlDom(zip2.files[fname].asText());
+    var xml2 = processXmlStr(zip2.files[fname].asText());
     zip2.file(fname, xml2);
   });
 
