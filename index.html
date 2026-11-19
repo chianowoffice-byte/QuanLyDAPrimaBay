@@ -4940,8 +4940,20 @@ function buildDocData(h){
     '60 - Số hợp đồng tín dụng':h.hdtd_code||'',
     '61 - Thỏa thuận HTLS':h.htls_agreement||'',
     '62 - Thỏa thuận QLTS':h.qlts_agreement||'',
-    '64- Lịch trả nợ từ kì 31 đến kỳ n-1':h.schedule_note_31||'',
-    '65 - kỳ thứ n':h.schedule_note_last||'',
+    '64- Lịch trả nợ từ kì 31 đến kỳ n-1':(function(){
+      var stv=parseInt(h.soTienVay)||0, kh=parseInt(h.kyHan)||0;
+      if(!stv||kh<=31) return '';
+      var soKy=kh-1-30; // kỳ 31..n-1
+      return fmt(Math.floor(stv/soKy));
+    })(),
+    '65 - kỳ thứ n':(function(){
+      var stv=parseInt(h.soTienVay)||0, kh=parseInt(h.kyHan)||0;
+      if(!stv||kh<=31) return '';
+      var soKy=kh-1-30;
+      var kyDeu=Math.floor(stv/soKy);
+      var dur=stv-kyDeu*soKy; // phần dư kỳ cuối
+      return fmt(dur>0?dur:kyDeu);
+    })(),
     '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop),
     '48 - Bằng chữ Giá trị HDMB căn':numToWords(h.giaHDMB),
     '48 - Bằng chữ Giá trị HDMB căn hộ  (bao gồm kinh phí bảo trì)':numToWords(h.hdmb_value_with_mgt||h.giaHDMB),
