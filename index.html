@@ -5065,7 +5065,7 @@ function buildDocData(h){
     '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop),
     '48 - Bằng chữ Giá trị HDMB căn':numToWords(h.giaHDMB),
     '48 - Bằng chữ Giá trị HDMB căn hộ  (bao gồm kinh phí bảo trì)':numToWords(h.hdmb_value_with_mgt||h.giaHDMB),
-    '50 - Bằng chữ Giá trị HDMB căn hộ (Không bao gồm kinh phí bảo trì)':numToWords(h.hdmb_value_with_mgt||h.giaHDMB),
+    '50 - Bằng chữ Giá trị HDMB căn hộ (Không bao gồm kinh phí bảo trì)':numToWords(h.giaHDMB),
     '67 - Bằng chữ - VTC/ định gíá lần 1':numToWords(h.equity_amount||h.vtcDaNop),
     '70 - Định giá lần 2':fmt(h.valuation_2),
     '71 - Bằng chữ -Định giá lần 2':numToWords(h.valuation_2)
