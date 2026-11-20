@@ -2348,7 +2348,7 @@ function buildHSForm(h) {
   html += fld('Ngày cấp CCCD','f-iddate',dv('id_issue_date'),khDim,'','date');
   html += fld('Số điện thoại','f-sdt',dv('sdt'),khDim);
   html += fld('Email','f-email',dv('email'),khDim,'vd: nguyenvana@gmail.com');
-  html += fld('Số CIF','f-cif',dv('cif'),khDim,'VD: 1234567890');
+  html += fld('Số CIF','f-cif',dv('cif'),khDim,'VD: 1234567890','','','oninput="(function(el){var yr=new Date().getFullYear();var cif=el.value.trim();var hdtd=document.getElementById(\'f-hdtd\');var mort=document.getElementById(\'f-mortgage\');if(hdtd&&!hdtd.dataset.manualEdit)hdtd.value=cif?\'01/\'+yr+\'/\'+cif+\'/HĐTD\':\'\';if(mort&&!mort.dataset.manualEdit)mort.value=cif?\'01/\'+yr+\'/\'+cif+\'/HĐTC\':\'\'})(this)"');
   html += fld('Ngày sinh','f-ns',dv('ngaySinh'),khDim,'','date');
   html += fld('Địa chỉ thường trú','f-permaddr',dv('permanent_address'),khDim,'','','ffull');
   html += fld('Địa chỉ liên hệ','f-dc',dv('diaChi'),khDim,'','','ffull');
@@ -2597,13 +2597,18 @@ function buildHSForm(h) {
   html += '<div id="t-hdgn" style="display:none">';
   var hdgnDis = (!isCBOwner && !isQLAdmin && !isQTTD()) ? 'disabled' : '';
   var fmtN = function(v){ return (v||v===0) ? parseInt(v).toLocaleString('en-US').replace(/,/g,',') : ''; };
-  var sugHDTD = (h.cif ? ('01'+h.cif+'/HDTD') : (h.hdtd_code||''));
+  var _yr = new Date().getFullYear();
+  var sugHDTD     = h.cif ? ('01/'+_yr+'/'+h.cif+'/HĐTD') : '';
+  var sugMortgage = h.cif ? ('01/'+_yr+'/'+h.cif+'/HĐTC') : '';
   var sugHTLS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTHTLS/PRIMA BAY') : 'số HĐMB/2026/mã căn/01/TTHTLS/PRIMA BAY');
   var sugQLTS = (h.soHDMB ? (h.soHDMB+'/2026/'+h.maCanHo+'/01/TTQLTS/PRIMA BAY') : 'số HĐMB/2026/mã căn/01/TTQLTS/PRIMA BAY');
+  // Giá trị hiển thị: nếu đã có giá trị lưu → dùng; chưa có → dùng gợi ý tự động
+  var valHDTD     = h.hdtd_code     || sugHDTD;
+  var valMortgage = h.mortgage_code || sugMortgage;
   html += '<div class="info-section"><div class="section-title">📄 Hợp đồng tín dụng</div><div class="fgrid">';
   html += fld('Mã PCA','f-pca',h.pca_code||'',hdgnDis,'VD: PCA-001');
-  html += fld('Số HĐTD','f-hdtd',h.hdtd_code||sugHDTD,hdgnDis,'01+CIF/HDTD');
-  html += fld('Số HĐ thế chấp','f-mortgage',h.mortgage_code||'',hdgnDis,'');
+  html += fld('Số HĐTD','f-hdtd',valHDTD,hdgnDis,'01/'+_yr+'/CIF/HĐTD','','','oninput="this.dataset.manualEdit=\'1\'"');
+  html += fld('Số HĐ thế chấp','f-mortgage',valMortgage,hdgnDis,'01/'+_yr+'/CIF/HĐTC','','','oninput="this.dataset.manualEdit=\'1\'"');
   html += '</div></div>';
   html += '<div class="info-section"><div class="section-title">📝 Thỏa thuận</div><div class="fgrid">';
   html += fld('Thỏa thuận HTLS','f-htls',h.htls_agreement||'',hdgnDis,sugHTLS);
