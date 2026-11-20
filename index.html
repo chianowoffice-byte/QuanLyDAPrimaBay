@@ -860,11 +860,11 @@ var confFn = null;
 // ══════════════════════════════════════════════════════════
 
 // Map app HS object → loan_files columns
+// CHÚ Ý: area_construction, area_usable thuộc bảng apartments (không phải loan_files)
 function mapHSToLF(h) {
   var appToDb={'moi':'new','dang':'processing','cho':'pending','choky':'approved','chogn':'approved','xong':'disbursed','tuchoi':'rejected'};
-  // Chỉ các field CHẮC CHẮN tồn tại trong schema loan_files
-  // (không gửi field không có trong DB → tránh lỗi PGRST204)
   return {
+    // ── Core fields (chắc chắn có trong mọi phiên bản schema) ──
     status:                 appToDb[h.status]||'new',
     officer_id:             h.canBoId||null,
     sale_price:             parseInt(h.giaHDMB)||null,
@@ -882,8 +882,9 @@ function mapHSToLF(h) {
     disbursement_amount:    parseInt(h.soTienGiaiNgan)||null,
     is_locked:              h.locked||false,
     is_kh_locked:           h.kLocked||false,
-    locked_by:              h.lockedBy||null,
     notes:                  h.ghiChu||null,
+    // ── Extended fields (cần chạy migration SQL để add vào DB) ──
+    locked_by:              h.lockedBy||null,
     drive_folder_url:       h.drive_folder_url||null,
     pca_code:               h.pca_code||null,
     hdtd_code:              h.hdtd_code||null,
@@ -907,6 +908,7 @@ function mapHSToLF(h) {
     expense_living:         h.expense_living||null,
     expense_debt:           h.expense_debt||null,
     updated_at:             new Date().toISOString()
+    // KHÔNG có area_construction, area_usable → thuộc bảng apartments
   };
 }
 
@@ -1029,6 +1031,19 @@ async function dbSaveLoanFile(h) {
         if (r2b.error) console.error('dbSaveLoanFile CUST fallback:', r2b.error);
       }
       if (lfCheck.data.apartment_id) h.apartmentId = lfCheck.data.apartment_id;
+    }
+  }
+
+  // Lưu area_construction, area_usable vào bảng apartments (đúng schema)
+  if (h.apartmentId && (h.area_construction || h.area_usable || h.dienTich)) {
+    var aptUpd = {};
+    if (h.area_construction) aptUpd.area_construction = parseFloat(h.area_construction)||null;
+    if (h.area_usable)       aptUpd.area_usable       = parseFloat(h.area_usable)||null;
+    if (h.dienTich)          aptUpd.area_m2            = parseFloat(h.dienTich)||null;
+    if (Object.keys(aptUpd).length) {
+      var rApt = await sb.from('apartments').update(aptUpd).eq('id', h.apartmentId);
+      if (rApt.error) console.error('[DB] apartments UPDATE error:', rApt.error.message);
+      else console.log('[DB] apartments UPDATE OK:', aptUpd);
     }
   }
 
