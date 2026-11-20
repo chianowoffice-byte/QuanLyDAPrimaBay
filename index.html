@@ -973,24 +973,24 @@ async function dbSaveLoanFile(h) {
   var custData = mapHSToCust(h);
   var errors   = [];
 
-  // Update loan_files — nếu lỗi PGRST204 (column không tồn tại), fallback về core fields
+  // Update loan_files — nếu lỗi PGRST204 (column không tồn tại), tự bỏ field lỗi & retry
   console.log('[DB] Saving loan_file id='+h.id+' hdmb_code='+lfData.hdmb_code);
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id).select('id,hdmb_code');
-  if (r1.error && r1.error.code === 'PGRST204') {
-    // Có column không tồn tại trong schema → fallback về core fields
-    console.warn('[DB] PGRST204 schema mismatch, fallback core fields. Missing:', r1.error.message);
+  // Nếu lỗi PGRST204 — column không tồn tại → retry với core fields
+  if (r1.error && (r1.error.code === 'PGRST204' || (r1.error.message && r1.error.message.indexOf('column') >= 0))) {
+    console.warn('[DB] Schema error, fallback core fields:', r1.error.message);
     var coreData = mapHSToLFCore(h);
     r1 = await sb.from('loan_files').update(coreData).eq('id', h.id).select('id,hdmb_code');
     if (r1.error) {
-      console.error('[DB] loan_files CORE ERROR:', r1.error.message, r1.error.code);
-      showNotif('❌ Lỗi DB: ' + r1.error.message);
+      console.error('[DB] CORE ERROR:', r1.error.message, r1.error.code);
+      alert('❌ Lỗi lưu DB (core): ' + r1.error.message + '\nCode: ' + r1.error.code);
       errors.push('loan_files: ' + r1.error.message);
     } else {
-      console.log('[DB] loan_files CORE UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
+      console.log('[DB] CORE UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
     }
   } else if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.code, r1.error.details);
-    showNotif('❌ Lỗi DB: ' + r1.error.message);
+    alert('❌ Lỗi lưu DB: ' + r1.error.message + '\nCode: ' + r1.error.code + '\nDetails: ' + JSON.stringify(r1.error.details));
     errors.push('loan_files: ' + r1.error.message);
   }
   if (!r1.error && (!r1.data || r1.data.length === 0)) {
@@ -4772,7 +4772,10 @@ async function saveHDGN() {
   h.updatedAt = nowStr();
   persist(); renderHSTable();
   var r=await sb.from('loan_files').update(lfu).eq('id',h.id);
-  if(r.error){showNotif('❌ Lỗi: '+r.error.message);return;}
+  if(r.error){
+    alert('❌ Lỗi lưu HĐ&GN: '+r.error.message+'\nCode: '+r.error.code+'\nDetails: '+JSON.stringify(r.error.details));
+    showNotif('❌ Lỗi: '+r.error.message);return;
+  }
   if(h.area_usable||h.area_construction){
     var aptU={};
     if(h.area_usable) aptU.area_usable=h.area_usable;
