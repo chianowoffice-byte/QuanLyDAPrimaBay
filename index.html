@@ -4921,8 +4921,7 @@ async function fillTemplate(key, data) {
 
   function normKey(k){
     return k
-      .replace(/&apos;/g,”’”).replace(/&quot;/g,’”’).replace(/&amp;/g,’&’)
-      .replace(/^[\s’’’””]+|[\s’’’””]+$/g,’’).trim();
+      .replace(/^[\s'"]+|[\s'"]+$/g,'').trim();
   }
   var dataMap = {};
   Object.keys(data).forEach(function(k){ dataMap[normKey(k)] = data[k]; });
