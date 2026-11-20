@@ -4945,7 +4945,7 @@ async function fillTemplate(key, data) {
   var CO_E  = 'CO_BORROWER_END';
   var CO_IS = 'CO_BORROWER_INLINE_START';
   var CO_IE = 'CO_BORROWER_INLINE_END';
-  var PH_RE = /(?:&lt;&lt;|<<)[\s&apos;’’’””]*(.+?)[\s&apos;’’’””]*(?:&gt;&gt;|>>)/g;
+  var PH_RE = /(?:&lt;&lt;|<<)[\s‘’“”’”]*(.+?)[\s‘’“”’”]*(?:&gt;&gt;|>>)/g;
 
   // ── Escape value để an toàn trong XML ──
   function escXml(s) {
