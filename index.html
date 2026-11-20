@@ -3031,6 +3031,22 @@ function saveProj() {
 }
 
 
+// Helper: đồng bộ HTLS/QLTS từ form vào hsList khi lưu
+function syncHDMBDependents(idx, gv) {
+  var yr = new Date().getFullYear();
+  var soHDMB = gv('f-sohdmb');
+  var maCanHo = hsList[idx].maCanHo || '';
+  var htlsEl = document.getElementById('f-htls');
+  var qltsEl = document.getElementById('f-qlts');
+  if (htlsEl) hsList[idx].htls_agreement = htlsEl.value || (soHDMB ? soHDMB+'/'+yr+'/'+maCanHo+'/01/TTHTLS/PRIMA BAY' : '');
+  if (qltsEl) hsList[idx].qlts_agreement = qltsEl.value || (soHDMB ? soHDMB+'/'+yr+'/'+maCanHo+'/01/TTQLTS/PRIMA BAY' : '');
+  var hdtdEl = document.getElementById('f-hdtd');
+  var mortEl = document.getElementById('f-mortgage');
+  var cif = hsList[idx].cif || '';
+  if (hdtdEl) hsList[idx].hdtd_code = hdtdEl.value || (cif ? '01/'+yr+'/'+cif+'/HĐTD' : '');
+  if (mortEl) hsList[idx].mortgage_code = mortEl.value || (cif ? '01/'+yr+'/'+cif+'/HĐTC' : '');
+}
+
 function saveProjQL() {
   // QL được lưu: số HĐMB / ngày ký + tab Giải ngân (HĐTD, HTLS, QLTS, số tiền GN...)
   if (!isQL() || !currentHSId) return;
@@ -3038,6 +3054,7 @@ function saveProjQL() {
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
   hsList[idx].soHDMB      = gv('f-sohdmb');
   hsList[idx].ngayKyHDMB  = gv('f-ngayky');
+  syncHDMBDependents(idx, gv);
   var hanGNEl = document.getElementById('f-hangn');
   hsList[idx].hanGiaiNgan = hanGNEl && hanGNEl.value ? hanGNEl.value : calcHanGN(gv('f-ngayky'));
   hsList[idx].updatedAt   = nowStr();
@@ -3073,6 +3090,7 @@ function saveProjQTTD() {
   if (document.getElementById('f-hthucvay')) hsList[idx].hinhThucVay = gv('f-hthucvay');
   if (document.getElementById('f-csbh'))     hsList[idx].csChinhSach = gv('f-csbh');
   if (document.getElementById('f-kh'))       hsList[idx].kyHan       = gv('f-kh');
+  syncHDMBDependents(idx, gv);
   hsList[idx].updatedAt = nowStr();
   addLog('QTTD cập nhật căn hộ & HĐMB: '+hsList[idx].tenKH,'amber',currentHSId);
   persist(); renderHSTable();
@@ -3101,6 +3119,7 @@ function saveProjCDT() {
   if (document.getElementById('f-stv'))      hsList[idx].soTienVay = gvn('f-stv');
   if (document.getElementById('f-hthucvay')) hsList[idx].hinhThucVay = gv('f-hthucvay');
   if (document.getElementById('f-csbh'))     hsList[idx].csChinhSach = gv('f-csbh');
+  syncHDMBDependents(idx, gv);
   hsList[idx].updatedAt   = nowStr();
   addLog('CĐT cập nhật căn hộ: '+hsList[idx].tenKH,'amber',currentHSId);
   persist(); renderHSTable();
