@@ -4774,9 +4774,15 @@ async function saveHDGN() {
   h.updatedAt = nowStr();
   persist(); renderHSTable();
   var r=await sb.from('loan_files').update(lfu).eq('id',h.id);
+  if(r.error && (r.error.code==='PGRST204' || (r.error.message&&r.error.message.indexOf('column')>=0))) {
+    // Có column không tồn tại — fallback chỉ lưu loan_term_months (chắc chắn có)
+    console.warn('[saveHDGN] Schema error, fallback:', r.error.message);
+    var lfuCore = { loan_term_months: parseInt(h.kyHan)||null, updated_at: new Date().toISOString() };
+    r = await sb.from('loan_files').update(lfuCore).eq('id',h.id);
+  }
   if(r.error){
-    alert('❌ Lỗi lưu HĐ&GN: '+r.error.message+'\nCode: '+r.error.code+'\nDetails: '+JSON.stringify(r.error.details));
-    showNotif('❌ Lỗi: '+r.error.message);return;
+    console.error('saveHDGN error:', r.error);
+    showNotif('❌ Lỗi lưu HĐ&GN: '+r.error.message); return;
   }
   if(h.area_usable||h.area_construction){
     var aptU={};
