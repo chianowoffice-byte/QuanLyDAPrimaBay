@@ -931,6 +931,7 @@ async function dbSaveLoanFile(h) {
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id).select('id,hdmb_code');
   if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.code, r1.error.details);
+    alert('❌ Lỗi lưu DB:\n' + r1.error.message + '\n\nCode: ' + r1.error.code);
     errors.push('loan_files: ' + r1.error.message);
   } else if (!r1.data || r1.data.length === 0) {
     // Row chưa tồn tại trong DB — thử insert
@@ -941,6 +942,7 @@ async function dbSaveLoanFile(h) {
     var r1b = await sb.from('loan_files').insert(insertData).select('id,hdmb_code');
     if (r1b.error) {
       console.error('[DB] loan_files INSERT ERROR:', r1b.error.message, r1b.error.code);
+      alert('❌ INSERT thất bại:\n' + r1b.error.message + '\n\nCode: ' + r1b.error.code + '\n\nID: ' + h.id);
       errors.push('loan_files insert: ' + r1b.error.message);
     } else {
       console.log('[DB] loan_files INSERT OK:', r1b.data);
