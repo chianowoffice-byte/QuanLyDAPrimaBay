@@ -2228,16 +2228,15 @@ function buildHSForm(h) {
   html += '<div id="t-proj">';
 
   // ── Thông tin KH chính ──
-  // Tất cả thấy rõ | CB sửa được | QL/Admin/CĐT xem (dim)
-  // KH fields: CB (hồ sơ mình) + Admin sửa | QL thuần / QTTD / CĐT chỉ xem
-  var khEditable = (isCBOwner || isAdmin()) && !kLocked && !locked;
+  // CB (hồ sơ mình) + QL + Admin sửa | QTTD / CĐT chỉ xem
+  var khEditable = (isCBOwner || isQLAdmin || isAdmin()) && !kLocked && !locked;
   var khDim = khEditable ? '' : 'disabled';
   var khDimClass = khEditable ? '' : 'cdt-section-dim';
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div class="fsec-title" style="display:flex;align-items:center;justify-content:space-between">';
   html += '<span>Thông tin khách hàng chính</span>';
   // Nút chốt KH: chỉ CB/QL/Admin (không phải CĐT)
-  if ((isCBOwner || isAdmin()) && !locked && !kLocked) {
+  if ((isCBOwner || isQLAdmin || isAdmin()) && !locked && !kLocked) {
     html += '<button class="btn btn-sm btn-amber" onclick="lockKH()">🔒 Chốt thông tin KH</button>';
   }
   html += '</div>';
@@ -2344,8 +2343,8 @@ function buildHSForm(h) {
   html += '</div></div>';
 
   // ── VTC & Nhu cầu vay ──
-  // CB (hồ sơ mình) + QTTD + CDT admin + Admin sửa | QL chỉ xem
-  var canEditVTC = (isCBOwner || isQTTD() || isCDTAdmin || isAdmin());
+  // CB (hồ sơ mình) + QL + QTTD + CDT admin + Admin sửa
+  var canEditVTC = (isCBOwner || isQLAdmin || isQTTD() || isCDTAdmin || isAdmin());
   var vtcDim = canEditVTC ? (locked ? 'disabled' : '') : 'disabled';
   var vtcDimClass = !canEditVTC ? 'cdt-section-dim' : '';
   html += '<div class="fsec ' + vtcDimClass + '">';
@@ -2395,7 +2394,7 @@ function buildHSForm(h) {
   var canSaveAny = !locked && (isCBOwner || isAdmin() || isQTTD() || (isQL() && !isAdmin()));
   html += '<div class="save-bar" id="proj-save-bar" style="display:'+(canSaveAny?'flex':'none')+'">';
   html += '<button class="btn btn-primary" onclick="saveAll()">💾 Lưu tất cả</button>';
-  if (isQL() && !isAdmin()) html += '<span style="font-size:12px;color:var(--txt3);margin-left:8px">Chỉ lưu số HĐMB & ngày ký</span>';
+  if (isQL() && !isAdmin()) html += '<span style="font-size:12px;color:var(--txt3);margin-left:8px">Lưu toàn bộ thông tin hồ sơ</span>';
   if (isQTTD()) html += '<span style="font-size:12px;color:var(--txt3);margin-left:8px">Lưu căn hộ & HĐMB (không sửa thông tin KH)</span>';
   html += '</div>';
   html += '</div>'; // t-proj
@@ -2818,8 +2817,14 @@ function saveAll() {
     return;
   }
 
-  // 3. QL — chỉ lưu số HĐMB / ngày ký
-  if (isQL() && !isAdmin()) { saveProjQL(); return; }
+  // 3. QL — lưu toàn bộ như CB (saveProj kiểm tra disabled từng field)
+  if (isQL() && !isAdmin()) {
+    if (document.getElementById('f-tenKH') && !document.getElementById('f-tenKH').value.trim()) {
+      alert('Vui lòng nhập họ tên KH!'); return;
+    }
+    if (document.getElementById('f-tenKH')) saveProj();
+    return;
+  }
 
   // 4. Admin — lưu toàn bộ như CB
   if (isAdmin()) {
