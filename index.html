@@ -926,31 +926,27 @@ async function dbSaveLoanFile(h) {
   var custData = mapHSToCust(h);
   var errors   = [];
 
-  // Update loan_files — chỉ update (row phải tồn tại sẵn trong DB từ khi tạo hồ sơ)
+  // Update loan_files
   console.log('[DB] Saving loan_file id='+h.id+' hdmb_code='+lfData.hdmb_code);
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id).select('id,hdmb_code');
   if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.code, r1.error.details);
-    showNotif('❌ Lỗi lưu DB: ' + r1.error.message);
     errors.push('loan_files: ' + r1.error.message);
   } else if (!r1.data || r1.data.length === 0) {
-    // Row chưa tồn tại — thử insert
-    console.warn('[DB] 0 rows updated, thử INSERT...');
+    // Row chưa tồn tại trong DB — thử insert
+    console.warn('[DB] 0 rows updated → thử INSERT id='+h.id);
     var insertData = Object.assign({id: h.id}, lfData);
     if (h.maCanHo) insertData.apartment_code = h.maCanHo;
     if (h.customerId) insertData.customer_id = h.customerId;
     var r1b = await sb.from('loan_files').insert(insertData).select('id,hdmb_code');
     if (r1b.error) {
       console.error('[DB] loan_files INSERT ERROR:', r1b.error.message, r1b.error.code);
-      showNotif('❌ Không thể tạo hồ sơ DB: ' + r1b.error.message);
       errors.push('loan_files insert: ' + r1b.error.message);
     } else {
       console.log('[DB] loan_files INSERT OK:', r1b.data);
-      showNotif('✅ Đã lưu DB (mới): ' + (r1b.data&&r1b.data[0] ? r1b.data[0].hdmb_code||'OK' : 'OK'));
     }
   } else {
-    console.log('[DB] loan_files UPDATE OK:', r1.data);
-    showNotif('✅ Đã lưu: ' + (r1.data[0].hdmb_code ? 'HĐMB '+r1.data[0].hdmb_code : 'thành công'));
+    console.log('[DB] loan_files UPDATE OK hdmb_code='+r1.data[0].hdmb_code);
   }
 
   // Update customers (nếu có customer_id)
@@ -1367,12 +1363,10 @@ async function saveAndSync(saveFn, successMsg) {
     ok = false;
   }
   if (ok !== false) {
-    // Lưu DB thành công → sync lại để lấy dữ liệu mới nhất từ server
-    await syncFromDB(true);
+    // Lưu DB thành công — KHÔNG sync lại ngay (tránh DB ghi đè data vừa lưu)
+    // syncFromDB sẽ chạy tự động theo interval hoặc khi reload
     showNotif('✅ ' + (successMsg||'Đã lưu!'));
   } else {
-    // Lưu DB thất bại → KHÔNG sync lại (tránh ghi đè localStorage bằng data cũ từ DB)
-    // Dữ liệu trong localStorage đã được persist() ghi đúng
     showNotif('⚠️ Lỗi đồng bộ DB — đã lưu tạm locally, kiểm tra kết nối.');
   }
 }
