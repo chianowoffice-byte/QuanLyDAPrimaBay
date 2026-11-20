@@ -4943,18 +4943,18 @@ function buildDocData(h){
     '61 - Thỏa thuận HTLS':h.htls_agreement||(h.soHDMB?h.soHDMB+'/2026/'+h.maCanHo+'/01/TTHTLS/PRIMA BAY':''),
     '62 - Thỏa thuận QLTS':h.qlts_agreement||(h.soHDMB?h.soHDMB+'/2026/'+h.maCanHo+'/01/TTQLTS/PRIMA BAY':''),
     '64- Lịch trả nợ từ kì 31 đến kỳ n-1':(function(){
-      var stv=parseInt(h.soTienVay)||0, kh=parseInt(h.kyHan)||0;
+      var stv=parseVND(h.soTienVay)||0, kh=parseInt(h.kyHan)||0;
       if(!stv||kh<=31) return '';
       var soKy=kh-1-30; // kỳ 31..n-1
       return fmt(Math.floor(stv/soKy));
     })(),
     '65 - kỳ thứ n':(function(){
-      var stv=parseInt(h.soTienVay)||0, kh=parseInt(h.kyHan)||0;
+      var stv=parseVND(h.soTienVay)||0, kh=parseInt(h.kyHan)||0;
       if(!stv||kh<=31) return '';
       var soKy=kh-1-30;
       var kyDeu=Math.floor(stv/soKy);
-      var dur=stv-kyDeu*soKy; // phần dư kỳ cuối
-      return fmt(dur>0?dur:kyDeu);
+      var dur=stv-kyDeu*soKy; // phần dư lẻ
+      return fmt(kyDeu+dur); // kỳ n = 1 kỳ đều + phần dư lẻ
     })(),
     '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop),
     '48 - Bằng chữ Giá trị HDMB căn':numToWords(h.giaHDMB),
