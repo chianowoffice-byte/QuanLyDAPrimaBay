@@ -5036,6 +5036,17 @@ async function loadTemplate(key){
   return ab;
 }
 
+// Bổ sung các trường tự tính nếu chưa có (không thay đổi hsList gốc)
+function enrichH(h) {
+  var yr = new Date().getFullYear();
+  var r = Object.assign({}, h);
+  if (!r.hdtd_code && r.cif)    r.hdtd_code    = '01/'+yr+'/'+r.cif+'/HĐTD';
+  if (!r.mortgage_code && r.cif) r.mortgage_code = '01/'+yr+'/'+r.cif+'/HĐTC';
+  if (!r.htls_agreement && r.soHDMB) r.htls_agreement = r.soHDMB+'/'+yr+'/'+(r.maCanHo||'')+'/01/TTHTLS/PRIMA BAY';
+  if (!r.qlts_agreement && r.soHDMB) r.qlts_agreement = r.soHDMB+'/'+yr+'/'+(r.maCanHo||'')+'/01/TTQLTS/PRIMA BAY';
+  return r;
+}
+
 function buildDocData(h){
   var fD=function(v){return fmtDateVN(v)||'';};
   return {
@@ -5139,7 +5150,7 @@ async function doExportContracts(){
   try{
     if(fmtVal==='each'){
       for(var i=0;i<hsList_.length;i++){
-        var h=hsList_[i];btn.textContent='⏳ ('+(i+1)+'/'+hsList_.length+')...';
+        var h=enrichH(hsList_[i]);btn.textContent='⏳ ('+(i+1)+'/'+hsList_.length+')...';
         var zip=new JSZip();
         var dd=buildDocData(h);
         var fn=(h.tenKH||'KH').replace(/\s+/g,'_')+'_'+(h.cccd||'');
@@ -5153,7 +5164,7 @@ async function doExportContracts(){
     }else{
       var zip=new JSZip();
       for(var i=0;i<hsList_.length;i++){
-        var h=hsList_[i];btn.textContent='⏳ ('+(i+1)+'/'+hsList_.length+')...';
+        var h=enrichH(hsList_[i]);btn.textContent='⏳ ('+(i+1)+'/'+hsList_.length+')...';
         var dd=buildDocData(h);
         var fn=(h.tenKH||'KH').replace(/\s+/g,'_')+'_'+(h.cccd||'');
         for(var j=0;j<selectedBM.length;j++){
