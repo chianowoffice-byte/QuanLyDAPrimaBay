@@ -880,7 +880,6 @@ function mapHSToLF(h) {
     collateral_value_ratio:h.collateral_value_ratio||null, vtc_5pct:h.vtc_5pct||null,
     payment_account:h.payment_account||null, min_account_balance:h.min_account_balance||null,
     valuation_1:h.valuation_1||null, valuation_2:h.valuation_2||null,
-    area_usable:h.area_usable||null, area_construction:h.area_construction||null,
     hdmb_value_with_mgt:h.hdmb_value_with_mgt||null, grace_period_months:h.grace_period_months||null,
     income_salary:h.income_salary||null, income_business:h.income_business||null,
     income_rental:h.income_rental||null, income_other:h.income_other||null,
@@ -931,7 +930,7 @@ async function dbSaveLoanFile(h) {
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id).select('id,hdmb_code');
   if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.code, r1.error.details);
-    alert('❌ Lỗi lưu DB:\n' + r1.error.message + '\n\nCode: ' + r1.error.code);
+    showNotif('❌ Lỗi DB: ' + r1.error.message);
     errors.push('loan_files: ' + r1.error.message);
   } else if (!r1.data || r1.data.length === 0) {
     // Row chưa tồn tại trong DB — thử insert
@@ -942,7 +941,7 @@ async function dbSaveLoanFile(h) {
     var r1b = await sb.from('loan_files').insert(insertData).select('id,hdmb_code');
     if (r1b.error) {
       console.error('[DB] loan_files INSERT ERROR:', r1b.error.message, r1b.error.code);
-      alert('❌ INSERT thất bại:\n' + r1b.error.message + '\n\nCode: ' + r1b.error.code + '\n\nID: ' + h.id);
+      showNotif('❌ INSERT thất bại: ' + r1b.error.message);
       errors.push('loan_files insert: ' + r1b.error.message);
     } else {
       console.log('[DB] loan_files INSERT OK:', r1b.data);
