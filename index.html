@@ -2920,7 +2920,7 @@ function saveProj() {
 
 
 function saveProjQL() {
-  // QL chỉ được lưu số HĐMB / ngày ký — không được sửa diện tích, giá, VTC, số tiền vay
+  // QL được lưu: số HĐMB / ngày ký + tab Giải ngân (HĐTD, HTLS, QLTS, số tiền GN...)
   if (!isQL() || !currentHSId) return;
   var gv=function(id){var el=document.getElementById(id);return el?el.value:'';};
   var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
@@ -2932,6 +2932,10 @@ function saveProjQL() {
   addLog('QL cập nhật số HĐMB: '+hsList[idx].tenKH,'amber',currentHSId);
   persist(); renderHSTable();
   saveAndSync(function(){ return dbSaveLoanFile(hsList[idx]); }, 'Đã lưu số HĐMB!');
+  // Lưu thêm tab Giải ngân nếu QL có quyền (canSetGiaiNgan)
+  if (canSetGiaiNgan() && document.getElementById('f-hmduyet') && !document.getElementById('f-hmduyet').disabled) {
+    saveGiaiNganInfo();
+  }
 }
 
 function saveProjQTTD() {
