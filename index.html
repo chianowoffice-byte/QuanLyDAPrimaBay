@@ -4769,6 +4769,7 @@ async function fillTemplate(key, data) {
   Object.keys(data).forEach(function(k){ dataMap[normKey(k)] = data[k]; });
   function findVal(raw) {
     var k = normKey(raw);
+    if (k.indexOf('64')===0||k.indexOf('65')===0) console.log('[findVal]',JSON.stringify(k),'hasOwn='+dataMap.hasOwnProperty(k),'val='+dataMap[k]);
     if (dataMap.hasOwnProperty(k)) return dataMap[k];
     var numM = k.match(/^(\d+)/);
     if (numM) {
@@ -4945,10 +4946,11 @@ function buildDocData(h){
     '64- Lịch trả nợ từ kì 31 đến kỳ n-1':(function(){
       var stv=parseVND(h.soTienVay)||parseVND(h.hanMucDuocDuyet)||0;
       var kh=parseInt(h.kyHan)||parseInt(h.loan_term_months)||0;
-      console.log('[BM6-64] stv='+stv+' kh='+kh+' soTienVay='+h.soTienVay+' kyHan='+h.kyHan);
+      var soKy=kh>31?(kh-1-30):0;
+      var val64=soKy>0?fmt(Math.floor(stv/soKy)):'';
+      console.log('[BM6-64] stv='+stv+' kh='+kh+' soKy='+soKy+' val64='+val64);
       if(!stv||kh<=31) return '';
-      var soKy=kh-1-30; // kỳ 31..n-1
-      return fmt(Math.floor(stv/soKy));
+      return val64;
     })(),
     '65 - kỳ thứ n':(function(){
       var stv=parseVND(h.soTienVay)||parseVND(h.hanMucDuocDuyet)||0;
