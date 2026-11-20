@@ -2133,6 +2133,7 @@ async function openHS(id){
   currentHSId = id;
   var h = hsList.find(function(x){ return x.id===id; });
   if(!h) return;
+  window._curHS = h;
   document.getElementById('mhs-title').textContent = 'Hồ sơ — ' + (h.tenKH||id);
   document.getElementById('mhs-badge').innerHTML = sBadge(h.status);
   document.getElementById('mhs-lock').style.display = h.locked ? 'inline' : 'none';
@@ -2437,7 +2438,7 @@ function buildHSForm(h) {
   html += fld('Diện tích sàn XD (m²)','f-areaconstruct',dv('area_construction'),hdmbDataDim);
   html += '<div class="fg"><label>Giá HĐMB không KPBT (VNĐ)</label>' + numInput('f-giahdmb',dv('giaHDMB'),hdmbDataDim) + '</div>';
   html += '<div class="fg"><label>Giá HĐMB có KPBT (VNĐ)</label>' + numInput('f-hdmbwithmgt',dv('hdmb_value_with_mgt'),hdmbDataDim) + '</div>';
-  html += fld('Số HĐMB','f-sohdmb',dv('soHDMB'),hdmbCodeDim);
+  html += fld('Số HĐMB','f-sohdmb',dv('soHDMB'),hdmbCodeDim,'','','','oninput="(function(el){var hdmb=el.value.trim();var yr=new Date().getFullYear();var maCanHo=(window._curHS&&window._curHS.maCanHo)||\'mã căn\';var htls=document.getElementById(\'f-htls\');var qlts=document.getElementById(\'f-qlts\');if(htls&&!htls.dataset.manualEdit)htls.value=hdmb?(hdmb+\'/\'+yr+\'/\'+maCanHo+\'/01/TTHTLS/PRIMA BAY\'):\'\';if(qlts&&!qlts.dataset.manualEdit)qlts.value=hdmb?(hdmb+\'/\'+yr+\'/\'+maCanHo+\'/01/TTQLTS/PRIMA BAY\'):\'\'})(this)"');
   html += fld('Ngày ký HĐMB','f-ngayky',dv('ngayKyHDMB'),hdmbCodeDim,'','date','','onchange="onNgayKyChange()"');
   html += '</div></div>';
 
@@ -2611,8 +2612,10 @@ function buildHSForm(h) {
   html += fld('Số HĐ thế chấp','f-mortgage',valMortgage,hdgnDis,'01/'+_yr+'/CIF/HĐTC','','','oninput="this.dataset.manualEdit=\'1\'"');
   html += '</div></div>';
   html += '<div class="info-section"><div class="section-title">📝 Thỏa thuận</div><div class="fgrid">';
-  html += fld('Thỏa thuận HTLS','f-htls',h.htls_agreement||'',hdgnDis,sugHTLS);
-  html += fld('Thỏa thuận QLTS','f-qlts',h.qlts_agreement||'',hdgnDis,sugQLTS);
+  var valHTLS = h.htls_agreement || sugHTLS;
+  var valQLTS = h.qlts_agreement || sugQLTS;
+  html += fld('Thỏa thuận HTLS','f-htls',valHTLS,hdgnDis,sugHTLS,'','','oninput="this.dataset.manualEdit=\'1\'"');
+  html += fld('Thỏa thuận QLTS','f-qlts',valQLTS,hdgnDis,sugQLTS,'','','oninput="this.dataset.manualEdit=\'1\'"');
   html += '</div></div>';
   html += '<div class="info-section"><div class="section-title">💰 Tài chính giải ngân</div><div class="fgrid">';
   html += '<div class="fg"><label>Giải ngân lần 1 (VNĐ)</label>'+numInput('f-disb1',h.disbursement_1,hdgnDis)+'</div>';
