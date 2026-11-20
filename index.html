@@ -862,29 +862,51 @@ var confFn = null;
 // Map app HS object → loan_files columns
 function mapHSToLF(h) {
   var appToDb={'moi':'new','dang':'processing','cho':'pending','choky':'approved','chogn':'approved','xong':'disbursed','tuchoi':'rejected'};
+  // Chỉ các field CHẮC CHẮN tồn tại trong schema loan_files
+  // (không gửi field không có trong DB → tránh lỗi PGRST204)
   return {
-    status: appToDb[h.status]||'new', officer_id:h.canBoId||null,
-    sale_price:parseInt(h.giaHDMB)||null, vtc_required:parseInt(h.vtcPhaiNop)||null,
-    vtc_paid:parseInt(h.vtcDaNop)||null, loan_amount_requested:parseInt(h.soTienVay)||null,
-    loan_term_months:parseInt(h.kyHan)||null, loan_amount_approved:parseInt(h.hanMucDuocDuyet)||null,
-    loan_form:h.hinhThucVay||null, loan_policy_ref:h.csChinhSach||null,
-    hdmb_code:h.soHDMB||null, hdmb_date:h.ngayKyHDMB||null,
-    max_disbursement_date:h.hanGiaiNgan||null, disbursement_date:h.ngayGiaiNgan||null,
-    disbursement_amount:parseInt(h.soTienGiaiNgan)||null,
-    is_locked:h.locked||false, is_kh_locked:h.kLocked||false, locked_by:h.lockedBy||null,
-    notes:h.ghiChu||null, drive_folder_url:h.drive_folder_url||null,
-    // Hợp đồng & Giải ngân
-    pca_code:h.pca_code||null, hdtd_code:h.hdtd_code||null, mortgage_code:h.mortgage_code||null,
-    htls_agreement:h.htls_agreement||null, qlts_agreement:h.qlts_agreement||null,
-    disbursement_1:h.disbursement_1||null, equity_amount:h.equity_amount||null,
-    collateral_value_ratio:h.collateral_value_ratio||null, vtc_5pct:h.vtc_5pct||null,
-    payment_account:h.payment_account||null, min_account_balance:h.min_account_balance||null,
-    valuation_1:h.valuation_1||null, valuation_2:h.valuation_2||null,
-    hdmb_value_with_mgt:h.hdmb_value_with_mgt||null, grace_period_months:h.grace_period_months||null,
-    income_salary:h.income_salary||null, income_business:h.income_business||null,
-    income_rental:h.income_rental||null, income_other:h.income_other||null,
-    expense_living:h.expense_living||null, expense_debt:h.expense_debt||null,
-    updated_at:new Date().toISOString()
+    status:                 appToDb[h.status]||'new',
+    officer_id:             h.canBoId||null,
+    sale_price:             parseInt(h.giaHDMB)||null,
+    vtc_required:           parseInt(h.vtcPhaiNop)||null,
+    vtc_paid:               parseInt(h.vtcDaNop)||null,
+    loan_amount_requested:  parseInt(h.soTienVay)||null,
+    loan_term_months:       parseInt(h.kyHan)||null,
+    loan_amount_approved:   parseInt(h.hanMucDuocDuyet)||null,
+    loan_form:              h.hinhThucVay||null,
+    loan_policy_ref:        h.csChinhSach||null,
+    hdmb_code:              h.soHDMB||null,
+    hdmb_date:              h.ngayKyHDMB||null,
+    max_disbursement_date:  h.hanGiaiNgan||null,
+    disbursement_date:      h.ngayGiaiNgan||null,
+    disbursement_amount:    parseInt(h.soTienGiaiNgan)||null,
+    is_locked:              h.locked||false,
+    is_kh_locked:           h.kLocked||false,
+    locked_by:              h.lockedBy||null,
+    notes:                  h.ghiChu||null,
+    drive_folder_url:       h.drive_folder_url||null,
+    pca_code:               h.pca_code||null,
+    hdtd_code:              h.hdtd_code||null,
+    mortgage_code:          h.mortgage_code||null,
+    htls_agreement:         h.htls_agreement||null,
+    qlts_agreement:         h.qlts_agreement||null,
+    disbursement_1:         h.disbursement_1||null,
+    equity_amount:          h.equity_amount||null,
+    collateral_value_ratio: h.collateral_value_ratio||null,
+    vtc_5pct:               h.vtc_5pct||null,
+    payment_account:        h.payment_account||null,
+    min_account_balance:    h.min_account_balance||null,
+    valuation_1:            h.valuation_1||null,
+    valuation_2:            h.valuation_2||null,
+    hdmb_value_with_mgt:    h.hdmb_value_with_mgt||null,
+    grace_period_months:    h.grace_period_months||null,
+    income_salary:          h.income_salary||null,
+    income_business:        h.income_business||null,
+    income_rental:          h.income_rental||null,
+    income_other:           h.income_other||null,
+    expense_living:         h.expense_living||null,
+    expense_debt:           h.expense_debt||null,
+    updated_at:             new Date().toISOString()
   };
 }
 
@@ -918,6 +940,32 @@ function mapHSToCust(h) {
   };
 }
 
+// Core fields đảm bảo tồn tại trong mọi phiên bản schema loan_files
+function mapHSToLFCore(h) {
+  var appToDb={'moi':'new','dang':'processing','cho':'pending','choky':'approved','chogn':'approved','xong':'disbursed','tuchoi':'rejected'};
+  return {
+    status:                h.status ? (appToDb[h.status]||'new') : undefined,
+    officer_id:            h.canBoId||null,
+    sale_price:            parseInt(h.giaHDMB)||null,
+    vtc_required:          parseInt(h.vtcPhaiNop)||null,
+    vtc_paid:              parseInt(h.vtcDaNop)||null,
+    loan_amount_requested: parseInt(h.soTienVay)||null,
+    loan_term_months:      parseInt(h.kyHan)||null,
+    loan_amount_approved:  parseInt(h.hanMucDuocDuyet)||null,
+    loan_form:             h.hinhThucVay||null,
+    loan_policy_ref:       h.csChinhSach||null,
+    hdmb_code:             h.soHDMB||null,
+    hdmb_date:             h.ngayKyHDMB||null,
+    max_disbursement_date: h.hanGiaiNgan||null,
+    disbursement_date:     h.ngayGiaiNgan||null,
+    disbursement_amount:   parseInt(h.soTienGiaiNgan)||null,
+    is_locked:             h.locked||false,
+    is_kh_locked:          h.kLocked||false,
+    notes:                 h.ghiChu||null,
+    updated_at:            new Date().toISOString()
+  };
+}
+
 // Lưu loan_file + customer lên DB
 async function dbSaveLoanFile(h) {
   if (!h || !h.id) return;
@@ -925,17 +973,32 @@ async function dbSaveLoanFile(h) {
   var custData = mapHSToCust(h);
   var errors   = [];
 
-  // Update loan_files
+  // Update loan_files — nếu lỗi PGRST204 (column không tồn tại), fallback về core fields
   console.log('[DB] Saving loan_file id='+h.id+' hdmb_code='+lfData.hdmb_code);
   var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id).select('id,hdmb_code');
-  if (r1.error) {
+  if (r1.error && r1.error.code === 'PGRST204') {
+    // Có column không tồn tại trong schema → fallback về core fields
+    console.warn('[DB] PGRST204 schema mismatch, fallback core fields. Missing:', r1.error.message);
+    var coreData = mapHSToLFCore(h);
+    r1 = await sb.from('loan_files').update(coreData).eq('id', h.id).select('id,hdmb_code');
+    if (r1.error) {
+      console.error('[DB] loan_files CORE ERROR:', r1.error.message, r1.error.code);
+      showNotif('❌ Lỗi DB: ' + r1.error.message);
+      errors.push('loan_files: ' + r1.error.message);
+    } else {
+      console.log('[DB] loan_files CORE UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
+    }
+  } else if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.code, r1.error.details);
     showNotif('❌ Lỗi DB: ' + r1.error.message);
     errors.push('loan_files: ' + r1.error.message);
-  } else if (!r1.data || r1.data.length === 0) {
+  }
+  if (!r1.error && (!r1.data || r1.data.length === 0)) {
     // Row chưa tồn tại trong DB — thử insert
+    // Row chưa tồn tại trong DB — thử insert với core fields (tránh PGRST204)
     console.warn('[DB] 0 rows updated → thử INSERT id='+h.id);
-    var insertData = Object.assign({id: h.id}, lfData);
+    var coreInsert = mapHSToLFCore(h);
+    var insertData = Object.assign({id: h.id}, coreInsert);
     if (h.maCanHo) insertData.apartment_code = h.maCanHo;
     if (h.customerId) insertData.customer_id = h.customerId;
     var r1b = await sb.from('loan_files').insert(insertData).select('id,hdmb_code');
@@ -946,8 +1009,8 @@ async function dbSaveLoanFile(h) {
     } else {
       console.log('[DB] loan_files INSERT OK:', r1b.data);
     }
-  } else {
-    console.log('[DB] loan_files UPDATE OK hdmb_code='+r1.data[0].hdmb_code);
+  } else if (!r1.error) {
+    console.log('[DB] loan_files UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
   }
 
   // Update customers (nếu có customer_id)
