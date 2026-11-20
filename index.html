@@ -928,13 +928,20 @@ async function dbSaveLoanFile(h) {
 
   // Upsert loan_files (insert nếu chưa có, update nếu đã có)
   lfData.id = h.id; // đảm bảo id có trong payload cho upsert
-  console.log('[DB] Saving loan_file (upsert)', h.id, lfData);
+  // Thêm apartment_code và customer_id nếu có (tránh lỗi NOT NULL khi INSERT)
+  if (h.maCanHo) lfData.apartment_code = h.maCanHo;
+  if (h.customerId) lfData.customer_id = h.customerId;
+  console.log('[DB] Saving loan_file (upsert)', h.id, 'hdmb_code='+lfData.hdmb_code, lfData);
   var r1 = await sb.from('loan_files').upsert(lfData, {onConflict: 'id'}).select('id,hdmb_code');
   if (r1.error) {
     console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.code, r1.error.details);
+    showNotif('❌ Lỗi lưu DB: ' + r1.error.message, 'error');
     errors.push('loan_files: ' + r1.error.message);
   } else {
     console.log('[DB] loan_files upsert OK — rows:', r1.data ? r1.data.length : 0, r1.data);
+    if (r1.data && r1.data.length > 0) {
+      showNotif('✅ Đã lưu DB: ' + (r1.data[0].hdmb_code || '(trống)'));
+    }
   }
 
   // Update customers (nếu có customer_id)
