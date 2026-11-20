@@ -987,7 +987,9 @@ async function dbSaveLoanFile(h) {
     console.log('[DB] CORE UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
     // Bước 2: Lưu extended fields — tách từng field riêng để field nào có thì lưu được
     var extFields = [
-      { hdmb_value_with_mgt: parseInt(h.hdmb_value_with_mgt)||null },
+      { hdmb_value_with_mgt: parseInt(h.hdmb_value_with_mgt)||null,
+        area_construction:   parseFloat(h.area_construction)||null,
+        area_usable:         parseFloat(h.area_usable)||null },
       { locked_by: h.lockedBy||null },
       { drive_folder_url: h.drive_folder_url||null },
       { pca_code: h.pca_code||null, hdtd_code: h.hdtd_code||null, mortgage_code: h.mortgage_code||null },
@@ -1047,25 +1049,11 @@ async function dbSaveLoanFile(h) {
     }
   }
 
-  // Lưu diện tích vào bảng apartments
-  if (h.apartmentId) {
-    var aptUpd = {};
-    if (h.dienTich)          aptUpd.area_m2 = parseFloat(h.dienTich)||null;
-    // area_construction, area_usable: thử lưu, bỏ qua nếu column chưa có
-    if (Object.keys(aptUpd).length) {
-      var rApt = await sb.from('apartments').update(aptUpd).eq('id', h.apartmentId);
-      if (rApt.error) console.warn('[DB] apartments UPDATE error:', rApt.error.message);
-      else console.log('[DB] apartments UPDATE OK:', aptUpd);
-    }
-    // Thử lưu area_construction, area_usable riêng (bỏ qua nếu column chưa có)
-    if (h.area_construction || h.area_usable) {
-      var aptExt = {};
-      if (h.area_construction) aptExt.area_construction = parseFloat(h.area_construction)||null;
-      if (h.area_usable)       aptExt.area_usable       = parseFloat(h.area_usable)||null;
-      var rAptExt = await sb.from('apartments').update(aptExt).eq('id', h.apartmentId);
-      if (rAptExt.error) console.warn('[DB] apartments area ext error (cần migration):', rAptExt.error.message);
-      else console.log('[DB] apartments area ext OK:', aptExt);
-    }
+  // Lưu area_m2 (diện tích sử dụng) vào apartments — column này chắc chắn có
+  if (h.apartmentId && h.dienTich) {
+    var rApt = await sb.from('apartments').update({ area_m2: parseFloat(h.dienTich)||null }).eq('id', h.apartmentId);
+    if (rApt.error) console.warn('[DB] apartments area_m2 error:', rApt.error.message);
+    else console.log('[DB] apartments area_m2 OK');
   }
 
   // Ghi activity log (bỏ qua lỗi — không ảnh hưởng save chính)
@@ -1900,8 +1888,8 @@ function mapDbHS(lf) {
     min_account_balance:   lf.min_account_balance   || null,
     valuation_1:           lf.valuation_1           || null,
     valuation_2:           lf.valuation_2           || null,
-    area_usable:           lf.area_usable           || null,
-    area_construction:     lf.area_construction     || null,
+    area_usable:           apt.area_usable          || lf.area_usable      || null,
+    area_construction:     apt.area_construction    || lf.area_construction|| null,
     hdmb_value_with_mgt:   lf.hdmb_value_with_mgt  || null,
     grace_period_months:   lf.grace_period_months   || null,
     income_salary:         lf.income_salary         || null,
