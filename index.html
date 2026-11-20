@@ -975,25 +975,49 @@ async function dbSaveLoanFile(h) {
   var custData = mapHSToCust(h);
   var errors   = [];
 
-  // Update loan_files — nếu lỗi PGRST204 (column không tồn tại), tự bỏ field lỗi & retry
+  // Bước 1: Lưu core fields — luôn thành công
   console.log('[DB] Saving loan_file id='+h.id+' hdmb_code='+lfData.hdmb_code);
-  var r1 = await sb.from('loan_files').update(lfData).eq('id', h.id).select('id,hdmb_code');
-  // Nếu lỗi PGRST204 — column không tồn tại → retry với core fields
-  if (r1.error && (r1.error.code === 'PGRST204' || (r1.error.message && r1.error.message.indexOf('column') >= 0))) {
-    console.warn('[DB] Schema error, fallback core fields:', r1.error.message);
-    var coreData = mapHSToLFCore(h);
-    r1 = await sb.from('loan_files').update(coreData).eq('id', h.id).select('id,hdmb_code');
-    if (r1.error) {
-      console.error('[DB] CORE ERROR:', r1.error.message, r1.error.code);
-      alert('❌ Lỗi lưu DB (core): ' + r1.error.message + '\nCode: ' + r1.error.code);
-      errors.push('loan_files: ' + r1.error.message);
-    } else {
-      console.log('[DB] CORE UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
-    }
-  } else if (r1.error) {
-    console.error('[DB] loan_files ERROR:', r1.error.message, r1.error.code, r1.error.details);
-    alert('❌ Lỗi lưu DB: ' + r1.error.message + '\nCode: ' + r1.error.code + '\nDetails: ' + JSON.stringify(r1.error.details));
+  var coreData = mapHSToLFCore(h);
+  var r1 = await sb.from('loan_files').update(coreData).eq('id', h.id).select('id,hdmb_code');
+  if (r1.error) {
+    console.error('[DB] CORE ERROR:', r1.error.message, r1.error.code);
+    alert('❌ Lỗi lưu DB: ' + r1.error.message + '\nCode: ' + r1.error.code);
     errors.push('loan_files: ' + r1.error.message);
+  } else {
+    console.log('[DB] CORE UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
+    // Bước 2: Lưu thêm extended fields (bỏ qua nếu column chưa có trong DB)
+    var extData = {
+      locked_by:              h.lockedBy||null,
+      drive_folder_url:       h.drive_folder_url||null,
+      pca_code:               h.pca_code||null,
+      hdtd_code:              h.hdtd_code||null,
+      mortgage_code:          h.mortgage_code||null,
+      htls_agreement:         h.htls_agreement||null,
+      qlts_agreement:         h.qlts_agreement||null,
+      disbursement_1:         h.disbursement_1||null,
+      equity_amount:          h.equity_amount||null,
+      collateral_value_ratio: h.collateral_value_ratio||null,
+      vtc_5pct:               h.vtc_5pct||null,
+      payment_account:        h.payment_account||null,
+      min_account_balance:    h.min_account_balance||null,
+      valuation_1:            h.valuation_1||null,
+      valuation_2:            h.valuation_2||null,
+      hdmb_value_with_mgt:    parseInt(h.hdmb_value_with_mgt)||null,
+      grace_period_months:    h.grace_period_months||null,
+      income_salary:          h.income_salary||null,
+      income_business:        h.income_business||null,
+      income_rental:          h.income_rental||null,
+      income_other:           h.income_other||null,
+      expense_living:         h.expense_living||null,
+      expense_debt:           h.expense_debt||null
+    };
+    var rExt = await sb.from('loan_files').update(extData).eq('id', h.id);
+    if (rExt.error) {
+      // Extended fields chưa có trong DB — log cảnh báo, không báo lỗi user
+      console.warn('[DB] Extended fields chưa có trong schema (cần chạy migration SQL):', rExt.error.message);
+    } else {
+      console.log('[DB] Extended fields UPDATE OK');
+    }
   }
   if (!r1.error && (!r1.data || r1.data.length === 0)) {
     // Row chưa tồn tại trong DB — thử insert
@@ -1034,16 +1058,24 @@ async function dbSaveLoanFile(h) {
     }
   }
 
-  // Lưu area_construction, area_usable vào bảng apartments (đúng schema)
-  if (h.apartmentId && (h.area_construction || h.area_usable || h.dienTich)) {
+  // Lưu diện tích vào bảng apartments
+  if (h.apartmentId) {
     var aptUpd = {};
-    if (h.area_construction) aptUpd.area_construction = parseFloat(h.area_construction)||null;
-    if (h.area_usable)       aptUpd.area_usable       = parseFloat(h.area_usable)||null;
-    if (h.dienTich)          aptUpd.area_m2            = parseFloat(h.dienTich)||null;
+    if (h.dienTich)          aptUpd.area_m2 = parseFloat(h.dienTich)||null;
+    // area_construction, area_usable: thử lưu, bỏ qua nếu column chưa có
     if (Object.keys(aptUpd).length) {
       var rApt = await sb.from('apartments').update(aptUpd).eq('id', h.apartmentId);
-      if (rApt.error) console.error('[DB] apartments UPDATE error:', rApt.error.message);
+      if (rApt.error) console.warn('[DB] apartments UPDATE error:', rApt.error.message);
       else console.log('[DB] apartments UPDATE OK:', aptUpd);
+    }
+    // Thử lưu area_construction, area_usable riêng (bỏ qua nếu column chưa có)
+    if (h.area_construction || h.area_usable) {
+      var aptExt = {};
+      if (h.area_construction) aptExt.area_construction = parseFloat(h.area_construction)||null;
+      if (h.area_usable)       aptExt.area_usable       = parseFloat(h.area_usable)||null;
+      var rAptExt = await sb.from('apartments').update(aptExt).eq('id', h.apartmentId);
+      if (rAptExt.error) console.warn('[DB] apartments area ext error (cần migration):', rAptExt.error.message);
+      else console.log('[DB] apartments area ext OK:', aptExt);
     }
   }
 
