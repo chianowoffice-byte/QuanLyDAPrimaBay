@@ -985,38 +985,27 @@ async function dbSaveLoanFile(h) {
     errors.push('loan_files: ' + r1.error.message);
   } else {
     console.log('[DB] CORE UPDATE OK hdmb_code='+((r1.data&&r1.data[0])||{}).hdmb_code);
-    // Bước 2: Lưu thêm extended fields (bỏ qua nếu column chưa có trong DB)
-    var extData = {
-      locked_by:              h.lockedBy||null,
-      drive_folder_url:       h.drive_folder_url||null,
-      pca_code:               h.pca_code||null,
-      hdtd_code:              h.hdtd_code||null,
-      mortgage_code:          h.mortgage_code||null,
-      htls_agreement:         h.htls_agreement||null,
-      qlts_agreement:         h.qlts_agreement||null,
-      disbursement_1:         h.disbursement_1||null,
-      equity_amount:          h.equity_amount||null,
-      collateral_value_ratio: h.collateral_value_ratio||null,
-      vtc_5pct:               h.vtc_5pct||null,
-      payment_account:        h.payment_account||null,
-      min_account_balance:    h.min_account_balance||null,
-      valuation_1:            h.valuation_1||null,
-      valuation_2:            h.valuation_2||null,
-      hdmb_value_with_mgt:    parseInt(h.hdmb_value_with_mgt)||null,
-      grace_period_months:    h.grace_period_months||null,
-      income_salary:          h.income_salary||null,
-      income_business:        h.income_business||null,
-      income_rental:          h.income_rental||null,
-      income_other:           h.income_other||null,
-      expense_living:         h.expense_living||null,
-      expense_debt:           h.expense_debt||null
-    };
-    var rExt = await sb.from('loan_files').update(extData).eq('id', h.id);
-    if (rExt.error) {
-      // Extended fields chưa có trong DB — log cảnh báo, không báo lỗi user
-      console.warn('[DB] Extended fields chưa có trong schema (cần chạy migration SQL):', rExt.error.message);
-    } else {
-      console.log('[DB] Extended fields UPDATE OK');
+    // Bước 2: Lưu extended fields — tách từng field riêng để field nào có thì lưu được
+    var extFields = [
+      { hdmb_value_with_mgt: parseInt(h.hdmb_value_with_mgt)||null },
+      { locked_by: h.lockedBy||null },
+      { drive_folder_url: h.drive_folder_url||null },
+      { pca_code: h.pca_code||null, hdtd_code: h.hdtd_code||null, mortgage_code: h.mortgage_code||null },
+      { htls_agreement: h.htls_agreement||null, qlts_agreement: h.qlts_agreement||null },
+      { disbursement_1: h.disbursement_1||null, equity_amount: h.equity_amount||null },
+      { collateral_value_ratio: h.collateral_value_ratio||null, vtc_5pct: h.vtc_5pct||null },
+      { payment_account: h.payment_account||null, min_account_balance: h.min_account_balance||null },
+      { valuation_1: h.valuation_1||null, valuation_2: h.valuation_2||null },
+      { grace_period_months: h.grace_period_months||null },
+      { income_salary: h.income_salary||null, income_business: h.income_business||null,
+        income_rental: h.income_rental||null, income_other: h.income_other||null },
+      { expense_living: h.expense_living||null, expense_debt: h.expense_debt||null }
+    ];
+    for (var _ei = 0; _ei < extFields.length; _ei++) {
+      var _ef = extFields[_ei];
+      var _rEf = await sb.from('loan_files').update(_ef).eq('id', h.id);
+      if (_rEf.error) console.warn('[DB] ext['+Object.keys(_ef).join(',')+'] skip:', _rEf.error.message);
+      else console.log('[DB] ext['+Object.keys(_ef).join(',')+'] OK');
     }
   }
   if (!r1.error && (!r1.data || r1.data.length === 0)) {
