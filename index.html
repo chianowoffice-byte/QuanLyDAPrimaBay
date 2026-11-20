@@ -3014,6 +3014,16 @@ function saveProj() {
   if (gnEl && !gnEl.disabled) data.ngayGiaiNgan = gnEl.value;
   var stgnEl = document.getElementById('f-stgn');
   if (stgnEl && !stgnEl.disabled) data.soTienGiaiNgan = gvn('f-stgn');
+  // Đồng bộ HTLS/QLTS/HĐTD/HĐTC từ form
+  var yr2 = new Date().getFullYear();
+  var soHDMB2 = gv('f-sohdmb'); var maCanHo2 = gv('f-mach') || (hsList.find(function(x){return x.id===currentHSId;})||{}).maCanHo || '';
+  var cif2 = gv('f-cif');
+  var htlsEl2 = document.getElementById('f-htls'); var qltsEl2 = document.getElementById('f-qlts');
+  var hdtdEl2 = document.getElementById('f-hdtd'); var mortEl2 = document.getElementById('f-mortgage');
+  if (htlsEl2) data.htls_agreement = htlsEl2.value || (soHDMB2 ? soHDMB2+'/'+yr2+'/'+maCanHo2+'/01/TTHTLS/PRIMA BAY' : '');
+  if (qltsEl2) data.qlts_agreement = qltsEl2.value || (soHDMB2 ? soHDMB2+'/'+yr2+'/'+maCanHo2+'/01/TTQLTS/PRIMA BAY' : '');
+  if (hdtdEl2) data.hdtd_code = hdtdEl2.value || (cif2 ? '01/'+yr2+'/'+cif2+'/HĐTD' : '');
+  if (mortEl2) data.mortgage_code = mortEl2.value || (cif2 ? '01/'+yr2+'/'+cif2+'/HĐTC' : '');
   if (currentHSId) {
     var idx=hsList.findIndex(function(x){return x.id===currentHSId;});
     Object.assign(hsList[idx], data);
