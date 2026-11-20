@@ -2322,7 +2322,7 @@ function buildHSForm(h) {
   // Diện tích / giá: CB (hồ sơ mình) + QTTD + CDT admin + Admin sửa | QL chỉ xem
   // Số HĐMB / ngày ký: thêm QL sửa được
   var canEditHDMBData = (isCBOwner || isQTTD() || isCDTAdmin || isAdmin());
-  var canEditHDCode   = (isCBOwner || isQTTD() || isCDTAdmin || isQL());
+  var canEditHDCode   = (isCBOwner || isQTTD() || isCDTAdmin || isQL() || isAdmin());
   var hdmbDataDim  = canEditHDMBData ? (locked ? 'disabled' : '') : 'disabled';
   var hdmbCodeDim  = canEditHDCode   ? (locked ? 'disabled' : '') : 'disabled';
   var hdmbDimClass = (!canEditHDMBData && !canEditHDCode) ? 'cdt-section-dim' : '';
