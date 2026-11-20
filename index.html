@@ -4764,7 +4764,7 @@ async function fillTemplate(key, data) {
 
   var hasCo = !!(data['22 - Họ và tên người 2'] && data['22 - Họ và tên người 2'].trim());
 
-  function normKey(k){ return k.replace(/^[\s']+|[\s']+$/g,'').trim(); }
+  function normKey(k){ return k.replace(/^[\s'‘’“”]+|[\s'‘’“”]+$/g,'').trim(); }
   var dataMap = {};
   Object.keys(data).forEach(function(k){ dataMap[normKey(k)] = data[k]; });
   function findVal(raw) {
@@ -4786,7 +4786,7 @@ async function fillTemplate(key, data) {
   var CO_E  = 'CO_BORROWER_END';
   var CO_IS = 'CO_BORROWER_INLINE_START';
   var CO_IE = 'CO_BORROWER_INLINE_END';
-  var PH_RE = /<<\s*'?\s*(.+?)\s*'?\s*>>/g;
+  var PH_RE = /<<[\s'‘’“”]*(.+?)[\s'‘’“”]*>>/g;
 
   // ── Escape value để an toàn trong XML ──
   function escXml(s) {
