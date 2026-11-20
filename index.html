@@ -1032,13 +1032,15 @@ async function dbSaveLoanFile(h) {
     }
   }
 
-  // Ghi activity log
-  await sb.from('activity_log').insert({
-    loan_file_id: h.id,
-    action: 'update',
-    description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
-    created_at: new Date().toISOString()
-  }).catch(function(){});
+  // Ghi activity log (bỏ qua lỗi — không ảnh hưởng save chính)
+  try {
+    await sb.from('activity_log').insert({
+      loan_file_id: h.id,
+      action: 'update',
+      description: 'Cập nhật hồ sơ: ' + (h.tenKH || h.id),
+      created_at: new Date().toISOString()
+    });
+  } catch(e) { /* bỏ qua lỗi activity_log */ }
 
   if (errors.length) {
     console.warn('dbSaveLoanFile warnings:', errors);
