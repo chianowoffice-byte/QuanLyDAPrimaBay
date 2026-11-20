@@ -2285,7 +2285,7 @@ function buildHSForm(h) {
   var hasVC = h && h.coVoChong;
   html += '<div class="fsec ' + khDimClass + '">';
   html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">';
-  var canToggle = (isCBOwner || isAdmin()) && !kLocked && !locked;
+  var canToggle = (isCBOwner || isQLAdmin || isAdmin()) && !kLocked && !locked;
   html += '<div id="vc-track" style="width:38px;height:22px;border-radius:11px;background:'+(hasVC?'var(--blue)':'var(--bdr2)')+';position:relative;'+(canToggle?'cursor:pointer;':'')+'" onclick="'+(canToggle?'toggleVC()':'')+'">';
   html += '<div id="vc-dot" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:'+(hasVC?'19px':'3px')+';transition:.2s"></div></div>';
   html += '<span style="font-size:13px;font-weight:500'+(canToggle?';cursor:pointer':'')+'" onclick="'+(canToggle?'toggleVC()':'')+'" >Có vợ / chồng đồng vay</span>';
