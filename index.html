@@ -2335,9 +2335,8 @@ function buildHSForm(h) {
   html += '</div></div></div></div>';
 
   // ── Căn hộ & HĐMB ──
-  // Diện tích / giá: CB (hồ sơ mình) + QTTD + CDT admin + Admin sửa | QL chỉ xem
-  // Số HĐMB / ngày ký: thêm QL sửa được
-  var canEditHDMBData = (isCBOwner || isQTTD() || isCDTAdmin || isAdmin());
+  // Diện tích / giá + Số HĐMB: CB + QL + QTTD + CDT admin + Admin sửa
+  var canEditHDMBData = (isCBOwner || isQLAdmin || isQTTD() || isCDTAdmin || isAdmin());
   var canEditHDCode   = (isCBOwner || isQTTD() || isCDTAdmin || isQL() || isAdmin());
   var hdmbDataDim  = canEditHDMBData ? (locked ? 'disabled' : '') : 'disabled';
   var hdmbCodeDim  = canEditHDCode   ? (locked ? 'disabled' : '') : 'disabled';
