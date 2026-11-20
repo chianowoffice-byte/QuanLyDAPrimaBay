@@ -5040,10 +5040,25 @@ async function loadTemplate(key){
 function enrichH(h) {
   var yr = new Date().getFullYear();
   var r = Object.assign({}, h);
-  if (!r.hdtd_code && r.cif)    r.hdtd_code    = '01/'+yr+'/'+r.cif+'/HĐTD';
-  if (!r.mortgage_code && r.cif) r.mortgage_code = '01/'+yr+'/'+r.cif+'/HĐTC';
+  // Ưu tiên lấy từ form nếu đang mở hồ sơ này
+  var hdtdEl   = document.getElementById('f-hdtd');
+  var mortEl   = document.getElementById('f-mortgage');
+  var htlsEl   = document.getElementById('f-htls');
+  var qltsEl   = document.getElementById('f-qlts');
+  var sohdmbEl = document.getElementById('f-sohdmb');
+  var cifEl    = document.getElementById('f-cif');
+  if (cifEl   && cifEl.value.trim())    r.cif    = cifEl.value.trim();
+  if (sohdmbEl && sohdmbEl.value.trim()) r.soHDMB = sohdmbEl.value.trim();
+  if (hdtdEl  && hdtdEl.value.trim())   r.hdtd_code    = hdtdEl.value.trim();
+  if (mortEl  && mortEl.value.trim())   r.mortgage_code = mortEl.value.trim();
+  if (htlsEl  && htlsEl.value.trim())   r.htls_agreement = htlsEl.value.trim();
+  if (qltsEl  && qltsEl.value.trim())   r.qlts_agreement = qltsEl.value.trim();
+  // Fallback: tính từ công thức
+  if (!r.hdtd_code    && r.cif)    r.hdtd_code    = '01/'+yr+'/'+r.cif+'/HĐTD';
+  if (!r.mortgage_code && r.cif)   r.mortgage_code = '01/'+yr+'/'+r.cif+'/HĐTC';
   if (!r.htls_agreement && r.soHDMB) r.htls_agreement = r.soHDMB+'/'+yr+'/'+(r.maCanHo||'')+'/01/TTHTLS/PRIMA BAY';
   if (!r.qlts_agreement && r.soHDMB) r.qlts_agreement = r.soHDMB+'/'+yr+'/'+(r.maCanHo||'')+'/01/TTQLTS/PRIMA BAY';
+  console.log('[enrichH]', r.tenKH, 'hdtd='+r.hdtd_code, 'mort='+r.mortgage_code, 'htls='+r.htls_agreement, 'qlts='+r.qlts_agreement);
   return r;
 }
 
