@@ -5163,7 +5163,7 @@ function buildDocData(h){
     '55 - Bằng chữ NH GN lần 1':numToWords(h.disbursement_1),
     '56 - TK thanh toán của KH vay':h.payment_account||'',
     '57 - Số tiền duy trì TK TT':fmt(h.min_account_balance),
-    '58 - Thời gian vay':h.hinhThucVay||'',
+    '58 - Thời gian vay':(h.kyHan ? h.kyHan+' tháng' : (h.hinhThucVay||'')),
     '59 - Số hợp đồng thế chấp':h.mortgage_code||'',
     '60 - Số hợp đồng tín dụng':h.hdtd_code||'',
     '61 - Thỏa thuận HTLS':h.htls_agreement||(h.soHDMB?(function(){var f=buildHDMBCode(h.soHDMB,h.maCanHo);return f.replace('/PRIMA BAY','/TTHTLS/PRIMA BAY');})():''),
