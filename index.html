@@ -2232,8 +2232,8 @@ function fmt(val) {
   var cleaned = s.replace(/\./g,'').replace(/,/g,'');
   var n = parseInt(cleaned);
   if (isNaN(n)) return val;
-  // Format dùng dấu PHẨY ngăn cách hàng nghìn: 123,000,000
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  // Format dùng dấu CHẤM ngăn cách hàng nghìn kiểu VN: 123.000.000
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
 // Parse số VN về integer (bỏ dấu chấm/phẩy)
@@ -2597,7 +2597,7 @@ function buildHSForm(h) {
   // ════════════════════════════════════════════
   html += '<div id="t-hdgn" style="display:none">';
   var hdgnDis = (!isCBOwner && !isQLAdmin && !isQTTD()) ? 'disabled' : '';
-  var fmtN = function(v){ return (v||v===0) ? parseInt(v).toLocaleString('en-US').replace(/,/g,',') : ''; };
+  var fmtN = function(v){ return (v||v===0) ? parseInt(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.') : ''; };
   var _yr = new Date().getFullYear();
   var sugHDTD     = h.cif ? ('01/'+_yr+'/'+h.cif+'/HĐTD') : '';
   var sugMortgage = h.cif ? ('01/'+_yr+'/'+h.cif+'/HĐTC') : '';
@@ -4899,11 +4899,12 @@ function numToWords(n) {
   var i = 0;
   while (n > 0) {
     var g = n % 1000;
-    if (g > 0) parts.unshift(readGroup(g) + (groups[i] ? groups[i] + ' ' : ''));
+    if (g > 0) parts.unshift(readGroup(g).trim() + (groups[i] ? ' ' + groups[i] : ''));
     n = Math.floor(n/1000);
     i++;
   }
-  var result = parts.join('').trim();
+  // Nối bằng dấu phẩy + khoảng trắng giữa các nhóm
+  var result = parts.join(', ').trim();
   // In hoa chữ đầu
   result = result.charAt(0).toUpperCase() + result.slice(1);
   return result + ' đồng';
