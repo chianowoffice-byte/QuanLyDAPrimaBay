@@ -2234,9 +2234,15 @@ function buildHDMBCode(input, maCanHo) {
   var s = String(input).trim();
   var yr = new Date().getFullYear();
   var ma = maCanHo || (window._curHS && window._curHS.maCanHo) || 'mã căn';
-  // Nếu đã có dạng đầy đủ (chứa '/PRIMA BAY') → không transform
-  if (s.indexOf('PRIMA BAY') !== -1) return s;
-  // Nếu chứa '/' nhưng chưa đầy đủ → vẫn expand (trường hợp nhập tay)
+  // Nếu đã có dạng đầy đủ chuẩn (số/năm/mã/01/PRIMA BAY, không có HĐMB/TTHTLS/TTQLTS)
+  // → normalize: bỏ /HĐMB/ nếu có lẫn vào
+  if (s.indexOf('PRIMA BAY') !== -1) {
+    // Xóa /HĐMB/ hoặc /HĐMB nếu lẫn vào giữa
+    s = s.replace(/\/HĐMB\//g, '/').replace(/\/TTHTLS\//g, '/').replace(/\/TTQLTS\//g, '/');
+    // Đảm bảo kết thúc bằng /PRIMA BAY (không có TT...)
+    s = s.replace(/\/(TTHTLS|TTQLTS)\/PRIMA BAY$/, '/PRIMA BAY');
+    return s;
+  }
   // Lấy phần số đầu tiên trước '/' nếu có, hoặc toàn bộ chuỗi
   var prefix = s.split('/')[0].trim();
   return prefix + '/' + yr + '/' + ma + '/01/PRIMA BAY';
