@@ -5006,9 +5006,38 @@ async function fillTemplate(key, data) {
     // 1. Xử lý CO_BORROWER block-level: xóa toàn bộ <w:p> chứa CO_S/CO_E
     //    Nếu không có người vay 2: xóa tất cả w:p giữa CO_S và CO_E (kể cả marker)
     if (!hasCo) {
-      // Xóa block CO: từ <w:p ...>CO_BORROWER_START</w:p> đến <w:p ...>CO_BORROWER_END</w:p>
-      xmlStr = xmlStr.replace(/<w:p[ >][\s\S]*?CO_BORROWER_START[\s\S]*?<\/w:p>/g, '');
-      xmlStr = xmlStr.replace(/<w:p[ >][\s\S]*?CO_BORROWER_END[\s\S]*?<\/w:p>/g, '');
+      // Xóa đoạn từ CO_BORROWER_START đến CO_BORROWER_END (kể cả thẻ <w:p> chứa marker)
+      // Dùng cách an toàn: tìm vị trí start/end của <w:p> chứa marker, rồi slice
+      function removeMarkerPara(xml, marker) {
+        var idx = xml.indexOf(marker);
+        if (idx === -1) return xml;
+        // Tìm <w:p ...> bắt đầu trước marker (tìm ngược)
+        var pStart = xml.lastIndexOf('<w:p', idx);
+        if (pStart === -1) pStart = idx;
+        // Tìm </w:p> kết thúc sau marker
+        var pEnd = xml.indexOf('</w:p>', idx);
+        if (pEnd === -1) return xml;
+        pEnd += '</w:p>'.length;
+        return xml.slice(0, pStart) + xml.slice(pEnd);
+      }
+      // Xóa đoạn giữa START và END marker (kể cả nội dung giữa)
+      var csIdx = xmlStr.indexOf('CO_BORROWER_START');
+      var ceIdx = xmlStr.indexOf('CO_BORROWER_END');
+      if (csIdx !== -1 && ceIdx !== -1) {
+        // Tìm <w:p> chứa START
+        var pCS = xmlStr.lastIndexOf('<w:p', csIdx);
+        if (pCS === -1) pCS = csIdx;
+        // Tìm </w:p> chứa END
+        var pCE = xmlStr.indexOf('</w:p>', ceIdx);
+        if (pCE !== -1) {
+          pCE += '</w:p>'.length;
+          xmlStr = xmlStr.slice(0, pCS) + xmlStr.slice(pCE);
+        }
+      } else {
+        // Fallback: xóa từng marker paragraph riêng
+        xmlStr = removeMarkerPara(xmlStr, 'CO_BORROWER_START');
+        xmlStr = removeMarkerPara(xmlStr, 'CO_BORROWER_END');
+      }
       // Xóa toàn bộ content giữa CO_BORROWER_INLINE_START và CO_BORROWER_INLINE_END
       xmlStr = xmlStr.replace(/CO_BORROWER_INLINE_START[\s\S]*?CO_BORROWER_INLINE_END/g, '');
     } else {
