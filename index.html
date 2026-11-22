@@ -5050,6 +5050,8 @@ async function fillTemplate(key, data) {
     xmlStr = xmlStr.replace(/<w:p>(<w:p[ >])/g, '$1');
     // Xóa <w:p></w:p> rỗng hoàn toàn (không có nội dung)
     xmlStr = xmlStr.replace(/<w:p><\/w:p>/g, '');
+    // Xóa <w:p> bare ngay trước closing tags của table cell/row/table (invalid position)
+    xmlStr = xmlStr.replace(/<w:p>(<\/w:tc>|<\/w:tr>|<\/w:tbl>)/g, '$1');
 
     // 2. Fill placeholders: thay <<KEY>> bằng giá trị (đã escape XML)
     PH_RE.lastIndex = 0;
