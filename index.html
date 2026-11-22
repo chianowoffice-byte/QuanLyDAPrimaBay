@@ -5046,6 +5046,11 @@ async function fillTemplate(key, data) {
       xmlStr = xmlStr.replace(/CO_BORROWER_INLINE_START/g,'').replace(/CO_BORROWER_INLINE_END/g,'');
     }
 
+    // 1b. Xóa <w:p> rỗng thừa sinh ra do CO_BORROWER processing (double <w:p><w:p)
+    xmlStr = xmlStr.replace(/<w:p>(<w:p[ >])/g, '$1');
+    // Xóa <w:p></w:p> rỗng hoàn toàn (không có nội dung)
+    xmlStr = xmlStr.replace(/<w:p><\/w:p>/g, '');
+
     // 2. Fill placeholders: thay <<KEY>> bằng giá trị (đã escape XML)
     PH_RE.lastIndex = 0;
     xmlStr = xmlStr.replace(PH_RE, function(m, k) {
