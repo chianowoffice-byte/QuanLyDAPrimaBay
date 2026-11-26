@@ -2227,25 +2227,26 @@ function collectCK(){
 // ================================================
 
 // Tạo số HĐMB đầy đủ từ số thứ tự
-// VD: "389" → "389/2026/P1-10-06/01/PRIMA BAY"
-// Nếu đã là full code (chứa '/') → giữ nguyên
+// VD: "389" → "389/2026/P1-10-06/01/HĐMB/PRIMA BAY"
+// Nếu đã là full code (chứa 'PRIMA BAY') → normalize về dạng chuẩn
 function buildHDMBCode(input, maCanHo) {
   if (!input) return '';
   var s = String(input).trim();
   var yr = new Date().getFullYear();
   var ma = maCanHo || (window._curHS && window._curHS.maCanHo) || 'mã căn';
-  // Nếu đã có dạng đầy đủ chuẩn (số/năm/mã/01/PRIMA BAY, không có HĐMB/TTHTLS/TTQLTS)
-  // → normalize: bỏ /HĐMB/ nếu có lẫn vào
   if (s.indexOf('PRIMA BAY') !== -1) {
-    // Xóa /HĐMB/ hoặc /HĐMB nếu lẫn vào giữa
-    s = s.replace(/\/HĐMB\//g, '/').replace(/\/TTHTLS\//g, '/').replace(/\/TTQLTS\//g, '/');
-    // Đảm bảo kết thúc bằng /PRIMA BAY (không có TT...)
+    // Normalize: bỏ /TTHTLS/ và /TTQLTS/ nếu lẫn vào
+    s = s.replace(/\/TTHTLS\//g, '/').replace(/\/TTQLTS\//g, '/');
     s = s.replace(/\/(TTHTLS|TTQLTS)\/PRIMA BAY$/, '/PRIMA BAY');
+    // Đảm bảo có /HĐMB/ trước PRIMA BAY
+    if (s.indexOf('/HĐMB/PRIMA BAY') === -1) {
+      s = s.replace('/PRIMA BAY', '/HĐMB/PRIMA BAY');
+    }
     return s;
   }
   // Lấy phần số đầu tiên trước '/' nếu có, hoặc toàn bộ chuỗi
   var prefix = s.split('/')[0].trim();
-  return prefix + '/' + yr + '/' + ma + '/01/PRIMA BAY';
+  return prefix + '/' + yr + '/' + ma + '/01/HĐMB/PRIMA BAY';
 }
 
 function fmt(val) {
@@ -2471,8 +2472,8 @@ function buildHSForm(h) {
       'var maCanHo=(window._curHS&&window._curHS.maCanHo)||\'mã căn\';' +
       'var htls=document.getElementById(\'f-htls\');' +
       'var qlts=document.getElementById(\'f-qlts\');' +
-      'if(htls&&!htls.dataset.manualEdit)htls.value=full?(full.replace(\'/PRIMA BAY\',\'/TTHTLS/PRIMA BAY\')):\'\';' +
-      'if(qlts&&!qlts.dataset.manualEdit)qlts.value=full?(full.replace(\'/PRIMA BAY\',\'/TTQLTS/PRIMA BAY\')):\'\'' +
+      'if(htls&&!htls.dataset.manualEdit)htls.value=full?(full.replace(\'/HĐMB/PRIMA BAY\',\'/TTHTLS/PRIMA BAY\')):\'\';' +
+      'if(qlts&&!qlts.dataset.manualEdit)qlts.value=full?(full.replace(\'/HĐMB/PRIMA BAY\',\'/TTQLTS/PRIMA BAY\')):\'\'' +
     '})(this)"');
   html += fld('Ngày ký HĐMB','f-ngayky',dv('ngayKyHDMB'),hdmbCodeDim,'','date','','onchange="onNgayKyChange()"');
   html += '</div></div>';
@@ -2637,8 +2638,8 @@ function buildHSForm(h) {
   var sugHDTD     = h.cif ? ('01/'+_yr+'/'+h.cif+'/HĐTD') : '';
   var sugMortgage = h.cif ? ('01/'+_yr+'/'+h.cif+'/HĐTC') : '';
   var _hdmbFull = h.soHDMB ? buildHDMBCode(h.soHDMB, h.maCanHo) : '';
-  var sugHTLS = _hdmbFull ? _hdmbFull.replace('/PRIMA BAY','/TTHTLS/PRIMA BAY') : 'số TT/'+_yr+'/mã căn/01/TTHTLS/PRIMA BAY';
-  var sugQLTS = _hdmbFull ? _hdmbFull.replace('/PRIMA BAY','/TTQLTS/PRIMA BAY') : 'số TT/'+_yr+'/mã căn/01/TTQLTS/PRIMA BAY';
+  var sugHTLS = _hdmbFull ? _hdmbFull.replace('/HĐMB/PRIMA BAY','/TTHTLS/PRIMA BAY') : 'số TT/'+_yr+'/mã căn/01/TTHTLS/PRIMA BAY';
+  var sugQLTS = _hdmbFull ? _hdmbFull.replace('/HĐMB/PRIMA BAY','/TTQLTS/PRIMA BAY') : 'số TT/'+_yr+'/mã căn/01/TTQLTS/PRIMA BAY';
   // Giá trị hiển thị: nếu đã có giá trị lưu → dùng; chưa có → dùng gợi ý tự động
   var valHDTD     = h.hdtd_code     || sugHDTD;
   var valMortgage = h.mortgage_code || sugMortgage;
@@ -3056,8 +3057,8 @@ function saveProj() {
   var cif2 = gv('f-cif');
   var htlsEl2 = document.getElementById('f-htls'); var qltsEl2 = document.getElementById('f-qlts');
   var hdtdEl2 = document.getElementById('f-hdtd'); var mortEl2 = document.getElementById('f-mortgage');
-  if (htlsEl2) { var _hfull2=soHDMB2?buildHDMBCode(soHDMB2,maCanHo2):''; data.htls_agreement = htlsEl2.value || (_hfull2?_hfull2.replace('/PRIMA BAY','/TTHTLS/PRIMA BAY'):''); }
-  if (qltsEl2) { var _qfull2=soHDMB2?buildHDMBCode(soHDMB2,maCanHo2):''; data.qlts_agreement = qltsEl2.value || (_qfull2?_qfull2.replace('/PRIMA BAY','/TTQLTS/PRIMA BAY'):''); }
+  if (htlsEl2) { var _hfull2=soHDMB2?buildHDMBCode(soHDMB2,maCanHo2):''; data.htls_agreement = htlsEl2.value || (_hfull2?_hfull2.replace('/HĐMB/PRIMA BAY','/TTHTLS/PRIMA BAY'):''); }
+  if (qltsEl2) { var _qfull2=soHDMB2?buildHDMBCode(soHDMB2,maCanHo2):''; data.qlts_agreement = qltsEl2.value || (_qfull2?_qfull2.replace('/HĐMB/PRIMA BAY','/TTQLTS/PRIMA BAY'):''); }
   // Lưu full HĐMB code
   if (soHDMB2) data.soHDMB = buildHDMBCode(soHDMB2, maCanHo2);
   if (hdtdEl2) data.hdtd_code = hdtdEl2.value || (cif2 ? '01/'+yr2+'/'+cif2+'/HĐTD' : '');
@@ -3088,8 +3089,8 @@ function syncHDMBDependents(idx, gv) {
   var qltsEl = document.getElementById('f-qlts');
   var hdmbFull = soHDMB ? buildHDMBCode(soHDMB, maCanHo) : '';
   if (soHDMB) hsList[idx].soHDMB = hdmbFull;
-  if (htlsEl) hsList[idx].htls_agreement = htlsEl.value || (hdmbFull ? hdmbFull.replace('/PRIMA BAY','/TTHTLS/PRIMA BAY') : '');
-  if (qltsEl) hsList[idx].qlts_agreement = qltsEl.value || (hdmbFull ? hdmbFull.replace('/PRIMA BAY','/TTQLTS/PRIMA BAY') : '');
+  if (htlsEl) hsList[idx].htls_agreement = htlsEl.value || (hdmbFull ? hdmbFull.replace('/HĐMB/PRIMA BAY','/TTHTLS/PRIMA BAY') : '');
+  if (qltsEl) hsList[idx].qlts_agreement = qltsEl.value || (hdmbFull ? hdmbFull.replace('/HĐMB/PRIMA BAY','/TTQLTS/PRIMA BAY') : '');
   var hdtdEl = document.getElementById('f-hdtd');
   var mortEl = document.getElementById('f-mortgage');
   var cif = hsList[idx].cif || '';
@@ -5138,11 +5139,11 @@ function enrichH(h) {
   if (!r.mortgage_code && r.cif)   r.mortgage_code = '01/'+yr+'/'+r.cif+'/HĐTC';
   if (!r.htls_agreement && r.soHDMB) {
     var hdmbFull = buildHDMBCode(r.soHDMB, r.maCanHo);
-    r.htls_agreement = hdmbFull.replace('/PRIMA BAY', '/TTHTLS/PRIMA BAY');
+    r.htls_agreement = hdmbFull.replace('/HĐMB/PRIMA BAY', '/TTHTLS/PRIMA BAY');
   }
   if (!r.qlts_agreement && r.soHDMB) {
     var hdmbFull2 = buildHDMBCode(r.soHDMB, r.maCanHo);
-    r.qlts_agreement = hdmbFull2.replace('/PRIMA BAY', '/TTQLTS/PRIMA BAY');
+    r.qlts_agreement = hdmbFull2.replace('/HĐMB/PRIMA BAY', '/TTQLTS/PRIMA BAY');
   }
   console.log('[enrichH]', r.tenKH, 'hdtd='+r.hdtd_code, 'mort='+r.mortgage_code, 'htls='+r.htls_agreement, 'qlts='+r.qlts_agreement);
   return r;
@@ -5208,25 +5209,32 @@ function buildDocData(h){
     '58 - Thời gian vay':(h.kyHan||h.loan_term_months||''),
     '59 - Số hợp đồng thế chấp':h.mortgage_code||'',
     '60 - Số hợp đồng tín dụng':h.hdtd_code||'',
-    '61 - Thỏa thuận HTLS':h.htls_agreement||(h.soHDMB?(function(){var f=buildHDMBCode(h.soHDMB,h.maCanHo);return f.replace('/PRIMA BAY','/TTHTLS/PRIMA BAY');})():''),
-    '62 - Thỏa thuận QLTS':h.qlts_agreement||(h.soHDMB?(function(){var f=buildHDMBCode(h.soHDMB,h.maCanHo);return f.replace('/PRIMA BAY','/TTQLTS/PRIMA BAY');})():''),
+    '61 - Thỏa thuận HTLS':h.htls_agreement||(h.soHDMB?(function(){var f=buildHDMBCode(h.soHDMB,h.maCanHo);return f.replace('/HĐMB/PRIMA BAY','/TTHTLS/PRIMA BAY');})():''),
+    '62 - Thỏa thuận QLTS':h.qlts_agreement||(h.soHDMB?(function(){var f=buildHDMBCode(h.soHDMB,h.maCanHo);return f.replace('/HĐMB/PRIMA BAY','/TTQLTS/PRIMA BAY');})():''),
     '64- Lịch trả nợ từ kì 31 đến kỳ n-1':(function(){
+      // Tổng kỳ trả nợ gốc = kyHan - anHan = kh - 30
+      // 209 kỳ đều (từ kỳ 31 đến kỳ n-1) + 1 kỳ cuối (kỳ n) = số tiền còn lại
       var stv=parseVND(h.soTienVay)||parseVND(h.hanMucDuocDuyet)||0;
       var kh=parseInt(h.kyHan)||parseInt(h.loan_term_months)||0;
-      var soKy=kh>31?(kh-1-30):0;
-      var val64=soKy>0?fmt(Math.floor(stv/soKy)):'';
-      console.log('[BM6-64] stv='+stv+' kh='+kh+' soKy='+soKy+' val64='+val64);
-      if(!stv||kh<=31) return '';
+      var anHan=parseInt(h.grace_period_months)||30;
+      var soKyTongTraNo=kh-anHan; // tổng kỳ trả nợ gốc (vd: 240-30=210)
+      var soKyDeu=soKyTongTraNo>1?(soKyTongTraNo-1):0; // 209 kỳ đều (trừ 1 kỳ cuối)
+      var val64=soKyDeu>0?fmt(Math.floor(stv/soKyDeu)):'';
+      console.log('[BM6-64] stv='+stv+' kh='+kh+' anHan='+anHan+' soKyDeu='+soKyDeu+' val64='+val64);
+      if(!stv||soKyDeu<=0) return '';
       return val64;
     })(),
     '65 - kỳ thứ n':(function(){
+      // Kỳ cuối = số tiền còn lại = stv - 209 × kyDeu
       var stv=parseVND(h.soTienVay)||parseVND(h.hanMucDuocDuyet)||0;
       var kh=parseInt(h.kyHan)||parseInt(h.loan_term_months)||0;
-      if(!stv||kh<=31) return '';
-      var soKy=kh-1-30;
-      var kyDeu=Math.floor(stv/soKy);
-      var dur=stv-kyDeu*soKy;
-      return fmt(kyDeu+dur);
+      var anHan=parseInt(h.grace_period_months)||30;
+      var soKyTongTraNo=kh-anHan;
+      var soKyDeu=soKyTongTraNo>1?(soKyTongTraNo-1):0;
+      if(!stv||soKyDeu<=0) return '';
+      var kyDeu=Math.floor(stv/soKyDeu);
+      var kyConLai=stv-kyDeu*soKyDeu; // số tiền còn lại sau 209 kỳ đều
+      return fmt(kyConLai);
     })(),
     '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop),
     '48 - Bằng chữ Giá trị HDMB căn':numToWords(h.giaHDMB),
