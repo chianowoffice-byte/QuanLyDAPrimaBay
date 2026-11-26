@@ -5212,28 +5212,28 @@ function buildDocData(h){
     '61 - Thỏa thuận HTLS':h.htls_agreement||(h.soHDMB?(function(){var f=buildHDMBCode(h.soHDMB,h.maCanHo);return f.replace('/HĐMB/PRIMA BAY','/TTHTLS/PRIMA BAY');})():''),
     '62 - Thỏa thuận QLTS':h.qlts_agreement||(h.soHDMB?(function(){var f=buildHDMBCode(h.soHDMB,h.maCanHo);return f.replace('/HĐMB/PRIMA BAY','/TTQLTS/PRIMA BAY');})():''),
     '64- Lịch trả nợ từ kì 31 đến kỳ n-1':(function(){
-      // Tổng kỳ trả nợ gốc = kyHan - anHan = kh - 30
-      // 209 kỳ đều (từ kỳ 31 đến kỳ n-1) + 1 kỳ cuối (kỳ n) = số tiền còn lại
+      // Tổng kỳ trả nợ = kyHan - anHan (vd: 240-30=210)
+      // Mỗi kỳ đều = floor(stv / 210), áp dụng cho 209 kỳ (kỳ 31 → kỳ 239)
       var stv=parseVND(h.soTienVay)||parseVND(h.hanMucDuocDuyet)||0;
       var kh=parseInt(h.kyHan)||parseInt(h.loan_term_months)||0;
       var anHan=parseInt(h.grace_period_months)||30;
-      var soKyTongTraNo=kh-anHan; // tổng kỳ trả nợ gốc (vd: 240-30=210)
-      var soKyDeu=soKyTongTraNo>1?(soKyTongTraNo-1):0; // 209 kỳ đều (trừ 1 kỳ cuối)
-      var val64=soKyDeu>0?fmt(Math.floor(stv/soKyDeu)):'';
-      console.log('[BM6-64] stv='+stv+' kh='+kh+' anHan='+anHan+' soKyDeu='+soKyDeu+' val64='+val64);
-      if(!stv||soKyDeu<=0) return '';
-      return val64;
+      var soKyTong=kh-anHan; // 210
+      if(!stv||soKyTong<=1) return '';
+      var kyDeu=Math.floor(stv/soKyTong); // chia cho 210, làm tròn xuống đơn vị
+      console.log('[BM6-64] stv='+stv+' kh='+kh+' anHan='+anHan+' soKyTong='+soKyTong+' kyDeu='+kyDeu);
+      return fmt(kyDeu);
     })(),
     '65 - kỳ thứ n':(function(){
-      // Kỳ cuối = số tiền còn lại = stv - 209 × kyDeu
+      // Kỳ cuối (kỳ 240) = stv - 209 × kyDeu
       var stv=parseVND(h.soTienVay)||parseVND(h.hanMucDuocDuyet)||0;
       var kh=parseInt(h.kyHan)||parseInt(h.loan_term_months)||0;
       var anHan=parseInt(h.grace_period_months)||30;
-      var soKyTongTraNo=kh-anHan;
-      var soKyDeu=soKyTongTraNo>1?(soKyTongTraNo-1):0;
-      if(!stv||soKyDeu<=0) return '';
-      var kyDeu=Math.floor(stv/soKyDeu);
-      var kyConLai=stv-kyDeu*soKyDeu; // số tiền còn lại sau 209 kỳ đều
+      var soKyTong=kh-anHan; // 210
+      if(!stv||soKyTong<=1) return '';
+      var kyDeu=Math.floor(stv/soKyTong);
+      var soKyDeu=soKyTong-1; // 209 kỳ đều
+      var kyConLai=stv-kyDeu*soKyDeu; // stv - 209 × kyDeu
+      console.log('[BM6-65] kyDeu='+kyDeu+' soKyDeu='+soKyDeu+' kyConLai='+kyConLai);
       return fmt(kyConLai);
     })(),
     '66 - Vốn tự có':fmt(h.equity_amount||h.vtcDaNop),
