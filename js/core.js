@@ -1273,10 +1273,42 @@ function applyPerms(){
   tog('pni-usr',      isAdmin());
   // Module tabs: CĐT chỉ thấy tab loan; không ẩn tab project với QL/admin
   tog('mtab-project', !isCDT());
-  // Topbar button
+  // Topbar buttons
+  tog('btn-settings',   isAdmin());
   tog('btn-new-hs',   isQL() && !isCDT() && !isViewer());
   tog('btn-new-hs-top', isQL() && !isCDT() && !isViewer());
   tog('s-cb',         isQL() || isViewer());
   tog('panel-cbload', isQL() || isViewer());
+}
+
+// ── Đổi mật khẩu ──────────────────────────────────
+function openPwModal(){
+  var el=document.getElementById('modal-pw');
+  if(!el) return;
+  document.getElementById('pw-err').style.display='none';
+  ['pw-old','pw-new','pw-c'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  el.classList.add('open');
+}
+function closePwModal(){
+  var el=document.getElementById('modal-pw');
+  if(el) el.classList.remove('open');
+}
+async function savePw(){
+  var oldPw = (document.getElementById('pw-old')||{}).value||'';
+  var newPw = (document.getElementById('pw-new')||{}).value||'';
+  var confPw= (document.getElementById('pw-c')||{}).value||'';
+  var errEl = document.getElementById('pw-err');
+  function showErr(msg){ errEl.textContent=msg; errEl.style.display='block'; }
+  if(!oldPw||!newPw||!confPw){ showErr('Vui lòng điền đầy đủ thông tin.'); return; }
+  if(newPw!==confPw){ showErr('Mật khẩu xác nhận không khớp.'); return; }
+  if(newPw.length<6){ showErr('Mật khẩu mới phải có ít nhất 6 ký tự.'); return; }
+  var u = users.find(function(x){return x.id===currentUser.id;});
+  if(!u || u.password!==oldPw){ showErr('Mật khẩu hiện tại không đúng.'); return; }
+  try {
+    await sb.from('users').update({password:newPw}).eq('id',currentUser.id);
+    u.password = newPw;
+    closePwModal();
+    alert('Đổi mật khẩu thành công!');
+  } catch(e) { showErr('Lỗi: '+e.message); }
 }
 
