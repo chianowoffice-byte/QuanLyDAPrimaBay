@@ -5047,12 +5047,14 @@ async function fillTemplate(key, data) {
       xmlStr = xmlStr.replace(/CO_BORROWER_INLINE_START/g,'').replace(/CO_BORROWER_INLINE_END/g,'');
     }
 
-    // 1b. Xóa <w:p> rỗng thừa sinh ra do CO_BORROWER processing (double <w:p><w:p)
-    xmlStr = xmlStr.replace(/<w:p>(<w:p[ >])/g, '$1');
-    // Xóa <w:p></w:p> rỗng hoàn toàn (không có nội dung)
-    xmlStr = xmlStr.replace(/<w:p><\/w:p>/g, '');
-    // Xóa <w:p> bare ngay trước closing tags của table cell/row/table (invalid position)
-    xmlStr = xmlStr.replace(/<w:p>(<\/w:tc>|<\/w:tr>|<\/w:tbl>)/g, '$1');
+    // 1b. Sửa <w:p...> rỗng thừa sinh ra do CO_BORROWER processing:
+    //     Nếu có 2 <w:p...> liên tiếp mà không có </w:p> ở giữa → paragraph đầu bị unclosed
+    //     → thêm </w:p> giữa chúng để fix XML
+    xmlStr = xmlStr.replace(/(<w:p(?:\s[^>]*)?>)(<w:p[ >])/g, '$1</w:p>$2');
+    // Xóa <w:p></w:p> rỗng hoàn toàn (kể cả có attributes)
+    xmlStr = xmlStr.replace(/<w:p(?:\s[^>]*)?>[\s]*<\/w:p>/g, '');
+    // Xóa <w:p> ngay trước closing tags của table cell/row/table (invalid position)
+    xmlStr = xmlStr.replace(/<w:p(?:\s[^>]*)?>(<\/w:tc>|<\/w:tr>|<\/w:tbl>)/g, '$1');
 
     // 2. Fill placeholders: thay <<KEY>> bằng giá trị (đã escape XML)
     PH_RE.lastIndex = 0;
