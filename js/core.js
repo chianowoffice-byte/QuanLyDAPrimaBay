@@ -1266,11 +1266,12 @@ function applyPerms(){
   tog('ns-sys',       isAdmin());
   tog('ni-usr',       isAdmin());
   // Project sidebar items
+  tog('pns-sys',      isAdmin() || isQL());
   tog('pni-imp',      isQL());
+  tog('pni-usr',      isAdmin());
+  tog('pns-cdt',      isCDT());
   tog('pni-cdt-up',   isCDT());
   tog('pni-cdt-view', isCDT());
-  tog('pns-sys',      isAdmin());
-  tog('pni-usr',      isAdmin());
   // Module tabs: CĐT chỉ thấy tab loan
   tog('mtab-project', !isCDT());
   if(isCDT() && typeof switchModule==='function') switchModule('loan');
