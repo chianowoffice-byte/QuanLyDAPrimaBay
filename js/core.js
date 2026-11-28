@@ -976,10 +976,11 @@ async function doLogin(){
 
     // Kiểm tra mật khẩu
     var ok = false;
-    if(dbUser.ma_cb && p===dbUser.ma_cb) ok=true;           // mật khẩu = mã CB
-    if(p==='admin2025' && dbUser.role==='admin') ok=true;   // mật khẩu admin
-    if(p==='bim2025' && (dbUser.role==='cdt_view'||dbUser.role==='cdt_admin')) ok=true;
-    if(dbUser.password && p===dbUser.password) ok=true;     // plain password field
+    if(dbUser.password     && p===dbUser.password)     ok=true; // password field chính
+    if(dbUser.officer_code && p===dbUser.officer_code) ok=true; // mã CB làm pass mặc định
+    if(dbUser.ma_cb        && p===dbUser.ma_cb)        ok=true; // backward compat
+    if(p==='admin2025' && dbUser.role==='admin') ok=true;
+    if(p==='bim2025'   && (dbUser.role==='cdt_view'||dbUser.role==='cdt_admin')) ok=true;
 
     if(!ok){
       showLoginErr('Mật khẩu không đúng.');
@@ -998,8 +999,9 @@ async function doLogin(){
             dbUser.role==='qttd'    ? 'qttd'  :
             (dbUser.role==='cdt_view'||dbUser.role==='cdt_admin') ? 'cdt' : dbUser.role,
       db_role: dbUser.role,
-      pgd: dbUser.pgd||'', phone: dbUser.phone||'',
-      maCB: dbUser.ma_cb||'',
+      pgd:  dbUser.pgd||'', phone: dbUser.phone||'',
+      cv:   dbUser.job_title||'',
+      maCB: dbUser.officer_code || dbUser.ma_cb || '',
       active: dbUser.is_active,
       canSetGiaiNgan: dbUser.can_set_disbursement
     };
@@ -1038,20 +1040,22 @@ function showLoginErr(msg){
 
 function mapDbUser(u) {
   return {
-    id:    u.id,
-    db_id: u.id,
-    name:  u.full_name,
-    login: u.email ? u.email.split('@')[0] : u.id,
-    email: u.email,
+    id:           u.id,
+    db_id:        u.id,
+    name:         u.full_name,
+    login:        u.email ? u.email.split('@')[0] : u.id,
+    email:        u.email,
     role:  u.role === 'officer' ? 'cb' :
            u.role === 'manager' ? 'ql' :
            u.role === 'admin'   ? 'admin' :
            u.role === 'viewer'  ? 'viewer' :
            (u.role === 'cdt_view' || u.role === 'cdt_admin') ? 'cdt' : u.role,
-    db_role: u.role,
-    pgd:   u.pgd || '',
-    phone: u.phone || '',
-    active: u.is_active,
+    db_role:      u.role,
+    pgd:          u.pgd || '',
+    cv:           u.job_title || '',       // chức vụ
+    maCB:         u.officer_code || '',    // mã CB thực (tách khỏi password)
+    phone:        u.phone || '',
+    active:       u.is_active,
     canSetGiaiNgan: u.can_set_disbursement
   };
 }

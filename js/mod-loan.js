@@ -1737,129 +1737,190 @@ function renderCDTTable(){
 // ==================================================
 // USERS
 // ==================================================
+// ==================================================
+// QUẢN TRỊ HỆ THỐNG – 3 tabs
+// ==================================================
+
+var _admCurrentTab = 'adm-users';
+
+function admTab(tab) {
+  _admCurrentTab = tab;
+  document.querySelectorAll('.adm-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.adm-panel').forEach(function(p){ p.classList.remove('active'); });
+  var btn = document.querySelector('.adm-tab[data-tab="'+tab+'"]');
+  var panel = document.getElementById(tab);
+  if(btn)   btn.classList.add('active');
+  if(panel) panel.classList.add('active');
+  if(tab === 'adm-users')   renderUsrTable();
+  if(tab === 'adm-settings') renderProjSettings();
+  if(tab === 'adm-perm')    renderPermTable();
+}
+
+// --- TAB 1: Người dùng ---
+
 function renderUsrTable(){
-  var html='';
-  users.forEach(function(u){
-    var active=hsList.filter(function(h){return h.canBoId===u.id&&h.status!=='xong'&&h.status!=='tuchoi';}).length;
+  var search  = (document.getElementById('usr-search') || {}).value || '';
+  var roleF   = (document.getElementById('usr-role-filter') || {}).value || '';
+  var statusF = (document.getElementById('usr-status-filter') || {}).value || '';
+  search = search.trim().toLowerCase();
+
+  var list = users.filter(function(u){
+    if(search && u.name.toLowerCase().indexOf(search)<0 && u.login.toLowerCase().indexOf(search)<0 && (u.maCB||'').toLowerCase().indexOf(search)<0) return false;
+    if(roleF && u.role !== roleF) return false;
+    if(statusF === 'active' && !u.active) return false;
+    if(statusF === 'inactive' && u.active) return false;
+    return true;
+  });
+
+  var html = '';
+  list.forEach(function(u){
+    var hsActive = hsList.filter(function(h){return h.canBoId===u.id&&h.status!=='xong'&&h.status!=='tuchoi';}).length;
+    var roleLbl  = rBadge(u.role);
+    var statusCls= u.active ? 'b-xong' : 'b-tuchoi';
+    var statusTxt= u.active ? 'Hoạt động' : 'Ngừng';
     html += '<tr>';
-    html += '<td style="font-weight:500">'+u.name+'</td>';
-    html += '<td><code style="font-size:12px">'+u.login+'</code></td>';
-    html += '<td>'+rBadge(u.role)+'</td>';
-    html += '<td>'+active+' HS</td>';
-    html += '<td><span class="badge '+(u.active?'b-xong':'b-tuchoi')+'">'+(u.active?'Hoat dong':'Ngung')+'</span></td>';
-    html += '<td style="display:flex;gap:4px">';
-    html += '<button class="btn btn-sm" data-uid="'+u.id+'" onclick="openEditUser(this.dataset.uid)">Sua</button>';
-    html += '<button class="btn btn-sm '+(u.active?'btn-danger':'btn-success')+'" data-uid="'+u.id+'" onclick="toggleUsr(this.dataset.uid)">'+(u.active?'Tam ngung':'Kich hoat')+'</button>';
-    if(u.id!=='u1') html += '<button class="btn btn-sm btn-danger" data-uid="'+u.id+'" onclick="delUsr(this.dataset.uid)">X</button>';
+    html += '<td style="font-weight:600">'+esc(u.name)+'<br><span style="font-size:11px;color:var(--text-muted)">'+esc(u.cv||'')+'</span></td>';
+    html += '<td><code style="font-size:11px">'+esc(u.login)+'</code><br><span style="font-size:11px;color:var(--text-muted)">'+esc(u.email||'')+'</span></td>';
+    html += '<td><code style="font-size:12px">'+esc(u.maCB||'—')+'</code></td>';
+    html += '<td>'+esc(u.pgd||'—')+'</td>';
+    html += '<td>'+roleLbl+'</td>';
+    html += '<td style="text-align:center">'+hsActive+'</td>';
+    html += '<td><span class="badge '+statusCls+'">'+statusTxt+'</span></td>';
+    html += '<td style="white-space:nowrap">';
+    html += '<button class="btn btn-sm" onclick="openEditUser(\''+u.id+'\')">✏️</button> ';
+    html += '<button class="btn btn-sm '+(u.active?'btn-warning':'btn-success')+'" onclick="toggleUsr(\''+u.id+'\')">'+(u.active?'Ngừng':'Kích hoạt')+'</button>';
     html += '</td></tr>';
   });
-  var usrTbody = document.getElementById('p-usr-tbody'); if(usrTbody) usrTbody.innerHTML=html;
+
+  if(!html) html = '<tr><td colspan="8" class="empty-state">Không tìm thấy người dùng nào</td></tr>';
+
+  var tbody = document.getElementById('p-usr-tbody');
+  if(tbody) tbody.innerHTML = html;
 }
 
-function openAddUser(){ editUserId=null; document.getElementById('musr-title').textContent='Thêm người dùng'; ['u-name','u-login','u-pw'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('u-role').value='cb'; document.getElementById('modal-usr').classList.add('open'); }
-function openEditUser(id){
-  editUserId=id;
-  var u=users.find(function(x){return x.id===id;});
-  if(!u) return;
-  document.getElementById('musr-title').textContent='Sửa: '+u.name;
-  document.getElementById('u-name').value=u.name;
-  document.getElementById('u-login').value=u.login;
-  document.getElementById('u-pw').value=''; // Không hiện mật khẩu cũ — để trống = giữ nguyên
-  document.getElementById('u-pw').placeholder='Để trống = giữ mật khẩu hiện tại';
-  document.getElementById('u-role').value=u.role;
-  document.getElementById('modal-usr').classList.add('open');
-}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-async function delUsr(id){
-  showConf('Xoá người dùng?','Không thể khôi phục.',async function(){
-    var { error }=await sb.from('users').delete().eq('id',id);
-    if(error){ console.error('[DB] delUsr:', error); alert('Lỗi xoá: '+error.message); return; }
-    users=users.filter(function(u){return u.id!==id;});
-    persist(); renderUsrTable();
-    showNotif('✅ Đã xoá người dùng');
+function openAddUser(){
+  editUserId = null;
+  var t = document.getElementById('musr-title'); if(t) t.textContent = 'Thêm người dùng mới';
+  ['u-name','u-login','u-pw','u-maCB','u-pgd','u-cv','u-phone'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = '';
   });
+  var roleEl = document.getElementById('u-role'); if(roleEl) roleEl.value = 'cb';
+  var pwEl = document.getElementById('u-pw'); if(pwEl){ pwEl.placeholder = 'Mật khẩu (bắt buộc)'; }
+  var errEl = document.getElementById('usr-modal-err'); if(errEl){ errEl.style.display='none'; errEl.textContent=''; }
+  var delBtn = document.getElementById('u-del-btn'); if(delBtn) delBtn.style.display='none';
+  var modal = document.getElementById('modal-usr'); if(modal) modal.classList.add('open');
 }
 
-function closeUsrModal(){ document.getElementById('modal-usr').classList.remove('open'); editUserId=null; }
-async function saveUser(){
-  var name  = document.getElementById('u-name').value.trim();
-  var login = document.getElementById('u-login').value.trim().toLowerCase();
-  var pw    = document.getElementById('u-pw').value;
-  var role  = document.getElementById('u-role').value;
+function openEditUser(id){
+  var u = users.find(function(x){return x.id===id;});
+  if(!u) return;
+  editUserId = id;
+  var t = document.getElementById('musr-title'); if(t) t.textContent = 'Sửa: '+u.name;
+  var nm = document.getElementById('u-name');   if(nm)   nm.value  = u.name  || '';
+  var lg = document.getElementById('u-login');  if(lg)   lg.value  = u.login || '';
+  var pw = document.getElementById('u-pw');     if(pw){  pw.value  = ''; pw.placeholder = 'Để trống = giữ mật khẩu hiện tại'; }
+  var ro = document.getElementById('u-role');   if(ro)   ro.value  = u.role  || 'cb';
+  var mc = document.getElementById('u-maCB');   if(mc)   mc.value  = u.maCB  || '';
+  var pg = document.getElementById('u-pgd');    if(pg)   pg.value  = u.pgd   || '';
+  var cv = document.getElementById('u-cv');     if(cv)   cv.value  = u.cv    || '';
+  var ph = document.getElementById('u-phone');  if(ph)   ph.value  = u.phone || '';
+  var errEl = document.getElementById('usr-modal-err'); if(errEl){ errEl.style.display='none'; errEl.textContent=''; }
+  var delBtn = document.getElementById('u-del-btn');
+  if(delBtn) delBtn.style.display = (currentUser && currentUser.id !== id) ? 'inline-flex' : 'none';
+  var modal = document.getElementById('modal-usr'); if(modal) modal.classList.add('open');
+}
 
-  // Khi thêm mới: bắt buộc pw; khi sửa: pw để trống = giữ nguyên
-  if(!name || !login) { alert('Vui lòng điền họ tên và tên đăng nhập!'); return; }
-  if(!editUserId && !pw) { alert('Vui lòng nhập mật khẩu!'); return; }
-  if(!editUserId && users.find(function(u){return u.login===login;})){
-    alert('Tên đăng nhập đã tồn tại!'); return;
+function closeUsrModal(){
+  var modal = document.getElementById('modal-usr'); if(modal) modal.classList.remove('open');
+  editUserId = null;
+}
+
+function _usrShowErr(msg){
+  var el = document.getElementById('usr-modal-err');
+  if(!el) { alert(msg); return; }
+  el.textContent = msg; el.style.display = 'block';
+}
+
+async function saveUser(){
+  var name  = (document.getElementById('u-name')  ||{}).value||''; name  = name.trim();
+  var login = (document.getElementById('u-login') ||{}).value||''; login = login.trim().toLowerCase();
+  var pw    = (document.getElementById('u-pw')    ||{}).value||'';
+  var role  = (document.getElementById('u-role')  ||{}).value||'cb';
+  var maCB  = (document.getElementById('u-maCB')  ||{}).value||''; maCB  = maCB.trim();
+  var pgd   = (document.getElementById('u-pgd')   ||{}).value||''; pgd   = pgd.trim();
+  var cv    = (document.getElementById('u-cv')    ||{}).value||''; cv    = cv.trim();
+  var phone = (document.getElementById('u-phone') ||{}).value||''; phone = phone.trim();
+
+  var errEl = document.getElementById('usr-modal-err');
+  if(errEl){ errEl.style.display='none'; errEl.textContent=''; }
+
+  if(!name)  { _usrShowErr('Vui lòng nhập họ tên!'); return; }
+  if(!login) { _usrShowErr('Vui lòng nhập tên đăng nhập!'); return; }
+  if(!editUserId && !pw) { _usrShowErr('Vui lòng nhập mật khẩu!'); return; }
+  if(!editUserId && users.find(function(u){ return u.login===login; })){
+    _usrShowErr('Tên đăng nhập đã tồn tại!'); return;
   }
 
-  // Ghép email từ login
-  var email = login.indexOf('@') !== -1 ? login :
-              (login === 'bim1' ? 'bim1@bimgroup.vn' :
-               login === 'bim2' ? 'bim2@bimgroup.vn' :
-               login + '@bidv.com.vn');
-
-  // Map role app → DB role
-  var dbRole = role === 'cb'    ? 'officer' :
-               role === 'ql'    ? 'manager' :
-               role === 'admin' ? 'admin'   :
-               role === 'cdt'   ? 'cdt_view':
-               role === 'viewer'? 'viewer'  :
-               role === 'qttd'  ? 'qttd'   : role;
+  var email = login.indexOf('@')!==-1 ? login : login+'@bidv.com.vn';
+  var dbRole = { cb:'officer', ql:'manager', admin:'admin', cdt:'cdt_view', viewer:'viewer', qttd:'qttd' }[role] || role;
 
   var saveBtn = document.querySelector('#modal-usr .btn-primary');
   if(saveBtn){ saveBtn.textContent='⏳ Đang lưu...'; saveBtn.disabled=true; }
 
   try {
-    if(editUserId) {
-      // Sửa user hiện có
+    if(editUserId){
       var u = users.find(function(x){return x.id===editUserId;});
-      if(u) {
-        u.name  = name;
-        u.login = login;
-        u.role  = role;
-        if(pw) u.pw = pw; // Chỉ update pw nếu nhập mới
-
-        // Cập nhật DB
-        var updateData = { full_name: name, email: email, role: dbRole, updated_at: new Date().toISOString() };
-        if(pw) updateData.ma_cb = pw; // Dùng ma_cb làm password
-
-        var { error } = await sb.from('users').update(updateData).eq('id', editUserId);
-        if(error) {
-          console.error('[DB] saveUser update:', error);
-          alert('⚠️ Lưu local OK nhưng lỗi DB: ' + error.message);
-        } else {
-          showNotif('✅ Đã cập nhật người dùng: ' + name);
-        }
+      if(u){
+        u.name=name; u.login=login; u.role=role; u.maCB=maCB; u.pgd=pgd; u.cv=cv; u.phone=phone; u.email=email;
+        if(pw) u.pw = pw;
       }
+      var upd = { full_name:name, email:email, role:dbRole, officer_code:maCB||null, pgd:pgd||null, job_title:cv||null, phone:phone||null };
+      if(pw) upd.officer_code = maCB || null; // keep officer_code as maCB; password stored in ma_cb
+      if(pw) upd.ma_cb = pw;
+      var { error:ue } = await sb.from('users').update(upd).eq('id', editUserId);
+      if(ue){ console.error('[DB] saveUser upd:', ue); _usrShowErr('Lỗi DB: '+ue.message); }
+      else   showNotif('✅ Đã cập nhật: '+name);
     } else {
-      // Thêm user mới
-      var newUser = { id: 'u'+Date.now(), name:name, login:login, pw:pw, role:role, active:true, email:email };
-      users.push(newUser);
-
-      var insertData = {
-        full_name: name, email: email, role: dbRole,
-        ma_cb: pw, is_active: true, created_at: new Date().toISOString()
-      };
-      var { data: inserted, error: insErr } = await sb.from('users').insert(insertData).select().single();
-      if(insErr) {
-        console.error('[DB] saveUser insert:', insErr);
-        alert('⚠️ Lưu local OK nhưng lỗi DB: ' + insErr.message);
-      } else {
-        if(inserted) newUser.id = inserted.id; // Dùng UUID từ DB
-        showNotif('✅ Đã thêm người dùng: ' + name);
-      }
+      var nu = { id:'u'+Date.now(), name:name, login:login, pw:pw, role:role, maCB:maCB, pgd:pgd, cv:cv, phone:phone, email:email, active:true };
+      users.push(nu);
+      var ins = { full_name:name, email:email, role:dbRole, ma_cb:pw, officer_code:maCB||null, pgd:pgd||null, job_title:cv||null, phone:phone||null, is_active:true };
+      var { data:inserted, error:ie } = await sb.from('users').insert(ins).select().single();
+      if(ie){ console.error('[DB] saveUser ins:', ie); _usrShowErr('Lỗi DB: '+ie.message); }
+      else  { if(inserted) nu.id=inserted.id; showNotif('✅ Đã thêm: '+name); }
     }
-  } catch(e) {
-    console.error('[DB] saveUser exception:', e);
-    alert('⚠️ Lỗi: ' + e.message);
-  } finally {
-    if(saveBtn){ saveBtn.textContent='Lưu'; saveBtn.disabled=false; }
-  }
+  } catch(e){ console.error('[DB] saveUser:', e); _usrShowErr('Lỗi: '+e.message); }
+  finally   { if(saveBtn){ saveBtn.textContent='Lưu'; saveBtn.disabled=false; } }
 
   persist(); closeUsrModal(); renderUsrTable();
 }
+
+function delUsrCurrent(){
+  if(!editUserId) return;
+  var u = users.find(function(x){return x.id===editUserId;});
+  if(!u) return;
+  showConf('Xoá người dùng?', 'Xoá "'+u.name+'"? Không thể khôi phục.', async function(){
+    var { error } = await sb.from('users').delete().eq('id', editUserId);
+    if(error){ console.error('[DB] delUsrCurrent:', error); alert('Lỗi xoá: '+error.message); return; }
+    users = users.filter(function(x){ return x.id !== editUserId; });
+    persist(); closeUsrModal(); renderUsrTable();
+    showNotif('✅ Đã xoá người dùng: '+u.name);
+  });
+}
+
+async function delUsr(id){
+  var u = users.find(function(x){return x.id===id;});
+  if(!u) return;
+  showConf('Xoá người dùng?','Xoá "'+u.name+'"? Không thể khôi phục.',async function(){
+    var { error }=await sb.from('users').delete().eq('id',id);
+    if(error){ console.error('[DB] delUsr:', error); alert('Lỗi xoá: '+error.message); return; }
+    users=users.filter(function(x){return x.id!==id;});
+    persist(); renderUsrTable();
+    showNotif('✅ Đã xoá người dùng');
+  });
+}
+
 async function toggleUsr(id){
   var u=users.find(function(x){return x.id===id;});
   if(!u) return;
@@ -1868,6 +1929,75 @@ async function toggleUsr(id){
   if(error) console.error('[DB] toggleUsr:', error);
   else showNotif((u.active?'✅ Kích hoạt: ':'🚫 Tạm ngừng: ')+u.name);
   persist(); renderUsrTable();
+}
+
+// --- TAB 2: Cài đặt dự án ---
+
+var _projCfg = {
+  projName: 'Prima Bay Phu Quoc',
+  projCode: 'PB5',
+  projAddr: 'Phú Quốc, Kiên Giang',
+  projDev:  'BIM Group',
+  loanMin:  500,
+  loanMax:  70,
+  loanTerm: 240,
+  loanRate: 8.5
+};
+
+function renderProjSettings(){
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem('pb5_projcfg')||'{}'); } catch(e){}
+  Object.assign(_projCfg, saved);
+  var fields = ['projName','projCode','projAddr','projDev','loanMin','loanMax','loanTerm','loanRate'];
+  fields.forEach(function(k){
+    var el = document.getElementById('cfg-'+k);
+    if(el) el.value = _projCfg[k];
+  });
+}
+
+function saveProjSettings(){
+  var fields = ['projName','projCode','projAddr','projDev','loanMin','loanMax','loanTerm','loanRate'];
+  fields.forEach(function(k){
+    var el = document.getElementById('cfg-'+k);
+    if(el) _projCfg[k] = el.value;
+  });
+  try { localStorage.setItem('pb5_projcfg', JSON.stringify(_projCfg)); } catch(e){}
+  showNotif('✅ Đã lưu cài đặt dự án');
+}
+
+// --- TAB 3: Phân quyền ---
+
+function renderPermTable(){
+  var tbody = document.getElementById('perm-tbody');
+  if(!tbody) return;
+
+  var perms = [
+    { feat:'Xem Dashboard tổng quan',       admin:1, ql:1, cb:1, cdt:0, viewer:1, qttd:0 },
+    { feat:'Xem danh sách hồ sơ',           admin:1, ql:1, cb:1, cdt:0, viewer:1, qttd:1 },
+    { feat:'Thêm hồ sơ mới',                admin:1, ql:1, cb:1, cdt:0, viewer:0, qttd:0 },
+    { feat:'Sửa hồ sơ của mình',            admin:1, ql:1, cb:1, cdt:0, viewer:0, qttd:0 },
+    { feat:'Sửa hồ sơ của người khác',      admin:1, ql:1, cb:0, cdt:0, viewer:0, qttd:0 },
+    { feat:'Xoá hồ sơ',                     admin:1, ql:0, cb:0, cdt:0, viewer:0, qttd:0 },
+    { feat:'Duyệt hồ sơ (Phê duyệt)',       admin:1, ql:1, cb:0, cdt:0, viewer:0, qttd:0 },
+    { feat:'Từ chối hồ sơ',                 admin:1, ql:1, cb:0, cdt:0, viewer:0, qttd:0 },
+    { feat:'Đặt ngày giải ngân',            admin:1, ql:1, cb:1, cdt:0, viewer:0, qttd:0 },
+    { feat:'Xem tab Hồ sơ Vay (CDT)',       admin:0, ql:0, cb:0, cdt:1, viewer:0, qttd:0 },
+    { feat:'Quản trị hệ thống / Người dùng',admin:1, ql:0, cb:0, cdt:0, viewer:0, qttd:0 },
+    { feat:'Cài đặt dự án',                 admin:1, ql:0, cb:0, cdt:0, viewer:0, qttd:0 },
+    { feat:'Xem báo cáo tổng hợp',          admin:1, ql:1, cb:0, cdt:0, viewer:1, qttd:1 },
+    { feat:'Xuất Excel / Báo cáo',          admin:1, ql:1, cb:1, cdt:0, viewer:0, qttd:1 },
+  ];
+
+  var cols = ['admin','ql','cb','cdt','viewer','qttd'];
+  var html = '';
+  perms.forEach(function(p){
+    html += '<tr><td>'+esc(p.feat)+'</td>';
+    cols.forEach(function(c){
+      html += '<td class="'+(p[c]?'perm-y':'perm-n')+'">'+(p[c]?'✓':'—')+'</td>';
+    });
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
 }
 
 // ==================================================

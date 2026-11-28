@@ -158,6 +158,26 @@
 #page-bidv { overflow: hidden; }
 #page-bidv .page-hd { flex-shrink: 0; }
 #bidv-table-wrap { overflow: auto; flex: 1; }
+/* ── Quản trị hệ thống tabs ── */
+.adm-tabnav {
+  display: flex; gap: 2px; padding: 10px 16px 0;
+  border-bottom: 1px solid var(--bdr); background: var(--surf); flex-shrink: 0;
+}
+.adm-tab {
+  padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer;
+  border: none; background: none; color: var(--txt2); border-radius: 6px 6px 0 0;
+  border-bottom: 3px solid transparent; transition: all .15s;
+}
+.adm-tab:hover { background: var(--surf2); color: var(--txt); }
+.adm-tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+.adm-panel { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+.adm-panel.active { display: flex; flex-direction: column; }
+#page-usr { flex-direction: column; }
+.empty-state { text-align: center; padding: 48px 16px; color: var(--txt3); font-size: 14px; }
+.perm-y { color: #16a34a; font-size: 15px; font-weight: 700; }
+.perm-n { color: var(--txt3); font-size: 13px; }
+.perm-banner { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; border-radius: 6px; padding: 8px 12px; font-size: 13px; }
+#usr-table tbody tr:hover td { background: var(--surf2); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -253,7 +273,7 @@
           <div class="proj-nav-it" id="pni-bidv" onclick="showProjPage('bidv')">📁 Hồ sơ BIDV</div>
           <div class="proj-nav-sec hide" id="pns-sys">Hệ thống</div>
           <div class="proj-nav-it hide" id="pni-imp" onclick="showProjPage('imp')">📥 Nhập từ BIM</div>
-          <div class="proj-nav-it hide" id="pni-usr" onclick="showProjPage('usr')">👥 Người dùng</div>
+          <div class="proj-nav-it hide" id="pni-usr" onclick="showProjPage('usr')">⚙️ Quản trị hệ thống</div>
           <div class="proj-nav-sec hide" id="pns-cdt">CĐT</div>
           <div class="proj-nav-it hide" id="pni-cdt-up" onclick="showProjPage('cdt-up')">📤 Upload KH mới</div>
           <div class="proj-nav-it hide" id="pni-cdt-view" onclick="showProjPage('cdt-view')">📊 Tiến độ hồ sơ</div>
@@ -368,19 +388,119 @@
 
         <!-- USERS (Prima Bay) -->
         <div class="page" id="page-usr">
+          <!-- Topbar -->
           <div class="page-topbar">
-            <span class="page-topbar-title">Quản lý người dùng</span>
-            <div class="page-topbar-acts"><button class="btn btn-primary" onclick="openAddUser()">+ Thêm người dùng</button></div>
+            <span class="page-topbar-title">⚙️ Quản trị hệ thống</span>
+            <div class="page-topbar-acts" id="adm-acts"></div>
           </div>
-          <div class="page-scroll content" style="max-width:700px">
-            <div class="twrap">
-              <table>
-                <thead><tr><th>Họ tên</th><th>Đăng nhập</th><th>Vai trò</th><th>HS đang xử lý</th><th>Trạng thái</th><th></th></tr></thead>
-                <tbody id="p-usr-tbody"></tbody>
-              </table>
+
+          <!-- Tab nav -->
+          <div class="adm-tabnav">
+            <button class="adm-tab active" data-tab="adm-users"    onclick="admTab('adm-users')">👥 Người dùng</button>
+            <button class="adm-tab"        data-tab="adm-settings" onclick="admTab('adm-settings')">🏗️ Cài đặt dự án</button>
+            <button class="adm-tab"        data-tab="adm-perm"     onclick="admTab('adm-perm')">🔐 Phân quyền</button>
+          </div>
+
+          <!-- ── Tab 1: Người dùng ── -->
+          <div class="adm-panel active" id="adm-users">
+            <!-- Filter bar -->
+            <div class="fbar" style="padding:12px 16px 0">
+              <input id="usr-search" placeholder="🔍 Tìm tên, login, mã CB..." oninput="renderUsrTable()">
+              <select id="usr-role-filter" onchange="renderUsrTable()">
+                <option value="">Tất cả vai trò</option>
+                <option value="admin">Admin</option>
+                <option value="ql">CB Quản lý</option>
+                <option value="cb">Cán bộ BIDV</option>
+                <option value="viewer">Lãnh đạo</option>
+                <option value="qttd">QTTD</option>
+                <option value="cdt">CĐT (BIM)</option>
+              </select>
+              <select id="usr-status-filter" onchange="renderUsrTable()">
+                <option value="">Tất cả trạng thái</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Tạm ngưng</option>
+              </select>
+              <button class="btn btn-primary" onclick="openAddUser()" style="margin-left:auto">+ Thêm người dùng</button>
+            </div>
+            <!-- Table -->
+            <div class="page-scroll" style="padding:12px 16px">
+              <div class="twrap">
+                <table id="usr-table">
+                  <thead><tr>
+                    <th>Họ và tên / Chức vụ</th>
+                    <th>Đăng nhập / Email</th>
+                    <th>Mã CB</th>
+                    <th>Phòng / Ban</th>
+                    <th>Vai trò</th>
+                    <th style="text-align:center">HS xử lý</th>
+                    <th>Trạng thái</th>
+                    <th style="width:150px"></th>
+                  </tr></thead>
+                  <tbody id="p-usr-tbody"></tbody>
+                </table>
+              </div>
+              <div id="usr-empty" class="empty-state" style="display:none">
+                <div style="font-size:36px;margin-bottom:8px">👥</div>
+                <div>Không tìm thấy người dùng nào</div>
+              </div>
             </div>
           </div>
-        </div>
+
+          <!-- ── Tab 2: Cài đặt dự án ── -->
+          <div class="adm-panel" id="adm-settings">
+            <div class="page-scroll" style="padding:16px">
+              <div style="max-width:600px;display:flex;flex-direction:column;gap:16px">
+
+                <div class="panel">
+                  <div class="panel-title">Thông tin dự án</div>
+                  <div class="fgrid" style="gap:12px">
+                    <div class="fg ffull"><label>Tên dự án</label><input id="cfg-tenDA" value="Prima Bay - Hạ Long"></div>
+                    <div class="fg ffull"><label>Chủ đầu tư</label><input id="cfg-cdt" value="BIM Group"></div>
+                    <div class="fg ffull"><label>Chi nhánh phụ trách</label><input id="cfg-cn" value="BIDV Chi nhánh Tràng Tiền – Hà Nội"></div>
+                    <div class="fg ffull"><label>Phụ trách dự án</label><input id="cfg-ptda" value="Nguyễn Việt Anh"></div>
+                  </div>
+                </div>
+
+                <div class="panel">
+                  <div class="panel-title">Thông số vay mặc định</div>
+                  <div class="fgrid" style="gap:12px">
+                    <div class="fg"><label>Chính sách vay</label><input id="cfg-csv" value="20260617_Prima_vay"></div>
+                    <div class="fg"><label>Tỷ lệ vay (%)</label><input id="cfg-tlv" value="70" type="number" min="0" max="100"></div>
+                    <div class="fg ffull"><label>Hình thức vay mặc định</label><input id="cfg-htv" value="30 tháng"></div>
+                    <div class="fg ffull"><label>Hạn giải ngân</label><input id="cfg-hgn" value="ngay ký HDMB + 45 ngày"></div>
+                    <div class="fg ffull"><label>Vùng mặc định</label><input id="cfg-vung" value="Hà Nội"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-primary" onclick="saveProjSettings()">💾 Lưu cài đặt</button>
+                  <span id="cfg-saved" style="display:none;align-self:center;font-size:13px;color:var(--green)">✅ Đã lưu</span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Tab 3: Phân quyền ── -->
+          <div class="adm-panel" id="adm-perm">
+            <div class="page-scroll" style="padding:16px">
+              <div style="max-width:900px">
+                <div style="font-size:13px;color:var(--txt3);margin-bottom:12px">Ma trận phân quyền theo vai trò trong hệ thống. Chỉnh sửa trong code (core.js → applyPerms).</div>
+                <div class="twrap">
+                  <table id="perm-table">
+                    <thead><tr>
+                      <th>Chức năng</th>
+                      <th>Admin</th><th>CB Quản lý</th><th>Cán bộ</th>
+                      <th>QTTD</th><th>CĐT / BIM</th><th>Lãnh đạo</th>
+                    </tr></thead>
+                    <tbody id="perm-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /page-usr -->
 
         <!-- CĐT UPLOAD (Prima Bay) -->
         <div class="page" id="page-cdt-up">
@@ -507,29 +627,38 @@
 
 <!-- MODAL: USER -->
 <div class="overlay" id="modal-usr">
-  <div class="modal sm">
+  <div class="modal" style="max-width:520px">
     <div class="mh"><h2 id="musr-title">Người dùng</h2><button class="btn btn-sm" onclick="closeUsrModal()">✕</button></div>
     <div class="mb">
       <div class="fgrid" style="gap:12px">
-        <div class="fg ffull"><label>Họ và tên</label><input id="u-name" placeholder="Nguyễn Văn A"></div>
-        <div class="fg"><label>Tên đăng nhập</label><input id="u-login" placeholder="vana"></div>
-        <div class="fg"><label>Mật khẩu</label><input id="u-pw" placeholder="bidv2025"></div>
-        <div class="fg ffull"><label>Vai trò</label>
+        <div class="fg ffull"><label>Họ và tên <span style="color:red">*</span></label><input id="u-name" placeholder="Nguyễn Văn A"></div>
+        <div class="fg"><label>Email / Tên đăng nhập <span style="color:red">*</span></label><input id="u-login" placeholder="vana@bidv.com.vn"></div>
+        <div class="fg"><label>Mật khẩu <span id="u-pw-hint" style="color:var(--txt3);font-weight:400;font-size:11px">(để trống = giữ nguyên)</span></label>
+          <input id="u-pw" placeholder="Mã CB hoặc mật khẩu riêng" autocomplete="new-password"></div>
+        <div class="fg"><label>Vai trò <span style="color:red">*</span></label>
           <select id="u-role">
             <option value="cb">Cán bộ BIDV</option>
             <option value="ql">CB Quản lý</option>
-            <option value="cdt">CĐT (BIM)</option>
             <option value="admin">Admin</option>
             <option value="viewer">Lãnh đạo / Kiểm tra</option>
             <option value="qttd">QTTD</option>
+            <option value="cdt">CĐT (BIM)</option>
           </select>
         </div>
+        <div class="fg"><label>Mã cán bộ</label><input id="u-maCB" placeholder="157345"></div>
+        <div class="fg ffull"><label>Phòng / Ban (PGD)</label><input id="u-pgd" placeholder="Phòng KHCN / PGD Hào Nam..."></div>
+        <div class="fg ffull"><label>Chức vụ</label><input id="u-cv" placeholder="Chuyên viên KHƯT cấp 3"></div>
+        <div class="fg"><label>Điện thoại</label><input id="u-phone" placeholder="0901234567" type="tel"></div>
+      </div>
+      <div id="usr-modal-err" class="perm-banner" style="display:none;margin-top:10px"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-danger" id="u-del-btn" onclick="delUsrCurrent()" style="display:none">🗑 Xoá</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeUsrModal()">Huỷ</button>
+        <button class="btn btn-primary" id="u-save-btn" onclick="saveUser()">💾 Lưu</button>
       </div>
     </div>
-    <div class="mf"><div></div><div style="display:flex;gap:8px">
-      <button class="btn" onclick="closeUsrModal()">Huỷ</button>
-      <button class="btn btn-primary" onclick="saveUser()">Lưu</button>
-    </div></div>
   </div>
 </div>
 
@@ -611,9 +740,9 @@
 <!-- ══════════════════════════════════════════════════
      JS MODULES
 ══════════════════════════════════════════════════ -->
-<script src="js/core.js?v=20261128j"></script>
-<script src="js/mod-loan.js?v=20261128j"></script>
-<script src="js/mod-primabay.js?v=20261128j"></script>
+<script src="js/core.js?v=20261128k"></script>
+<script src="js/mod-loan.js?v=20261128k"></script>
+<script src="js/mod-primabay.js?v=20261128k"></script>
 
 <script>
 // ── Module switcher ──────────────────────────────
@@ -642,7 +771,7 @@ function showProjPage(p) {
   if (p === 'bidv')     { renderBIDVTable(); }
   if (p === 'db')       { renderDB(); }
   if (p === 'hs')       { renderHSFilterCB(); renderHSTable(); }
-  if (p === 'usr')      { renderUsrTable(); }
+  if (p === 'usr')      { admTab('adm-users'); }
   if (p === 'imp')      { renderImpCBSel(); }
   if (p === 'cdt-view') { renderCDTDash(); }
 }
