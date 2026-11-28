@@ -311,8 +311,8 @@
           </div>
           <div class="page-scroll content">
             <div class="fbar">
-              <input id="p-s-q" placeholder="🔍  Tìm tên KH, SĐT, mã căn hộ..." oninput="pRenderHSTable()">
-              <select id="p-s-st" onchange="pRenderHSTable()">
+              <input id="p-s-q" placeholder="🔍  Tìm tên KH, SĐT, mã căn hộ..." oninput="renderHSTable()">
+              <select id="p-s-st" onchange="renderHSTable()">
                 <option value="">Tất cả trạng thái</option>
                 <option value="moi">Mới nhận</option>
                 <option value="dang">Đang xử lý</option>
@@ -321,7 +321,7 @@
                 <option value="xong">Hoàn thành</option>
                 <option value="tuchoi">Từ chối</option>
               </select>
-              <select id="p-s-cb" onchange="pRenderHSTable()" class="hide"></select>
+              <select id="p-s-cb" onchange="renderHSTable()" class="hide"></select>
               <span class="ml-auto text-sm" id="p-hs-count"></span>
             </div>
             <div class="twrap">
@@ -348,7 +348,7 @@
                 <div style="font-weight:600;margin-bottom:4px">Chọn file CSV</div>
                 <div class="text-sm">Hệ thống tự kiểm tra trùng lặp trước khi nhập</div>
               </div>
-              <input type="file" id="p-imp-file" accept=".csv" style="display:none" onchange="handleImpFile(event,'p')">
+              <input type="file" id="p-imp-file" accept=".csv" style="display:none" onchange="handleImpFile(event)">
               <div id="p-imp-preview" style="display:none">
                 <div style="font-size:13px;font-weight:500;margin-bottom:8px" id="p-imp-info"></div>
                 <div style="overflow-x:auto;max-height:160px;border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:12px">
@@ -357,8 +357,8 @@
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                   <span style="font-size:13px;font-weight:500">Phân công:</span>
                   <select id="p-imp-cb-sel" style="padding:7px 12px;border:1px solid var(--bdr);border-radius:var(--r);font-size:13px;font-family:inherit"></select>
-                  <button class="btn btn-primary" onclick="doImport('p')">Nhập và phân công</button>
-                  <button class="btn" onclick="cancelImp('p')">Huỷ</button>
+                  <button class="btn btn-primary" onclick="doImport()">Nhập và phân công</button>
+                  <button class="btn" onclick="cancelImp()">Huỷ</button>
                 </div>
               </div>
               <div class="info-banner" id="p-imp-result" style="display:none"></div>
@@ -393,7 +393,7 @@
                 <div style="font-weight:600;margin-bottom:4px">Chọn file CSV</div>
                 <div class="text-sm">Hệ thống kiểm tra trùng CCCD và Mã căn hộ trước khi gửi</div>
               </div>
-              <input type="file" id="p-cdt-file" accept=".csv" style="display:none" onchange="handleCDTFile(event,'p')">
+              <input type="file" id="p-cdt-file" accept=".csv" style="display:none" onchange="handleCDTFile(event)">
               <div id="p-cdt-preview" style="display:none">
                 <div style="font-size:13px;font-weight:500;margin-bottom:8px" id="p-cdt-info"></div>
                 <div class="lock-banner" id="p-cdt-warn" style="display:none"></div>
@@ -405,8 +405,8 @@
                   <input type="date" id="p-cdt-ngayGN" style="padding:7px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;font-family:inherit">
                 </div>
                 <div style="display:flex;gap:8px">
-                  <button class="btn btn-primary" onclick="doCDTSubmit('p')">Gửi lên BIDV</button>
-                  <button class="btn" onclick="cancelCDT('p')">Huỷ</button>
+                  <button class="btn btn-primary" onclick="doCDTSubmit()">Gửi lên BIDV</button>
+                  <button class="btn" onclick="cancelCDT()">Huỷ</button>
                 </div>
               </div>
               <div class="info-banner" id="p-cdt-result" style="display:none"></div>
@@ -611,9 +611,9 @@
 <!-- ══════════════════════════════════════════════════
      JS MODULES
 ══════════════════════════════════════════════════ -->
-<script src="js/core.js?v=20261128c"></script>
-<script src="js/mod-loan.js?v=20261128c"></script>
-<script src="js/mod-primabay.js?v=20261128c"></script>
+<script src="js/core.js?v=20261128d"></script>
+<script src="js/mod-loan.js?v=20261128d"></script>
+<script src="js/mod-primabay.js?v=20261128d"></script>
 
 <script>
 // ── Module switcher ──────────────────────────────

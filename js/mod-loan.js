@@ -22,7 +22,7 @@ function renderDB(){
   s += '<div class="stat-card pu"><div class="stat-lbl">Chờ ký</div><div class="stat-val">'+c.choky+'</div><div class="stat-sub">Đã hẹn lịch</div></div>';
   s += '<div class="stat-card gr"><div class="stat-lbl">Hoàn thành</div><div class="stat-val">'+c.xong+'</div><div class="stat-sub">Tháng này</div></div>';
   s += '<div class="stat-card rd"><div class="stat-lbl">Từ chối</div><div class="stat-val">'+c.tuchoi+'</div><div class="stat-sub">Tháng này</div></div>';
-  document.getElementById('p-db-stats').innerHTML = s;
+  var dbStats = document.getElementById('p-db-stats'); if(dbStats) dbStats.innerHTML = s;
 
   if(isQL()||isViewer()){
     var cbs = users.filter(function(u){ return u.active && (u.role==='cb'||u.role==='ql'); });
@@ -34,7 +34,7 @@ function renderDB(){
       html += '<span style="font-size:13px;color:var(--blue);font-weight:600">'+n+' HS</span></div>';
       html += '<div class="prog-wrap" style="margin-bottom:10px"><div class="prog-bar" style="width:'+Math.min(100,n*8)+'%"></div></div>';
     });
-    document.getElementById('p-cb-load-list').innerHTML = html || '<div class="text-sm">Chưa có cán bộ</div>';
+    var cbLoadEl = document.getElementById('p-cb-load-list'); if(cbLoadEl) cbLoadEl.innerHTML = html || '<div class="text-sm">Chưa có cán bộ</div>';
   }
 
   var logs = (isQL()||isViewer()) ? actLog : actLog.filter(function(a){return currentUser && a.who===currentUser.name;});
@@ -43,7 +43,7 @@ function renderDB(){
     aHtml += '<div class="tl-item"><div class="tl-dot '+(a.type||'')+'"></div>';
     aHtml += '<span class="tl-time">'+a.time+'</span><span>'+a.msg+'</span></div>';
   });
-  document.getElementById('p-act-list').innerHTML = aHtml || '<div class="text-sm" style="padding:8px 0">Chưa có hoạt động</div>';
+  var actEl = document.getElementById('p-act-list'); if(actEl) actEl.innerHTML = aHtml || '<div class="text-sm" style="padding:8px 0">Chưa có hoạt động</div>';
 
   var up = list.filter(function(h){ return h.ngayHen && h.status==='choky'; });
   var uHtml = '';
@@ -58,7 +58,7 @@ function renderDB(){
     });
     uHtml += '</table>';
   } else { uHtml = '<div class="text-sm" style="padding:8px 0">Không có hồ sơ nào.</div>'; }
-  document.getElementById('p-upcoming-list').innerHTML = uHtml;
+  var upEl = document.getElementById('p-upcoming-list'); if(upEl) upEl.innerHTML = uHtml;
 }
 
 // ==================================================
@@ -67,6 +67,7 @@ function renderDB(){
 function renderHSFilterCB(){
   if(!isQL() && !isViewer()) return;
   var sel = document.getElementById('p-s-cb');
+  if(!sel) return;
   var html = '<option value="">Tất cả cán bộ</option>';
   users.filter(function(u){ return u.active && (u.role==='cb'||u.role==='ql'); }).forEach(function(u){
     html += '<option value="'+u.id+'">'+u.name+'</option>';
@@ -110,7 +111,7 @@ function renderHSTable(){
       return ta - tb; // cũ nhất trên
     }
   });
-  document.getElementById('p-hs-count').textContent = f.length + ' / ' + src.length + ' hồ sơ';
+  var hsCntEl = document.getElementById('p-hs-count'); if(hsCntEl) hsCntEl.textContent = f.length + ' / ' + src.length + ' hồ sơ';
   var html = '';
   if(!f.length){
     html = '<tr><td colspan="10"><div class="empty-st">📭<br>Không có hồ sơ phù hợp</div></td></tr>';
@@ -149,7 +150,7 @@ function renderHSTable(){
       html += '</tr>';
     });
   }
-  document.getElementById('p-hs-tbody').innerHTML = html;
+  var hsTbody = document.getElementById('p-hs-tbody'); if(hsTbody) hsTbody.innerHTML = html;
 }
 
 // ==================================================
@@ -1694,7 +1695,7 @@ function renderCDTDash(){
   html+='<div class="stat-card gr"><div class="stat-lbl">Được vay</div><div class="stat-val">'+approved+'</div></div>';
   html+='<div class="stat-card rd"><div class="stat-lbl">Hoàn thành</div><div class="stat-val">'+done+'</div></div>';
   html+='<div class="stat-card pu"><div class="stat-lbl">Tỷ lệ duyệt</div><div class="stat-val">'+pct+'%</div></div>';
-  document.getElementById('p-cdt-stats').innerHTML=html;
+  var cdtStatsEl = document.getElementById('p-cdt-stats'); if(cdtStatsEl) cdtStatsEl.innerHTML=html;
   renderCDTTable();
 }
 function renderCDTTable(){
@@ -1729,7 +1730,7 @@ function renderCDTTable(){
       html+='</tr>';
     });
   }
-  document.getElementById('p-cdt-tbody').innerHTML=html;
+  var cdtTbody = document.getElementById('p-cdt-tbody'); if(cdtTbody) cdtTbody.innerHTML=html;
 }
 
 // ==================================================
@@ -1751,7 +1752,7 @@ function renderUsrTable(){
     if(u.id!=='u1') html += '<button class="btn btn-sm btn-danger" data-uid="'+u.id+'" onclick="delUsr(this.dataset.uid)">X</button>';
     html += '</td></tr>';
   });
-  document.getElementById('p-usr-tbody').innerHTML=html;
+  var usrTbody = document.getElementById('p-usr-tbody'); if(usrTbody) usrTbody.innerHTML=html;
 }
 
 function openAddUser(){ editUserId=null; document.getElementById('musr-title').textContent='Thêm người dùng'; ['u-name','u-login','u-pw'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('u-role').value='cb'; document.getElementById('modal-usr').classList.add('open'); }
