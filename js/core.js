@@ -566,6 +566,8 @@ async function reloadFromDB() {
     persist();
     renderHSTable();
     renderDB();
+    if (typeof pRenderDB === 'function') pRenderDB();
+    if (typeof pRenderHSTable === 'function') pRenderHSTable();
     if (document.getElementById('page-bidv') && document.getElementById('page-bidv').classList.contains('active')) renderBIDVTable();
     showNotif('✅ Đã tải lại dữ liệu mới nhất từ DB');
     if (currentHSId) openHS(currentHSId); // refresh popup nếu đang mở
@@ -1015,7 +1017,13 @@ async function doLogin(){
     document.getElementById('login-wrap').style.display='none';
     document.getElementById('app-wrap').classList.add('show');
     applyPerms();
-    showPage(isCDT()?'cdt-view':'db');
+    // CĐT: vào module loan; các role khác: vào Prima Bay dashboard
+    if (isCDT()) {
+      if (typeof switchModule === 'function') switchModule('loan');
+      showPage('cdt-view');
+    } else {
+      if (typeof showProjPage === 'function') showProjPage('db');
+    }
     initIdleWatcher();
 
   } catch(err) {
@@ -1266,6 +1274,9 @@ function applyPerms(){
   tog('ns-sys',       isAdmin());
   tog('ni-usr',       isAdmin());
   // Project sidebar items
+  tog('p-btn-new-hs', isQL() && !isCDT() && !isViewer());
+  tog('p-s-cb',       isQL() || isViewer());
+  tog('p-panel-cbload', isQL() || isViewer());
   tog('pns-sys',      isAdmin() || isQL());
   tog('pni-imp',      isQL());
   tog('pni-usr',      isAdmin());

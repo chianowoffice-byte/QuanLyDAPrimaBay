@@ -1,24 +1,9 @@
 // ==================================================
 // NAV
 // ==================================================
-// Các page thuộc module Hồ sơ Vay (loan)
-var LOAN_PAGES = ['db','hs','imp','usr','cdt-up','cdt-view'];
-
+// showPage: delegate sang showProjPage (pages nằm trong mod-project)
 function showPage(p){
-  // Chỉ toggle page trong module loan (không ảnh hưởng page-bidv của module project)
-  document.querySelectorAll('#mod-loan .page').forEach(function(x){ x.classList.remove('active'); });
-  document.querySelectorAll('.ls-item').forEach(function(x){ x.classList.remove('active'); });
-  var pg = document.getElementById('page-'+p);
-  if(pg) pg.classList.add('active');
-  var ni = document.getElementById('ni-'+p);
-  if(ni) ni.classList.add('active');
-  if(p==='db')       renderDB();
-  if(p==='hs')     { renderHSFilterCB(); renderHSTable(); }
-  if(p==='usr')      renderUsrTable();
-  if(p==='imp')      renderImpCBSel();
-  if(p==='cdt-view') renderCDTDash();
-  // Sync proj sidebar user info if function exists
-  if(typeof syncProjSidebar === 'function') syncProjSidebar();
+  if(typeof showProjPage === 'function') showProjPage(p);
 }
 
 // ==================================================
@@ -36,7 +21,7 @@ function renderDB(){
   s += '<div class="stat-card pu"><div class="stat-lbl">Chờ ký</div><div class="stat-val">'+c.choky+'</div><div class="stat-sub">Đã hẹn lịch</div></div>';
   s += '<div class="stat-card gr"><div class="stat-lbl">Hoàn thành</div><div class="stat-val">'+c.xong+'</div><div class="stat-sub">Tháng này</div></div>';
   s += '<div class="stat-card rd"><div class="stat-lbl">Từ chối</div><div class="stat-val">'+c.tuchoi+'</div><div class="stat-sub">Tháng này</div></div>';
-  document.getElementById('db-stats').innerHTML = s;
+  document.getElementById('p-db-stats').innerHTML = s;
 
   if(isQL()||isViewer()){
     var cbs = users.filter(function(u){ return u.active && (u.role==='cb'||u.role==='ql'); });
@@ -48,7 +33,7 @@ function renderDB(){
       html += '<span style="font-size:13px;color:var(--blue);font-weight:600">'+n+' HS</span></div>';
       html += '<div class="prog-wrap" style="margin-bottom:10px"><div class="prog-bar" style="width:'+Math.min(100,n*8)+'%"></div></div>';
     });
-    document.getElementById('cb-load-list').innerHTML = html || '<div class="text-sm">Chưa có cán bộ</div>';
+    document.getElementById('p-cb-load-list').innerHTML = html || '<div class="text-sm">Chưa có cán bộ</div>';
   }
 
   var logs = (isQL()||isViewer()) ? actLog : actLog.filter(function(a){return a.who===currentUser.name;});
@@ -57,7 +42,7 @@ function renderDB(){
     aHtml += '<div class="tl-item"><div class="tl-dot '+(a.type||'')+'"></div>';
     aHtml += '<span class="tl-time">'+a.time+'</span><span>'+a.msg+'</span></div>';
   });
-  document.getElementById('act-list').innerHTML = aHtml || '<div class="text-sm" style="padding:8px 0">Chưa có hoạt động</div>';
+  document.getElementById('p-act-list').innerHTML = aHtml || '<div class="text-sm" style="padding:8px 0">Chưa có hoạt động</div>';
 
   var up = list.filter(function(h){ return h.ngayHen && h.status==='choky'; });
   var uHtml = '';
@@ -72,7 +57,7 @@ function renderDB(){
     });
     uHtml += '</table>';
   } else { uHtml = '<div class="text-sm" style="padding:8px 0">Không có hồ sơ nào.</div>'; }
-  document.getElementById('upcoming-list').innerHTML = uHtml;
+  document.getElementById('p-upcoming-list').innerHTML = uHtml;
 }
 
 // ==================================================
@@ -80,7 +65,7 @@ function renderDB(){
 // ==================================================
 function renderHSFilterCB(){
   if(!isQL() && !isViewer()) return;
-  var sel = document.getElementById('s-cb');
+  var sel = document.getElementById('p-s-cb');
   var html = '<option value="">Tất cả cán bộ</option>';
   users.filter(function(u){ return u.active && (u.role==='cb'||u.role==='ql'); }).forEach(function(u){
     html += '<option value="'+u.id+'">'+u.name+'</option>';
@@ -103,9 +88,9 @@ function alertBadge(h) {
 }
 
 function renderHSTable(){
-  var q   = (document.getElementById('s-q')||{value:''}).value.toLowerCase();
-  var st  = (document.getElementById('s-st')||{value:''}).value;
-  var cb  = (document.getElementById('s-cb')||{value:''}).value;
+  var q   = (document.getElementById('p-s-q')||{value:''}).value.toLowerCase();
+  var st  = (document.getElementById('p-s-st')||{value:''}).value;
+  var cb  = (document.getElementById('p-s-cb')||{value:''}).value;
   var src = (isQL()||isCDT()||isViewer()) ? hsList : hsList.filter(function(h){ return h.canBoId===currentUser.id; });
   var f   = src.filter(function(h){
     var matchQ  = !q || (h.tenKH||'').toLowerCase().indexOf(q)>=0 || (h.sdt||'').indexOf(q)>=0 || (h.maCanHo||'').toLowerCase().indexOf(q)>=0;
@@ -124,7 +109,7 @@ function renderHSTable(){
       return ta - tb; // cũ nhất trên
     }
   });
-  document.getElementById('hs-count').textContent = f.length + ' / ' + src.length + ' hồ sơ';
+  document.getElementById('p-hs-count').textContent = f.length + ' / ' + src.length + ' hồ sơ';
   var html = '';
   if(!f.length){
     html = '<tr><td colspan="10"><div class="empty-st">📭<br>Không có hồ sơ phù hợp</div></td></tr>';
@@ -163,7 +148,7 @@ function renderHSTable(){
       html += '</tr>';
     });
   }
-  document.getElementById('hs-tbody').innerHTML = html;
+  document.getElementById('p-hs-tbody').innerHTML = html;
 }
 
 // ==================================================
@@ -1590,7 +1575,7 @@ function exportHS(){
 // IMPORT
 // ==================================================
 function renderImpCBSel(){
-  var sel=document.getElementById('imp-cb-sel'); if(!sel) return;
+  var sel=document.getElementById('p-imp-cb-sel'); if(!sel) return;
   var html='<option value="auto">Tự động (chia đều)</option>';
   users.filter(function(u){return u.active&&(u.role==='cb'||u.role==='ql');}).forEach(function(u){
     html+='<option value="'+u.id+'">'+u.name+'</option>';
@@ -1604,19 +1589,19 @@ function handleImpFile(e){
     var lines=ev.target.result.split('\n').filter(function(l){return l.trim();});
     impRows=lines.slice(1).map(function(l){return l.split(',').map(function(c){return c.trim().replace(/^"|"$/g,'');});});
     var headers=lines[0].split(',').map(function(c){return c.trim().replace(/^"|"$/g,'');});
-    document.getElementById('imp-info').textContent='Doc duoc '+impRows.length+' KH tu "'+file.name+'"';
+    document.getElementById('p-imp-info').textContent='Doc duoc '+impRows.length+' KH tu "'+file.name+'"';
     var thead=document.querySelector('#imp-tbl thead');
     var tbody=document.querySelector('#imp-tbl tbody');
     thead.innerHTML='<tr>'+headers.map(function(h){return '<th>'+h+'</th>';}).join('')+'</tr>';
     tbody.innerHTML=impRows.slice(0,4).map(function(r){return '<tr>'+r.map(function(c){return '<td>'+c+'</td>';}).join('')+'</tr>';}).join('')+
       (impRows.length>4?'<tr><td colspan="'+headers.length+'" style="text-align:center;color:var(--txt3)">... +'+( impRows.length-4)+' dong</td></tr>':'');
-    document.getElementById('imp-preview').style.display='block';
-    document.getElementById('imp-result').style.display='none';
+    document.getElementById('p-imp-preview').style.display='block';
+    document.getElementById('p-imp-result').style.display='none';
   };
   reader.readAsText(file,'UTF-8');
 }
 function doImport(){
-  var cbSel=document.getElementById('imp-cb-sel')?document.getElementById('imp-cb-sel').value:'auto';
+  var cbSel=document.getElementById('p-imp-cb-sel')?document.getElementById('p-imp-cb-sel').value:'auto';
   var cbs=users.filter(function(u){return u.active&&(u.role==='cb'||u.role==='ql');});
   var count=0, dupes=[];
   impRows.forEach(function(row,i){
@@ -1636,12 +1621,12 @@ function doImport(){
   persist();
   var msg='Nhap thanh cong '+count+' ho so.';
   if(dupes.length) msg+=' Bo qua: '+dupes.slice(0,3).join(', ')+(dupes.length>3?'...':'');
-  document.getElementById('imp-result').textContent=msg;
-  document.getElementById('imp-result').style.display='block';
-  document.getElementById('imp-preview').style.display='none';
+  document.getElementById('p-imp-result').textContent=msg;
+  document.getElementById('p-imp-result').style.display='block';
+  document.getElementById('p-imp-preview').style.display='none';
   impRows=[];
 }
-function cancelImp(){ document.getElementById('imp-preview').style.display='none'; document.getElementById('imp-file').value=''; impRows=[]; }
+function cancelImp(){ document.getElementById('p-imp-preview').style.display='none'; document.getElementById('p-imp-file').value=''; impRows=[]; }
 
 // ==================================================
 // CĐT
@@ -1662,15 +1647,15 @@ function handleCDTFile(e){
       if(mach) seenM[mach]=true;
       if(mach&&hsList.find(function(h){return h.maCanHo===mach;})) warns.push('Dong '+(i+2)+': Ma can ho "'+mach+'" da ton tai trong he thong');
     });
-    document.getElementById('cdt-info').textContent=cdtRows.length+' khach hang tu "'+file.name+'"';
-    var wEl=document.getElementById('cdt-warn');
+    document.getElementById('p-cdt-info').textContent=cdtRows.length+' khach hang tu "'+file.name+'"';
+    var wEl=document.getElementById('p-cdt-warn');
     if(warns.length){ wEl.innerHTML='⚠️ Cảnh báo:<br>'+warns.slice(0,5).map(function(w){return '• '+w;}).join('<br>'); wEl.style.display='flex'; }
     else wEl.style.display='none';
     var thead=document.querySelector('#cdt-tbl thead');
     var tbody=document.querySelector('#cdt-tbl tbody');
     thead.innerHTML='<tr>'+headers.map(function(h){return '<th>'+h+'</th>';}).join('')+'</tr>';
     tbody.innerHTML=cdtRows.slice(0,4).map(function(r){return '<tr>'+r.map(function(c){return '<td>'+c+'</td>';}).join('')+'</tr>';}).join('');
-    document.getElementById('cdt-preview').style.display='block';
+    document.getElementById('p-cdt-preview').style.display='block';
   };
   reader.readAsText(file,'UTF-8');
 }
@@ -1683,18 +1668,18 @@ function doCDTSubmit(){
       tenKH:row[0]||'',sdt:row[1]||'',cccd:row[2]||'',
       maCanHo:row[3]||'',tang:row[4]||'',dienTich:row[5]||'',
       giaHDMB:row[6]||'',soHDMB:row[7]||'',daDongCDT:row[8]||'',
-      ngayGiaiNgan:(document.getElementById('cdt-ngayGN')?document.getElementById('cdt-ngayGN').value:''),
+      ngayGiaiNgan:(document.getElementById('p-cdt-ngayGN')?document.getElementById('p-cdt-ngayGN').value:''),
       canBoId:'',ck:{}});
     count++;
   });
   addLog('CDT gui '+count+' KH moi len he thong', 'green');
   persist();
-  document.getElementById('cdt-result').textContent='Da gui '+count+' khach hang len BIDV. Vui long cho phan cong.';
-  document.getElementById('cdt-result').style.display='block';
-  document.getElementById('cdt-preview').style.display='none';
+  document.getElementById('p-cdt-result').textContent='Da gui '+count+' khach hang len BIDV. Vui long cho phan cong.';
+  document.getElementById('p-cdt-result').style.display='block';
+  document.getElementById('p-cdt-preview').style.display='none';
   cdtRows=[];
 }
-function cancelCDT(){ document.getElementById('cdt-preview').style.display='none'; document.getElementById('cdt-file').value=''; cdtRows=[]; }
+function cancelCDT(){ document.getElementById('p-cdt-preview').style.display='none'; document.getElementById('p-cdt-file').value=''; cdtRows=[]; }
 
 function renderCDTDash(){
   var total=hsList.length;
@@ -1708,12 +1693,12 @@ function renderCDTDash(){
   html+='<div class="stat-card gr"><div class="stat-lbl">Được vay</div><div class="stat-val">'+approved+'</div></div>';
   html+='<div class="stat-card rd"><div class="stat-lbl">Hoàn thành</div><div class="stat-val">'+done+'</div></div>';
   html+='<div class="stat-card pu"><div class="stat-lbl">Tỷ lệ duyệt</div><div class="stat-val">'+pct+'%</div></div>';
-  document.getElementById('cdt-stats').innerHTML=html;
+  document.getElementById('p-cdt-stats').innerHTML=html;
   renderCDTTable();
 }
 function renderCDTTable(){
-  var q=(document.getElementById('cdt-q')||{value:''}).value.toLowerCase();
-  var st=(document.getElementById('cdt-st')||{value:''}).value;
+  var q=(document.getElementById('p-cdt-q')||{value:''}).value.toLowerCase();
+  var st=(document.getElementById('p-cdt-st')||{value:''}).value;
   var f=hsList.filter(function(h){
     var mQ=!q||(h.tenKH||'').toLowerCase().indexOf(q)>=0||(h.maCanHo||'').toLowerCase().indexOf(q)>=0;
     var mS=!st||(st==='full'&&ckProgress(h).pct===100)||(st==='approved'&&h.outcome==='duoc_vay')||(st==='rejected'&&h.outcome&&h.outcome!=='duoc_vay');
@@ -1743,7 +1728,7 @@ function renderCDTTable(){
       html+='</tr>';
     });
   }
-  document.getElementById('cdt-tbody').innerHTML=html;
+  document.getElementById('p-cdt-tbody').innerHTML=html;
 }
 
 // ==================================================
@@ -1765,7 +1750,7 @@ function renderUsrTable(){
     if(u.id!=='u1') html += '<button class="btn btn-sm btn-danger" data-uid="'+u.id+'" onclick="delUsr(this.dataset.uid)">X</button>';
     html += '</td></tr>';
   });
-  document.getElementById('usr-tbody').innerHTML=html;
+  document.getElementById('p-usr-tbody').innerHTML=html;
 }
 
 function openAddUser(){ editUserId=null; document.getElementById('musr-title').textContent='Thêm người dùng'; ['u-name','u-login','u-pw'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('u-role').value='cb'; document.getElementById('modal-usr').classList.add('open'); }
@@ -2010,7 +1995,7 @@ function renderAlertPanels(list){
     html += '<span style="font-weight:700;font-size:13px">\uD83D\uDFE1 S\u1eafp \u0111\u1ebfn h\u1ea1n ('+warnL.length+' h\u1ed3 s\u01a1)</span></div>';
     html += makeRows(warnL)+'</div>';
   }
-  var el = document.getElementById('db-alerts');
+  var el = document.getElementById('p-db-alerts');
   if(el) el.innerHTML = html;
 }
 
