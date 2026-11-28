@@ -1017,8 +1017,7 @@ async function doLogin(){
     applyPerms();
     // CĐT: vào module loan; các role khác: vào Prima Bay dashboard
     if (isCDT()) {
-      if (typeof switchModule === 'function') switchModule('loan');
-      showPage('cdt-view');
+      if (typeof showProjPage === 'function') showProjPage('cdt-view');
     } else {
       if (typeof showProjPage === 'function') showProjPage('db');
     }
@@ -1281,9 +1280,8 @@ function applyPerms(){
   tog('pns-cdt',      isCDT());
   tog('pni-cdt-up',   isCDT());
   tog('pni-cdt-view', isCDT());
-  // Module tabs: CĐT chỉ thấy tab loan
+  // Module tabs: CĐT ẩn tab project button nhưng vẫn ở mod-project (trang cdt-view ở đó)
   tog('mtab-project', !isCDT());
-  if(isCDT() && typeof switchModule==='function') switchModule('loan');
   // Topbar buttons
   tog('btn-settings',   isAdmin());
   tog('btn-new-hs',   isQL() && !isCDT() && !isViewer());
