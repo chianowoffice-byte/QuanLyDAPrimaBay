@@ -10,6 +10,7 @@ function showPage(p){
 // DASHBOARD
 // ==================================================
 function renderDB(){
+  if(!window.currentUser) return;
   var list = myHS();
   renderAlertPanels(list);
   var c = {moi:0,dang:0,cho:0,choky:0,xong:0,tuchoi:0};
@@ -36,7 +37,7 @@ function renderDB(){
     document.getElementById('p-cb-load-list').innerHTML = html || '<div class="text-sm">Chưa có cán bộ</div>';
   }
 
-  var logs = (isQL()||isViewer()) ? actLog : actLog.filter(function(a){return a.who===currentUser.name;});
+  var logs = (isQL()||isViewer()) ? actLog : actLog.filter(function(a){return currentUser && a.who===currentUser.name;});
   var aHtml = '';
   logs.slice(0,6).forEach(function(a){
     aHtml += '<div class="tl-item"><div class="tl-dot '+(a.type||'')+'"></div>';

@@ -611,9 +611,9 @@
 <!-- ══════════════════════════════════════════════════
      JS MODULES
 ══════════════════════════════════════════════════ -->
-<script src="js/core.js?v=20261128b"></script>
-<script src="js/mod-loan.js?v=20261128b"></script>
-<script src="js/mod-primabay.js?v=20261128b"></script>
+<script src="js/core.js?v=20261128c"></script>
+<script src="js/mod-loan.js?v=20261128c"></script>
+<script src="js/mod-primabay.js?v=20261128c"></script>
 
 <script>
 // ── Module switcher ──────────────────────────────
@@ -628,7 +628,7 @@ function switchModule(mod) {
   // Topbar button
   var btnTop = document.getElementById('btn-new-hs-top');
   if (btnTop) btnTop.classList.toggle('hide', mod !== 'loan' || !(window.currentUser && (window.currentUser.role === 'admin' || window.currentUser.role === 'ql' || window.currentUser.role === 'cb')));
-  if (mod === 'project') renderBIDVTable();
+  if (mod === 'project' && window.currentUser) renderBIDVTable();
 }
 
 // ── Project page switcher ─────────────────────────

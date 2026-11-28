@@ -480,6 +480,7 @@ function getWhoName(id){
 }
 
 function renderBIDVTable(){
+  if(!window.currentUser) return;
   var wrap=document.getElementById('bidv-table-wrap');
   if(!wrap)return;
   var stFilter=(document.getElementById('bidv-filter-st')||{}).value||'';
@@ -487,7 +488,7 @@ function renderBIDVTable(){
   var list=(hsList||[]).filter(function(h){
     if(!h)return false;
     if(deriveHSStatus(h)==='tuchoi') return false; // Ẩn hồ sơ từ chối
-    if(!isQL()&&!isQTTD()&&!isAdmin()&&!isCDT()){if(h.canBoId!==currentUser.id)return false;}
+    if(!isQL()&&!isQTTD()&&!isAdmin()&&!isCDT()){if(!currentUser||h.canBoId!==currentUser.id)return false;}
     if(stFilter){
       var stMap={moi:'no_answer',dang:'contacted',cho:'docs_complete',choky:'approved_loan',chogn:'appointment',xong:'da_gn',tuchoi:'rejected_kh'};
       var st=deriveHSStatus(h);
