@@ -2497,12 +2497,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
     if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
     persist();
-    // Re-render page hiện tại với data mới
-    showPage(isCDT() ? 'cdt-view' : 'db');
+    // Re-render trực tiếp các hàm cần data mới
+    if (isCDT()) {
+      if (typeof renderCDTDash === 'function') renderCDTDash();
+    } else {
+      if (typeof renderDB === 'function') renderDB();
+    }
     showNotif('✅ Đã khôi phục phiên đăng nhập');
   } catch(e) {
     console.error('Restore session – DB refresh failed:', e);
-    // Vẫn ở lại app với data localStorage, không xóa session
   }
 });
 
