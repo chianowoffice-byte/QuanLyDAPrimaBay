@@ -1012,8 +1012,6 @@ async function doLogin(){
 
     localStorage.removeItem('pb5_log');  // Xoá log cũ
     localStorage.setItem('pb5_login_at', new Date().toISOString());
-    localStorage.removeItem('pb5_hs');   // Xoá HS cache cũ, load lại từ DB
-    localStorage.removeItem('pb5_users');// Xoá users cache cũ
     document.getElementById('login-wrap').style.display='none';
     document.getElementById('app-wrap').classList.add('show');
     applyPerms();

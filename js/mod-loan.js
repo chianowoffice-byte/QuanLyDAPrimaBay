@@ -2484,28 +2484,25 @@ function unlockHS() {
 document.addEventListener('DOMContentLoaded', async function() {
   if (!restoreSession()) return; // Không có session hoặc đã hết hạn → ở lại màn hình login
 
-  // Có session hợp lệ → load dữ liệu và vào app
-  try {
-    var btn = document.getElementById('login-btn');
-    if (btn) { btn.textContent = '⏳ Đang khôi phục...'; btn.disabled = true; }
+  // Hiển thị app ngay với data từ localStorage (nếu có)
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('app-wrap').classList.add('show');
+  applyPerms();
+  showPage(isCDT() ? 'cdt-view' : 'db');
+  initIdleWatcher();
 
+  // Fetch DB nền để refresh data mới nhất
+  try {
     var [dbUsers, dbHS] = await Promise.all([sbLoadUsers(), sbLoadHS()]);
     if (dbUsers && dbUsers.length) users  = dbUsers.map(mapDbUser);
     if (dbHS    && dbHS.length)    hsList = dbHS.map(mapDbHS);
     persist();
-
-    // Hiển thị app
-    document.getElementById('login-wrap').style.display = 'none';
-    document.getElementById('app-wrap').classList.add('show');
-    applyPerms();
+    // Re-render page hiện tại với data mới
     showPage(isCDT() ? 'cdt-view' : 'db');
-    initIdleWatcher();
     showNotif('✅ Đã khôi phục phiên đăng nhập');
   } catch(e) {
-    console.error('Restore session failed:', e);
-    // Nếu load DB thất bại → ở lại login
-    currentUser = null;
-    localStorage.removeItem('pb5_session');
+    console.error('Restore session – DB refresh failed:', e);
+    // Vẫn ở lại app với data localStorage, không xóa session
   }
 });
 
