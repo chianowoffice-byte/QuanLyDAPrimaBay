@@ -1271,8 +1271,9 @@ function applyPerms(){
   tog('pni-cdt-view', isCDT());
   tog('pns-sys',      isAdmin());
   tog('pni-usr',      isAdmin());
-  // Module tabs: CĐT chỉ thấy tab loan; không ẩn tab project với QL/admin
+  // Module tabs: CĐT chỉ thấy tab loan
   tog('mtab-project', !isCDT());
+  if(isCDT() && typeof switchModule==='function') switchModule('loan');
   // Topbar buttons
   tog('btn-settings',   isAdmin());
   tog('btn-new-hs',   isQL() && !isCDT() && !isViewer());

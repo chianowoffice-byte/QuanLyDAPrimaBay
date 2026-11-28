@@ -210,11 +210,11 @@
 
   <!-- MODULE TABS -->
   <div class="module-tabs">
-    <div class="module-tab active" id="mtab-loan" onclick="switchModule('loan')">
-      🏦 Hồ sơ Vay <span class="mtab-badge" id="mtab-loan-badge">—</span>
-    </div>
-    <div class="module-tab" id="mtab-project" onclick="switchModule('project')">
+    <div class="module-tab active" id="mtab-project" onclick="switchModule('project')">
       🏗️ Dự án Prima Bay
+    </div>
+    <div class="module-tab" id="mtab-loan" onclick="switchModule('loan')">
+      🏦 Hồ sơ Vay <span class="mtab-badge" id="mtab-loan-badge">—</span>
     </div>
     <div class="module-tab-sep"></div>
   </div>
@@ -225,7 +225,7 @@
     <!-- ══════════════════════════════════════════
          MODULE 1: HỒ SƠ VAY
     ══════════════════════════════════════════ -->
-    <div class="mod-panel active" id="mod-loan">
+    <div class="mod-panel" id="mod-loan">
 
       <!-- Sidebar Hồ sơ Vay (light) -->
       <div class="loan-sidebar">
@@ -427,7 +427,7 @@
     <!-- ══════════════════════════════════════════
          MODULE 2: DỰ ÁN PRIMA BAY
     ══════════════════════════════════════════ -->
-    <div class="mod-panel" id="mod-project">
+    <div class="mod-panel active" id="mod-project">
 
       <!-- Sidebar dự án (tối, giống thiết kế cũ) -->
       <div class="proj-sidebar">
@@ -639,7 +639,7 @@
 
 <script>
 // ── Module switcher ──────────────────────────────
-var _currentModule = 'loan';
+var _currentModule = 'project';
 
 function switchModule(mod) {
   _currentModule = mod;
