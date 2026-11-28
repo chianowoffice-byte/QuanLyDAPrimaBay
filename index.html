@@ -611,9 +611,9 @@
 <!-- ══════════════════════════════════════════════════
      JS MODULES
 ══════════════════════════════════════════════════ -->
-<script src="js/core.js?v=20261128g"></script>
-<script src="js/mod-loan.js?v=20261128g"></script>
-<script src="js/mod-primabay.js?v=20261128g"></script>
+<script src="js/core.js?v=20261128h"></script>
+<script src="js/mod-loan.js?v=20261128h"></script>
+<script src="js/mod-primabay.js?v=20261128h"></script>
 
 <script>
 // ── Module switcher ──────────────────────────────
@@ -647,12 +647,13 @@ function showProjPage(p) {
   if (p === 'cdt-view') { renderCDTDash(); }
 }
 
-// ── Patch showPage để sync user info trên proj sidebar ──
-var _origShowPage = typeof showPage === 'function' ? showPage : null;
-function showPage(p) {
-  if (_origShowPage) _origShowPage(p);
+// ── showPage: gọi mod-loan showPage rồi sync sidebar ──
+// Dùng biến tên khác để tránh đệ quy do function hoisting
+var _modLoanShowPage = typeof showPage === 'function' ? showPage : null;
+window.showPage = function(p) {
+  if (_modLoanShowPage) _modLoanShowPage(p);
   syncProjSidebar();
-}
+};
 
 function syncProjSidebar() {
   var u = window.currentUser;
