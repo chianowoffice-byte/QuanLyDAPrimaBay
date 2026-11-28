@@ -93,6 +93,7 @@ function renderHSTable(){
   var q   = (document.getElementById('p-s-q')||{value:''}).value.toLowerCase();
   var st  = (document.getElementById('p-s-st')||{value:''}).value;
   var cb  = (document.getElementById('p-s-cb')||{value:''}).value;
+  if(!window.currentUser) return;
   var src = (isQL()||isCDT()||isViewer()) ? hsList : hsList.filter(function(h){ return h.canBoId===currentUser.id; });
   var f   = src.filter(function(h){
     var matchQ  = !q || (h.tenKH||'').toLowerCase().indexOf(q)>=0 || (h.sdt||'').indexOf(q)>=0 || (h.maCanHo||'').toLowerCase().indexOf(q)>=0;
