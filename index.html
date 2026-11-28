@@ -2,29 +2,175 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<!-- BUILD: 20261128_080428 -->
+<!-- BUILD: 20261128_152000 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PrimaBay Credit — BIDV Tràng Tiền v20260716</title>
+<title>PrimaBay Credit — BIDV Tràng Tiền</title>
 <link rel="stylesheet" href="css/shared.css">
+<style>
+/* ── Module layout override ── */
+#app-wrap { flex-direction: column; }
+
+/* ── Top bar (nằm ngang, cố định trên cùng) ── */
+.app-topbar {
+  background: linear-gradient(90deg,#006B5E 0%,#005049 100%);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 48px; flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.app-topbar-brand { display: flex; align-items: center; gap: 10px; }
+.app-topbar-logo {
+  width: 30px; height: 30px; border-radius: 6px;
+  background: rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: #fff;
+}
+.app-topbar-name { font-size: 14px; font-weight: 700; color: #fff; }
+.app-topbar-sub  { font-size: 10px; color: rgba(255,255,255,.6); margin-top:1px; }
+.app-topbar-right { display: flex; align-items: center; gap: 8px; }
+.btn-topbar {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: .15s;
+}
+.btn-topbar-outline { background: rgba(255,255,255,.18); color: #fff; }
+.btn-topbar-outline:hover { background: rgba(255,255,255,.28); }
+.btn-topbar-icon { background: none; color: rgba(255,255,255,.8); font-size: 16px; padding: 4px 8px; }
+.btn-topbar-icon:hover { background: rgba(255,255,255,.18); border-radius: 6px; }
+.topbar-user {
+  display: flex; align-items: center; gap: 7px;
+  color: rgba(255,255,255,.85); font-size: 12px; cursor: pointer;
+}
+.topbar-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #F5A623; color: #003530;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+
+/* ── Module Tabs ── */
+.module-tabs {
+  background: #004A3E;
+  display: flex; align-items: stretch;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.module-tab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 20px; height: 40px;
+  font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,.6);
+  cursor: pointer; border-bottom: 3px solid transparent;
+  transition: .15s; white-space: nowrap;
+}
+.module-tab:hover { color: rgba(255,255,255,.9); background: rgba(255,255,255,.07); }
+.module-tab.active { color: #fff; border-bottom-color: #F5A623; background: rgba(245,166,35,.1); }
+.module-tab .mtab-badge {
+  background: rgba(255,255,255,.2); color: #fff;
+  border-radius: 20px; padding: 1px 7px;
+  font-size: 11px; font-weight: 700;
+}
+.module-tab.active .mtab-badge { background: rgba(245,166,35,.4); }
+.module-tab-sep { flex: 1; }
+
+/* ── Module wrapper ── */
+.mod-body { flex: 1; display: flex; overflow: hidden; }
+.mod-panel { display: none; width: 100%; }
+.mod-panel.active { display: flex; }
+
+/* ── MODULE LOAN: layout dọc (sidebar trái light + main phải) ── */
+#mod-loan { flex-direction: row; }
+
+/* Sidebar Hồ sơ Vay (light) */
+.loan-sidebar {
+  width: 220px; min-width: 220px; flex-shrink: 0;
+  background: var(--surf); border-right: 1px solid var(--bdr);
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.ls-section { padding: 10px 14px 2px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--txt3); }
+.ls-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 14px; cursor: pointer; font-size: 13px;
+  color: var(--txt2); transition: background .12s;
+  border-left: 3px solid transparent;
+}
+.ls-item:hover { background: var(--surf2); }
+.ls-item.active { background: var(--blue-l); color: var(--blue); border-left-color: var(--blue); font-weight: 600; }
+.ls-badge { margin-left: auto; border-radius: 20px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
+.ls-badge-blue   { background: var(--blue); color: #fff; }
+.ls-badge-orange { background: #F59E0B; color: #fff; }
+.ls-badge-green  { background: #10B981; color: #fff; }
+.ls-badge-grey   { background: var(--bdr); color: var(--txt3); }
+
+/* ── MODULE PROJECT: layout giống index.html cũ (sidebar tối + main) ── */
+#mod-project { flex-direction: row; }
+
+.proj-sidebar {
+  width: 220px; min-width: 220px; flex-shrink: 0;
+  background: linear-gradient(180deg,#006B5E 0%,#004A3E 60%,#003530 100%);
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.proj-sb-logo { padding: 14px 16px 12px; border-bottom: 1px solid rgba(255,255,255,.15); }
+.proj-sb-logo .bn { font-size: 13px; font-weight: 700; color: #fff; margin-top: 4px; }
+.proj-sb-logo .bs { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 1px; }
+.proj-sb-nav { padding: 8px 0; flex: 1; }
+.proj-nav-sec { padding: 10px 16px 3px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,.4); }
+.proj-nav-it {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; cursor: pointer;
+  color: rgba(255,255,255,.8); font-size: 13px;
+  border-left: 3px solid transparent; transition: .15s;
+}
+.proj-nav-it:hover { background: rgba(255,255,255,.1); color: #fff; }
+.proj-nav-it.active { background: rgba(245,166,35,.22); border-left-color: #F5A623; color: #fff; font-weight: 600; }
+.proj-nav-badge { margin-left: auto; background: rgba(255,255,255,.2); color: #fff; border-radius: 20px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
+.proj-sb-user {
+  padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.15);
+  font-size: 12px; color: rgba(255,255,255,.65);
+}
+.proj-sb-footer { padding: 10px 16px 14px; background: rgba(0,0,0,.15); flex-shrink: 0; border-top: 1px solid rgba(255,255,255,.12); }
+.proj-sb-footer .fn { font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+.proj-sb-footer .fa { font-size: 10px; color: rgba(255,255,255,.55); line-height: 1.7; }
+.proj-sb-footer .fc { font-size: 9px; color: rgba(255,255,255,.35); font-style: italic; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,.1); }
+
+/* ── Page area inside each module ── */
+.mod-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.page { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+.page.active { display: flex; }
+.page-hd {
+  padding: 14px 20px 10px; border-bottom: 1px solid var(--bdr);
+  background: var(--surf); flex-shrink: 0;
+}
+.page-scroll { flex: 1; overflow-y: auto; padding: 20px; }
+.page-topbar {
+  height: 50px; padding: 0 20px; flex-shrink: 0;
+  background: var(--surf); border-bottom: 1px solid var(--bdr);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-topbar-title { font-size: 15px; font-weight: 600; }
+.page-topbar-acts { display: flex; gap: 8px; align-items: center; }
+
+/* ── BIDV page (project) full height ── */
+#page-bidv { overflow: hidden; }
+#page-bidv .page-hd { flex-shrink: 0; }
+#bidv-table-wrap { overflow: auto; flex: 1; }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ══════════════════════ LOGIN ══════════════════════ -->
 <div id="login-wrap">
   <div class="lcard">
     <div class="logo-top">
-  <div style="font-size:28px;font-weight:700;color:var(--blue);letter-spacing:-0.5px">PrimaBay Credit</div>
-  <div class="bs" style="margin-top:4px">Hệ thống quản lý hồ sơ vay vốn</div>
-  <div style="font-size:11px;color:var(--txt3);margin-top:2px">BIDV Chi nhánh Tràng Tiền – Hà Nội</div>
-</div>
+      <div class="bn" style="font-size:26px;font-weight:800;color:var(--blue)">PrimaBay Credit</div>
+      <div class="bs" style="margin-top:4px">Hệ thống quản lý hồ sơ vay vốn</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:2px">BIDV Chi nhánh Tràng Tiền – Hà Nội</div>
+    </div>
     <div class="lerr" id="lerr"></div>
     <div class="lfield"><label>Tên đăng nhập</label>
       <input id="lu" placeholder="vd: admin" onkeydown="if(event.key==='Enter')doLogin()">
@@ -33,252 +179,334 @@
       <input id="lp" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="lbtn" id="login-btn" onclick="doLogin()">Đăng nhập</button>
-    
   </div>
 </div>
 
-<!-- APP -->
+<!-- ══════════════════════ APP ══════════════════════ -->
 <div id="app-wrap">
-  <aside class="sidebar">
-    <div class="sb-logo">
-      <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:24px;object-fit:contain;margin-bottom:6px;display:block">
-      <div class="bn">PrimaBay Credit</div>
-      <div class="bs">Chi nhánh Tràng Tiền – Hà Nội</div>
-    </div>
-    <nav class="sb-nav">
-      <div class="nav-sec">Tổng quan</div>
-      <div class="nav-it active" id="ni-db" onclick="showPage('db')">📊 Dashboard</div>
-      <div class="nav-sec">Hồ sơ</div>
-      <div class="nav-it" id="ni-hs" onclick="showPage('hs')">📋 Danh sách hồ sơ</div>
-      <div class="nav-it hide" id="ni-imp" onclick="showPage('imp')">📥 Nhập từ BIM</div>
-      <div class="nav-it hide" id="ni-bidv" onclick="showPage('bidv')">📁 Hồ sơ BIDV</div>
-      <div class="nav-sec hide" id="ns-sys">Hệ thống</div>
-      <div class="nav-it hide" id="ni-usr" onclick="showPage('usr')">👥 Người dùng</div>
-      <div class="nav-it hide" id="ni-cdt-up" onclick="showPage('cdt-up')">📤 Upload KH mới</div>
-      <div class="nav-it hide" id="ni-cdt-view" onclick="showPage('cdt-view')">📊 Tiến độ hồ sơ</div>
-    </nav>
-    <div class="sb-user">
-      <div class="sb-urow">
-        <div class="sb-av" id="sb-av">A</div>
-        <div><div class="sb-un" id="sb-un">—</div><div class="sb-ur" id="sb-ur">—</div></div>
-      </div>
-      <div class="sb-acts">
-        <button class="sb-link" onclick="doLogout()">Đăng xuất</button>
-        <button class="sb-link" onclick="openPwModal()">Đổi mật khẩu</button>
-      </div>
-    </div>
-  <div class="sb-footer">
-    <div class="sb-footer-divider"></div>
-    <div class="sb-footer-branch">
-      <div class="sb-footer-name">BIDV Tràng Tiền – Hà Nội</div>
-      <div class="sb-footer-addr">41 Hai Bà Trưng, Cửa Nam, TP. Hà Nội</div>
-      <div class="sb-footer-phone">024 7300 1999</div>
-    </div>
-    <div class="sb-footer-credit">Phụ trách: Nguyễn Việt Anh</div>
-  </div>
-  </aside>
 
-  <div class="main">
-    <!-- DASHBOARD -->
-    <div class="page" id="page-bidv" style="height:100%;overflow:hidden">
-  <div class="page-hd" style="flex-shrink:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div style="font-size:16px;font-weight:700;color:var(--blue)">📁 Hồ sơ BIDV — Xuất hợp đồng</div>
-      <button class="btn btn-primary" onclick="openExportModal()" id="btn-export-modal" style="display:none">
-        📄 Xuất hợp đồng (<span id="export-count">0</span>)
-      </button>
+  <!-- TOP BAR -->
+  <div class="app-topbar">
+    <div class="app-topbar-brand">
+      <div class="app-topbar-logo">B</div>
+      <div>
+        <div class="app-topbar-name">PrimaBay Credit</div>
+        <div class="app-topbar-sub">BIDV Chi nhánh Tràng Tiền – Hà Nội</div>
+      </div>
     </div>
-    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <select id="bidv-filter-st" onchange="renderBIDVTable()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
-        <option value="">Tất cả trạng thái</option>
-        <option value="moi">Mới nhận</option>
-        <option value="dang">Đang xử lý</option>
-        <option value="cho">Chờ phê duyệt</option>
-        <option value="choky">Chờ ký</option>
-        <option value="chogn">Chờ giải ngân</option>
-        <option value="xong">Hoàn thành</option>
-        <option value="tuchoi">Từ chối</option>
-      </select>
-      <select id="bidv-filter-cb" onchange="renderBIDVTable()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
-        <option value="">Tất cả CB</option>
-      </select>
-      <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">
-        <input type="checkbox" onchange="toggleAllBIDV(this.checked)"> Chọn tất cả
-      </label>
+    <div class="app-topbar-right">
+      <button class="btn-topbar btn-topbar-outline hide" id="btn-new-hs-top" onclick="openNewHS()">+ Tạo hồ sơ</button>
+      <div class="topbar-user" onclick="openPwModal()" id="topbar-user">
+        <div class="topbar-av" id="sb-av">A</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#fff" id="sb-un">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6)" id="sb-ur">—</div>
+        </div>
+      </div>
+      <button class="btn-topbar btn-topbar-icon" onclick="openUM()" title="Cài đặt hệ thống">⚙️</button>
+      <button class="btn-topbar btn-topbar-outline" onclick="doLogout()" style="font-size:11px">Đăng xuất</button>
     </div>
   </div>
-  <div id="bidv-table-wrap" style="overflow-x:auto;overflow-y:auto;flex:1;margin-top:8px"></div>
-</div>
 
-<div class="page" id="page-db">
-      <div class="topbar"><span class="topbar-title">Dashboard tổng quan</span></div>
-      <div class="content">
-        <div id="db-alerts" style="margin-bottom:14px"></div>
-        <div class="stats-row" id="db-stats"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="panel hide" id="panel-cbload">
-            <div class="panel-title">Tải việc cán bộ</div>
-            <div id="cb-load-list"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-title">Hoạt động gần đây</div>
-            <div id="act-list"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-title">Hồ sơ chờ ký</div>
-            <div id="upcoming-list"></div>
-          </div>
-        </div>
-      </div>
+  <!-- MODULE TABS -->
+  <div class="module-tabs">
+    <div class="module-tab active" id="mtab-loan" onclick="switchModule('loan')">
+      🏦 Hồ sơ Vay <span class="mtab-badge" id="mtab-loan-badge">—</span>
     </div>
-
-    <!-- DANH SÁCH HỒ SƠ -->
-    <div class="page" id="page-hs">
-      <div class="topbar">
-        <span class="topbar-title">Danh sách hồ sơ</span>
-        <div class="topbar-acts">
-          <button class="btn btn-primary hide" id="btn-new-hs" onclick="openNewHS()">+ Tạo hồ sơ mới</button>
-        </div>
-      </div>
-      <div class="content">
-        <div class="fbar">
-          <input id="s-q" placeholder="🔍  Tìm tên KH, SĐT, mã căn hộ..." oninput="renderHSTable()">
-          <select id="s-st" onchange="renderHSTable()">
-            <option value="">Tất cả trạng thái</option>
-            <option value="moi">Mới nhận</option><option value="dang">Đang xử lý</option>
-            <option value="cho">Chờ phê duyệt</option><option value="choky">Chờ ký</option>
-            <option value="xong">Hoàn thành</option><option value="tuchoi">Từ chối</option>
-          </select>
-          <select id="s-cb" onchange="renderHSTable()" class="hide"></select>
-          <span class="ml-auto text-sm" id="hs-count"></span>
-        </div>
-        <div class="twrap">
-          <table>
-            <thead><tr>
-              <th>Khách hàng</th><th>SĐT</th><th>Căn hộ</th>
-              <th>Deadline</th><th>Hồ sơ</th><th>CIC</th><th>Cán bộ</th><th>Trạng thái</th><th>Cập nhật</th><th></th>
-            </tr></thead>
-            <tbody id="hs-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="module-tab" id="mtab-project" onclick="switchModule('project')">
+      🏗️ Dự án Prima Bay
     </div>
-
-    <!-- IMPORT -->
-    <div class="page" id="page-imp">
-      <div class="topbar"><span class="topbar-title">Nhập danh sách từ BIM</span></div>
-      <div class="content" style="max-width:680px">
-        <div class="panel">
-          <div class="panel-title">Upload file từ BIM</div>
-          <div class="imp-zone" onclick="document.getElementById('imp-file').click()">
-            <div style="font-size:32px;margin-bottom:8px">📂</div>
-            <div style="font-weight:600;margin-bottom:4px">Chọn file CSV</div>
-            <div class="text-sm">Hệ thống tự kiểm tra trùng lặp trước khi nhập</div>
-          </div>
-          <input type="file" id="imp-file" accept=".csv" style="display:none" onchange="handleImpFile(event)">
-          <div id="imp-preview" style="display:none">
-            <div style="font-size:13px;font-weight:500;margin-bottom:8px" id="imp-info"></div>
-            <div style="overflow-x:auto;max-height:160px;border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:12px">
-              <table id="imp-tbl"><thead></thead><tbody></tbody></table>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <span style="font-size:13px;font-weight:500">Phân công:</span>
-              <select id="imp-cb-sel" style="padding:7px 12px;border:1px solid var(--bdr);border-radius:var(--r);font-size:13px;font-family:inherit"></select>
-              <button class="btn btn-primary" onclick="doImport()">Nhập và phân công</button>
-              <button class="btn" onclick="cancelImp()">Huỷ</button>
-            </div>
-          </div>
-          <div class="info-banner" id="imp-result" style="display:none"></div>
-        </div>
-        <div class="panel">
-          <div class="panel-title">Cấu trúc file CSV</div>
-          <div style="font-size:13px;color:var(--txt2);line-height:1.9">
-            Cột A–I: <b>Họ tên KH · SĐT · CCCD · Mã căn hộ · Tầng · Diện tích m² · Giá HĐMB (tr.đ) · Số HĐMB · Đã đóng CĐT (tr.đ)</b><br>
-            Dòng 1 là header, dữ liệu từ dòng 2. Hệ thống bỏ qua dòng trùng CCCD hoặc trùng Mã căn hộ.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- USERS -->
-    <div class="page" id="page-usr">
-      <div class="topbar">
-        <span class="topbar-title">Quản lý người dùng</span>
-        <div class="topbar-acts"><button class="btn btn-primary" onclick="openAddUser()">+ Thêm người dùng</button></div>
-      </div>
-      <div class="content" style="max-width:700px">
-        <div class="twrap">
-          <table>
-            <thead><tr><th>Họ tên</th><th>Đăng nhập</th><th>Vai trò</th><th>HS đang xử lý</th><th>Trạng thái</th><th></th></tr></thead>
-            <tbody id="usr-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- CĐT UPLOAD -->
-    <div class="page" id="page-cdt-up">
-      <div class="topbar"><span class="topbar-title">Upload khách hàng mới — BIM Group</span></div>
-      <div class="content" style="max-width:680px">
-        <div class="panel">
-          <div class="panel-title">Upload danh sách KH mới</div>
-          <div class="imp-zone" onclick="document.getElementById('cdt-file').click()">
-            <div style="font-size:32px;margin-bottom:8px">📤</div>
-            <div style="font-weight:600;margin-bottom:4px">Chọn file CSV</div>
-            <div class="text-sm">Hệ thống kiểm tra trùng CCCD và Mã căn hộ trước khi gửi</div>
-          </div>
-          <input type="file" id="cdt-file" accept=".csv" style="display:none" onchange="handleCDTFile(event)">
-          <div id="cdt-preview" style="display:none">
-            <div style="font-size:13px;font-weight:500;margin-bottom:8px" id="cdt-info"></div>
-            <div class="lock-banner" id="cdt-warn" style="display:none"></div>
-            <div style="overflow-x:auto;max-height:160px;border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:12px">
-              <table id="cdt-tbl"><thead></thead><tbody></tbody></table>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
-              <span style="font-size:13px;font-weight:500">Ngày giải ngân dự kiến (áp dụng cho cả lô):</span>
-              <input type="date" id="cdt-ngayGN" style="padding:7px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;font-family:inherit">
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-primary" onclick="doCDTSubmit()">Gửi lên BIDV</button>
-              <button class="btn" onclick="cancelCDT()">Huỷ</button>
-            </div>
-          </div>
-          <div class="info-banner" id="cdt-result" style="display:none"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CĐT VIEW -->
-    <div class="page" id="page-cdt-view">
-      <div class="topbar">
-        <span class="topbar-title">Tiến độ hồ sơ — BIM Group</span>
-        <div class="topbar-acts"><button class="btn btn-success" onclick="exportCDT()">⬇ Xuất CSV</button></div>
-      </div>
-      <div class="content">
-        <div class="stats-row" id="cdt-stats"></div>
-        <div class="fbar">
-          <input id="cdt-q" placeholder="🔍  Tìm KH, mã căn hộ..." oninput="renderCDTTable()">
-          <select id="cdt-st" onchange="renderCDTTable()">
-            <option value="">Tất cả</option>
-            <option value="full">Đủ hồ sơ</option>
-            <option value="approved">Được vay</option>
-            <option value="rejected">Không vay</option>
-          </select>
-        </div>
-        <div class="twrap">
-          <table>
-            <thead><tr>
-              <th>Mã căn hộ</th><th>Khách hàng</th>
-              <th>Giấy tờ CN</th><th>CM Thu nhập</th><th>HS TSBĐ</th><th>Khoản vay HT</th>
-              <th>Tiến độ HS</th><th>Ket qua khai thac</th><th>Ngay GN</th><th>Han muc duyet</th><th>Tinh trang</th><th>Cap nhat</th>
-            </tr></thead>
-            <tbody id="cdt-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="module-tab-sep"></div>
   </div>
-</div>
+
+  <!-- MODULE BODY -->
+  <div class="mod-body">
+
+    <!-- ══════════════════════════════════════════
+         MODULE 1: HỒ SƠ VAY
+    ══════════════════════════════════════════ -->
+    <div class="mod-panel active" id="mod-loan">
+
+      <!-- Sidebar Hồ sơ Vay (light) -->
+      <div class="loan-sidebar">
+        <div style="padding:14px 14px 10px;border-bottom:1px solid var(--bdr)">
+          <div style="font-size:13px;font-weight:700;color:var(--blue)">📋 Hồ sơ Vay</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:2px">Quản lý & theo dõi</div>
+        </div>
+        <div class="ls-section">Danh mục</div>
+        <div class="ls-item active" id="ni-db" onclick="showPage('db')">📊 Dashboard</div>
+        <div class="ls-item" id="ni-hs" onclick="showPage('hs')">📁 Danh sách hồ sơ <span class="ls-badge ls-badge-blue" id="ls-badge-hs">0</span></div>
+        <div class="ls-section">Hệ thống</div>
+        <div class="ls-item hide" id="ni-imp" onclick="showPage('imp')">📥 Nhập từ BIM</div>
+        <div class="ls-section">CĐT</div>
+        <div class="ls-item hide" id="ni-cdt-up" onclick="showPage('cdt-up')">📤 Upload KH mới</div>
+        <div class="ls-item hide" id="ni-cdt-view" onclick="showPage('cdt-view')">📊 Tiến độ hồ sơ</div>
+        <div class="ls-section hide" id="ns-sys">Admin</div>
+        <div class="ls-item hide" id="ni-usr" onclick="showPage('usr')">👥 Người dùng</div>
+      </div><!-- /loan-sidebar -->
+
+      <!-- Main: pages của Hồ sơ Vay -->
+      <div class="mod-main">
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-db">
+          <div class="page-topbar"><span class="page-topbar-title">Dashboard tổng quan</span></div>
+          <div class="page-scroll content">
+            <div id="db-alerts" style="margin-bottom:14px"></div>
+            <div class="stats-row" id="db-stats"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div class="panel hide" id="panel-cbload">
+                <div class="panel-title">Tải việc cán bộ</div>
+                <div id="cb-load-list"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-title">Hoạt động gần đây</div>
+                <div id="act-list"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-title">Hồ sơ chờ ký</div>
+                <div id="upcoming-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DANH SÁCH HỒ SƠ -->
+        <div class="page" id="page-hs">
+          <div class="page-topbar">
+            <span class="page-topbar-title">Danh sách hồ sơ</span>
+            <div class="page-topbar-acts">
+              <button class="btn btn-primary hide" id="btn-new-hs" onclick="openNewHS()">+ Tạo hồ sơ mới</button>
+            </div>
+          </div>
+          <div class="page-scroll content">
+            <div class="fbar">
+              <input id="s-q" placeholder="🔍  Tìm tên KH, SĐT, mã căn hộ..." oninput="renderHSTable()">
+              <select id="s-st" onchange="renderHSTable()">
+                <option value="">Tất cả trạng thái</option>
+                <option value="moi">Mới nhận</option>
+                <option value="dang">Đang xử lý</option>
+                <option value="cho">Chờ phê duyệt</option>
+                <option value="choky">Chờ ký</option>
+                <option value="xong">Hoàn thành</option>
+                <option value="tuchoi">Từ chối</option>
+              </select>
+              <select id="s-cb" onchange="renderHSTable()" class="hide"></select>
+              <span class="ml-auto text-sm" id="hs-count"></span>
+            </div>
+            <div class="twrap">
+              <table>
+                <thead><tr>
+                  <th>Khách hàng</th><th>SĐT</th><th>Căn hộ</th>
+                  <th>Deadline</th><th>Hồ sơ</th><th>CIC</th><th>Cán bộ</th>
+                  <th>Trạng thái</th><th>Cập nhật</th><th></th>
+                </tr></thead>
+                <tbody id="hs-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMPORT -->
+        <div class="page" id="page-imp">
+          <div class="page-topbar"><span class="page-topbar-title">Nhập danh sách từ BIM</span></div>
+          <div class="page-scroll content" style="max-width:680px">
+            <div class="panel">
+              <div class="panel-title">Upload file từ BIM</div>
+              <div class="imp-zone" onclick="document.getElementById('imp-file').click()">
+                <div style="font-size:32px;margin-bottom:8px">📂</div>
+                <div style="font-weight:600;margin-bottom:4px">Chọn file CSV</div>
+                <div class="text-sm">Hệ thống tự kiểm tra trùng lặp trước khi nhập</div>
+              </div>
+              <input type="file" id="imp-file" accept=".csv" style="display:none" onchange="handleImpFile(event)">
+              <div id="imp-preview" style="display:none">
+                <div style="font-size:13px;font-weight:500;margin-bottom:8px" id="imp-info"></div>
+                <div style="overflow-x:auto;max-height:160px;border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:12px">
+                  <table id="imp-tbl"><thead></thead><tbody></tbody></table>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <span style="font-size:13px;font-weight:500">Phân công:</span>
+                  <select id="imp-cb-sel" style="padding:7px 12px;border:1px solid var(--bdr);border-radius:var(--r);font-size:13px;font-family:inherit"></select>
+                  <button class="btn btn-primary" onclick="doImport()">Nhập và phân công</button>
+                  <button class="btn" onclick="cancelImp()">Huỷ</button>
+                </div>
+              </div>
+              <div class="info-banner" id="imp-result" style="display:none"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">Cấu trúc file CSV</div>
+              <div style="font-size:13px;color:var(--txt2);line-height:1.9">
+                Cột A–I: <b>Họ tên KH · SĐT · CCCD · Mã căn hộ · Tầng · Diện tích m² · Giá HĐMB (tr.đ) · Số HĐMB · Đã đóng CĐT (tr.đ)</b><br>
+                Dòng 1 là header, dữ liệu từ dòng 2. Hệ thống bỏ qua dòng trùng CCCD hoặc trùng Mã căn hộ.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- USERS -->
+        <div class="page" id="page-usr">
+          <div class="page-topbar">
+            <span class="page-topbar-title">Quản lý người dùng</span>
+            <div class="page-topbar-acts"><button class="btn btn-primary" onclick="openAddUser()">+ Thêm người dùng</button></div>
+          </div>
+          <div class="page-scroll content" style="max-width:700px">
+            <div class="twrap">
+              <table>
+                <thead><tr><th>Họ tên</th><th>Đăng nhập</th><th>Vai trò</th><th>HS đang xử lý</th><th>Trạng thái</th><th></th></tr></thead>
+                <tbody id="usr-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- CĐT UPLOAD -->
+        <div class="page" id="page-cdt-up">
+          <div class="page-topbar"><span class="page-topbar-title">Upload khách hàng mới — BIM Group</span></div>
+          <div class="page-scroll content" style="max-width:680px">
+            <div class="panel">
+              <div class="panel-title">Upload danh sách KH mới</div>
+              <div class="imp-zone" onclick="document.getElementById('cdt-file').click()">
+                <div style="font-size:32px;margin-bottom:8px">📤</div>
+                <div style="font-weight:600;margin-bottom:4px">Chọn file CSV</div>
+                <div class="text-sm">Hệ thống kiểm tra trùng CCCD và Mã căn hộ trước khi gửi</div>
+              </div>
+              <input type="file" id="cdt-file" accept=".csv" style="display:none" onchange="handleCDTFile(event)">
+              <div id="cdt-preview" style="display:none">
+                <div style="font-size:13px;font-weight:500;margin-bottom:8px" id="cdt-info"></div>
+                <div class="lock-banner" id="cdt-warn" style="display:none"></div>
+                <div style="overflow-x:auto;max-height:160px;border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:12px">
+                  <table id="cdt-tbl"><thead></thead><tbody></tbody></table>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+                  <span style="font-size:13px;font-weight:500">Ngày giải ngân dự kiến:</span>
+                  <input type="date" id="cdt-ngayGN" style="padding:7px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;font-family:inherit">
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-primary" onclick="doCDTSubmit()">Gửi lên BIDV</button>
+                  <button class="btn" onclick="cancelCDT()">Huỷ</button>
+                </div>
+              </div>
+              <div class="info-banner" id="cdt-result" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CĐT VIEW -->
+        <div class="page" id="page-cdt-view">
+          <div class="page-topbar">
+            <span class="page-topbar-title">Tiến độ hồ sơ — BIM Group</span>
+            <div class="page-topbar-acts"><button class="btn btn-success" onclick="exportCDT()">⬇ Xuất CSV</button></div>
+          </div>
+          <div class="page-scroll content">
+            <div class="stats-row" id="cdt-stats"></div>
+            <div class="fbar">
+              <input id="cdt-q" placeholder="🔍  Tìm KH, mã căn hộ..." oninput="renderCDTTable()">
+              <select id="cdt-st" onchange="renderCDTTable()">
+                <option value="">Tất cả</option>
+                <option value="full">Đủ hồ sơ</option>
+                <option value="approved">Được vay</option>
+                <option value="rejected">Không vay</option>
+              </select>
+            </div>
+            <div class="twrap">
+              <table>
+                <thead><tr>
+                  <th>Mã căn hộ</th><th>Khách hàng</th>
+                  <th>Giấy tờ CN</th><th>CM Thu nhập</th><th>HS TSBĐ</th><th>Khoản vay HT</th>
+                  <th>Tiến độ HS</th><th>Kết quả</th><th>Ngày GN</th><th>Hạn mức</th><th>Tình trạng</th><th>Cập nhật</th>
+                </tr></thead>
+                <tbody id="cdt-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /mod-main (loan) -->
+    </div><!-- /mod-loan -->
+
+    <!-- ══════════════════════════════════════════
+         MODULE 2: DỰ ÁN PRIMA BAY
+    ══════════════════════════════════════════ -->
+    <div class="mod-panel" id="mod-project">
+
+      <!-- Sidebar dự án (tối, giống thiết kế cũ) -->
+      <div class="proj-sidebar">
+        <div class="proj-sb-logo">
+          <img src="BIDV_LOGO_B64_PLACEHOLDER" alt="BIDV" style="height:22px;object-fit:contain;margin-bottom:5px;display:block">
+          <div class="bn">PrimaBay Credit</div>
+          <div class="bs">Chi nhánh Tràng Tiền – Hà Nội</div>
+        </div>
+        <nav class="proj-sb-nav">
+          <div class="proj-nav-sec">Tổng quan</div>
+          <div class="proj-nav-it active" id="pni-bidv" onclick="showProjPage('bidv')">📁 Hồ sơ BIDV</div>
+          <div class="proj-nav-sec">Hệ thống</div>
+          <div class="proj-nav-it hide" id="pni-imp" onclick="showProjPage('imp2')">📥 Nhập từ BIM</div>
+          <div class="proj-nav-it hide" id="pni-cdt-up" onclick="showProjPage('cdt-up2')">📤 Upload KH mới</div>
+          <div class="proj-nav-it hide" id="pni-cdt-view" onclick="showProjPage('cdt-view2')">📊 Tiến độ hồ sơ</div>
+          <div class="proj-nav-sec hide" id="pns-sys">Hệ thống</div>
+          <div class="proj-nav-it hide" id="pni-usr" onclick="showProjPage('usr2')">👥 Người dùng</div>
+        </nav>
+        <div class="proj-sb-user">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:28px;height:28px;border-radius:50%;background:#F5A623;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#003530" id="psb-av">A</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#fff" id="psb-un">—</div>
+              <div style="font-size:10px;color:rgba(255,255,255,.55)" id="psb-ur">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="proj-sb-footer">
+          <div class="fn">BIDV Tràng Tiền – Hà Nội</div>
+          <div class="fa">41 Hai Bà Trưng, Cửa Nam, TP. Hà Nội</div>
+          <div class="fa">024 7300 1999</div>
+          <div class="fc">Phụ trách: Nguyễn Việt Anh</div>
+        </div>
+      </div><!-- /proj-sidebar -->
+
+      <!-- Main: pages của Dự án -->
+      <div class="mod-main">
+
+        <!-- BIDV / Xuất hợp đồng (page chính của module Project) -->
+        <div class="page active" id="page-bidv">
+          <div class="page-hd" style="flex-shrink:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+              <div style="font-size:15px;font-weight:700;color:var(--blue)">📁 Hồ sơ BIDV — Xuất hợp đồng</div>
+              <button class="btn btn-primary" onclick="openExportModal()" id="btn-export-modal" style="display:none">
+                📄 Xuất hợp đồng (<span id="export-count">0</span>)
+              </button>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <select id="bidv-filter-st" onchange="renderBIDVTable()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:6px;font-size:13px;background:var(--surf);color:var(--txt)">
+                <option value="">Tất cả trạng thái</option>
+                <option value="moi">Mới nhận</option>
+                <option value="dang">Đang xử lý</option>
+                <option value="cho">Chờ phê duyệt</option>
+                <option value="choky">Chờ ký</option>
+                <option value="chogn">Chờ giải ngân</option>
+                <option value="xong">Hoàn thành</option>
+                <option value="tuchoi">Từ chối</option>
+              </select>
+              <select id="bidv-filter-cb" onchange="renderBIDVTable()" style="padding:6px 10px;border:1px solid var(--bdr);border-radius:6px;font-size:13px;background:var(--surf);color:var(--txt)">
+                <option value="">Tất cả CB</option>
+              </select>
+              <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">
+                <input type="checkbox" onchange="toggleAllBIDV(this.checked)"> Chọn tất cả
+              </label>
+            </div>
+          </div>
+          <div id="bidv-table-wrap" style="overflow-x:auto;overflow-y:auto;flex:1;margin-top:0"></div>
+        </div>
+
+      </div><!-- /mod-main (project) -->
+    </div><!-- /mod-project -->
+
+  </div><!-- /mod-body -->
+
+</div><!-- /app-wrap -->
+
+<!-- ══════════════════════════════════════════════════
+     MODALS (dùng chung cho cả 2 module)
+══════════════════════════════════════════════════ -->
 
 <!-- MODAL: HỒ SƠ -->
 <div class="overlay" id="modal-hs">
@@ -314,7 +542,9 @@
             <option value="ql">CB Quản lý</option>
             <option value="cdt">CĐT (BIM)</option>
             <option value="admin">Admin</option>
-          <option value="viewer">Lãnh đạo / Kiểm tra</option><option value="qttd">QTTD</option></select>
+            <option value="viewer">Lãnh đạo / Kiểm tra</option>
+            <option value="qttd">QTTD</option>
+          </select>
         </div>
       </div>
     </div>
@@ -341,7 +571,8 @@
     </div></div>
   </div>
 </div>
-<!-- EXPORT MODAL -->
+
+<!-- MODAL: EXPORT BM -->
 <div class="overlay" id="modal-export" onclick="if(event.target===this)closeModal('modal-export')">
   <div class="modal" style="max-width:580px;width:95%">
     <div class="mhd">📄 Xuất hồ sơ hợp đồng</div>
@@ -387,7 +618,6 @@
   </div>
 </div>
 
-
 <!-- MODAL: CONFIRM -->
 <div class="overlay" id="modal-conf">
   <div class="modal sm">
@@ -400,30 +630,70 @@
   </div>
 </div>
 
-
-<!-- Core utilities, auth, Supabase, data layer -->
+<!-- ══════════════════════════════════════════════════
+     JS MODULES
+══════════════════════════════════════════════════ -->
 <script src="js/core.js"></script>
-<!-- Hồ sơ Vay module -->
 <script src="js/mod-loan.js"></script>
-<!-- Prima Bay / BIDV export module -->
 <script src="js/mod-primabay.js"></script>
+
 <script>
+// ── Module switcher ──────────────────────────────
+var _currentModule = 'loan';
 
+function switchModule(mod) {
+  _currentModule = mod;
+  document.getElementById('mtab-loan').classList.toggle('active', mod === 'loan');
+  document.getElementById('mtab-project').classList.toggle('active', mod === 'project');
+  document.getElementById('mod-loan').classList.toggle('active', mod === 'loan');
+  document.getElementById('mod-project').classList.toggle('active', mod === 'project');
+  // Topbar button
+  var btnTop = document.getElementById('btn-new-hs-top');
+  if (btnTop) btnTop.classList.toggle('hide', mod !== 'loan' || !(window.currentUser && (window.currentUser.role === 'admin' || window.currentUser.role === 'ql' || window.currentUser.role === 'cb')));
+  if (mod === 'project') renderBIDVTable();
+}
 
-// Inject logos
+// ── Project page switcher ─────────────────────────
+function showProjPage(p) {
+  document.querySelectorAll('#mod-project .page').forEach(function(x){ x.classList.remove('active'); });
+  document.querySelectorAll('.proj-nav-it').forEach(function(x){ x.classList.remove('active'); });
+  var page = document.getElementById('page-' + p);
+  if (page) page.classList.add('active');
+  var ni = document.getElementById('pni-' + p);
+  if (ni) ni.classList.add('active');
+  if (p === 'bidv') renderBIDVTable();
+}
+
+// ── Patch showPage để sync user info trên proj sidebar ──
+var _origShowPage = typeof showPage === 'function' ? showPage : null;
+function showPage(p) {
+  if (_origShowPage) _origShowPage(p);
+  syncProjSidebar();
+}
+
+function syncProjSidebar() {
+  var u = window.currentUser;
+  if (!u) return;
+  var av = document.getElementById('psb-av');
+  var un = document.getElementById('psb-un');
+  var ur = document.getElementById('psb-ur');
+  if (av) av.textContent = (u.name||'A')[0].toUpperCase();
+  if (un) un.textContent = u.name || u.login || '—';
+  if (ur) ur.textContent = (window.ROLE_LBL && window.ROLE_LBL[u.role]) || u.role || '—';
+  // Cập nhật badge hồ sơ
+  var badge = document.getElementById('mtab-loan-badge');
+  if (badge && window.hsList) badge.textContent = window.hsList.length;
+}
+
+// ── Logo inject ──────────────────────────────────
 (function(){
-  var bidvB64     = 'bidv-logo.png'; // Logo trắng cho sidebar
-  var bidvGreenB64 = bidvB64; // Dùng logo trắng luôn
-  var bimB64 = document.querySelector('img[src="BIM_LOGO_B64_PLACEHOLDER"]') ? '' : '';
-  // Load BIM logo
-  fetch('/mnt/user-data/uploads/1784216867500_image.png').catch(()=>{});
-  document.querySelectorAll('img[src="BIDV_LOGO_B64_PLACEHOLDER"]').forEach(function(img){ img.src=bidvB64; });
+  document.querySelectorAll('img[src="BIDV_LOGO_B64_PLACEHOLDER"]').forEach(function(img){
+    img.src = 'bidv-logo.png';
+  });
   document.querySelectorAll('img[src="BIM_LOGO_B64_PLACEHOLDER"]').forEach(function(img){
-    img.src='bim-logo.png';
+    img.src = 'bim-logo.png';
   });
 })();
-
-
 </script>
 </body>
 </html>

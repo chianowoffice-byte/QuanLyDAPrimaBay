@@ -1249,23 +1249,34 @@ function applyPerms(){
   var r = currentUser.role;
   var ini = currentUser.name.split(' ').slice(-2).map(function(w){return w[0];}).join('').toUpperCase();
   var avCol = {admin:'', ql:'teal', cb:'', cdt:'amber'};
-  document.getElementById('sb-av').textContent = ini;
-  document.getElementById('sb-av').className = 'sb-av ' + (avCol[r]||'');
-  document.getElementById('sb-un').textContent = currentUser.name;
-  document.getElementById('sb-ur').textContent = ROLE_LBL[r]||r;
+  function setEl(id,prop,val){var e=document.getElementById(id);if(e)e[prop]=val;}
+  setEl('sb-av','textContent', ini);
+  setEl('sb-un','textContent', currentUser.name);
+  setEl('sb-ur','textContent', ROLE_LBL[r]||r);
+  setEl('psb-av','textContent', ini);
+  setEl('psb-un','textContent', currentUser.name);
+  setEl('psb-ur','textContent', ROLE_LBL[r]||r);
   function tog(id, show){ var el=document.getElementById(id); if(el) el.classList.toggle('hide',!show); }
-  tog('ni-imp',       isQL());
-  tog('ns-sys',       isAdmin());
-  tog('ni-usr',       isAdmin());
-  tog('ni-qttd',      isQTTD());
-  tog('ni-bidv',       isQL() || isViewer());
-  tog('btn-new-hs',   isQL() && !isCDT() && !isViewer());
-  tog('s-cb',         isQL() || isViewer());
-  tog('panel-cbload', isQL() || isViewer());
+  // Loan sidebar items
   tog('ni-db',        !isCDT());
   tog('ni-hs',        true);
-  tog('ni-cdt-up',    false);
-  tog('ni-bidv', !isCDT());
+  tog('ni-imp',       isQL());
+  tog('ni-cdt-up',    isCDT());
   tog('ni-cdt-view',  isCDT());
+  tog('ns-sys',       isAdmin());
+  tog('ni-usr',       isAdmin());
+  // Project sidebar items
+  tog('pni-imp',      isQL());
+  tog('pni-cdt-up',   isCDT());
+  tog('pni-cdt-view', isCDT());
+  tog('pns-sys',      isAdmin());
+  tog('pni-usr',      isAdmin());
+  // Module tabs: CĐT chỉ thấy tab loan; không ẩn tab project với QL/admin
+  tog('mtab-project', !isCDT());
+  // Topbar button
+  tog('btn-new-hs',   isQL() && !isCDT() && !isViewer());
+  tog('btn-new-hs-top', isQL() && !isCDT() && !isViewer());
+  tog('s-cb',         isQL() || isViewer());
+  tog('panel-cbload', isQL() || isViewer());
 }
 

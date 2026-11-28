@@ -1,21 +1,24 @@
 // ==================================================
 // NAV
 // ==================================================
+// Các page thuộc module Hồ sơ Vay (loan)
+var LOAN_PAGES = ['db','hs','imp','usr','cdt-up','cdt-view'];
+
 function showPage(p){
-  document.querySelectorAll('.page').forEach(function(x){ x.classList.remove('active'); });
-  document.querySelectorAll('.nav-it').forEach(function(x){ x.classList.remove('active'); });
+  // Chỉ toggle page trong module loan (không ảnh hưởng page-bidv của module project)
+  document.querySelectorAll('#mod-loan .page').forEach(function(x){ x.classList.remove('active'); });
+  document.querySelectorAll('.ls-item').forEach(function(x){ x.classList.remove('active'); });
   var pg = document.getElementById('page-'+p);
   if(pg) pg.classList.add('active');
   var ni = document.getElementById('ni-'+p);
   if(ni) ni.classList.add('active');
-  var mainEl=document.querySelector('.main');
-  if(mainEl) mainEl.style.overflow=(p==='bidv')?'hidden':'auto';
   if(p==='db')       renderDB();
   if(p==='hs')     { renderHSFilterCB(); renderHSTable(); }
   if(p==='usr')      renderUsrTable();
   if(p==='imp')      renderImpCBSel();
   if(p==='cdt-view') renderCDTDash();
-  if(p==='bidv') { _bidvSelected=new Set(); renderBIDVTable(); }
+  // Sync proj sidebar user info if function exists
+  if(typeof syncProjSidebar === 'function') syncProjSidebar();
 }
 
 // ==================================================
