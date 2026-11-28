@@ -611,9 +611,9 @@
 <!-- ══════════════════════════════════════════════════
      JS MODULES
 ══════════════════════════════════════════════════ -->
-<script src="js/core.js?v=20261128h"></script>
-<script src="js/mod-loan.js?v=20261128h"></script>
-<script src="js/mod-primabay.js?v=20261128h"></script>
+<script src="js/core.js?v=20261128i"></script>
+<script src="js/mod-loan.js?v=20261128i"></script>
+<script src="js/mod-primabay.js?v=20261128i"></script>
 
 <script>
 // ── Module switcher ──────────────────────────────
@@ -664,12 +664,13 @@ function syncProjSidebar() {
   if (av) av.textContent = (u.name||'A')[0].toUpperCase();
   if (un) un.textContent = u.name || u.login || '—';
   if (ur) ur.textContent = (window.ROLE_LBL && window.ROLE_LBL[u.role]) || u.role || '—';
-  // Cập nhật badge hồ sơ
+  // Badge Prima Bay (hồ sơ dự án)
   var cnt = (window.hsList||[]).length;
-  var badge = document.getElementById('mtab-loan-badge');
-  if (badge) badge.textContent = cnt || '—';
   var badge2 = document.getElementById('pni-hs-badge');
   if (badge2) badge2.textContent = cnt || '—';
+  // Badge tab Hồ sơ Vay: module riêng, chưa có data → ẩn badge
+  var badge = document.getElementById('mtab-loan-badge');
+  if (badge) badge.textContent = '—';
 }
 
 // ── Logo inject ──────────────────────────────────
